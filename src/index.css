@@ -2,39 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Ziv Duel Design System - Brazilian MMORPG Theme
+All colors MUST be HSL. Inspired by Northeastern Brazilian landscape and culture.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Background System - Desert to Atlantic Coast */
+    --background: 45 25% 97%;
+    --foreground: 25 35% 15%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Card System - Natural materials */
+    --card: 45 30% 95%;
+    --card-foreground: 25 35% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* Popover System */
+    --popover: 45 30% 95%;
+    --popover-foreground: 25 35% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Caatinga Sunset */
+    --primary: 25 85% 55%;
+    --primary-foreground: 45 25% 97%;
+    --primary-glow: 35 75% 65%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Agreste Green */
+    --secondary: 140 45% 45%;
+    --secondary-foreground: 45 25% 97%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted - Desert Sand */
+    --muted: 45 20% 88%;
+    --muted-foreground: 25 25% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Atlantic Blue */
+    --accent: 210 85% 55%;
+    --accent-foreground: 45 25% 97%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Destructive - Brazilian Red */
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 45 25% 97%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Borders - Subtle earth tones */
+    --border: 45 15% 85%;
+    --input: 45 15% 85%;
+    --ring: 25 85% 55%;
+
+    /* Gaming specific colors */
+    --warrior: 0 65% 50%;
+    --mage: 240 75% 60%;
+    --archer: 120 50% 45%;
+    --healer: 60 70% 55%;
+    --assassin: 280 45% 35%;
+
+    /* Gradients for visual appeal */
+    --gradient-hero: linear-gradient(135deg, hsl(25 85% 55%) 0%, hsl(35 75% 65%) 50%, hsl(210 85% 55%) 100%);
+    --gradient-caatinga: linear-gradient(180deg, hsl(35 40% 75%) 0%, hsl(25 50% 65%) 100%);
+    --gradient-ocean: linear-gradient(135deg, hsl(210 85% 55%) 0%, hsl(195 75% 65%) 100%);
+    --gradient-forest: linear-gradient(180deg, hsl(140 45% 45%) 0%, hsl(120 35% 35%) 100%);
+
+    /* Shadows with Brazilian warmth */
+    --shadow-warm: 0 10px 30px -5px hsl(25 85% 55% / 0.3);
+    --shadow-cool: 0 10px 30px -5px hsl(210 85% 55% / 0.2);
+    --shadow-glow: 0 0 40px hsl(35 75% 65% / 0.4);
+
+    /* Animation variables */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --radius: 0.5rem;
 
