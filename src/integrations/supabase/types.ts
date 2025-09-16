@@ -14,7 +14,393 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      character_items: {
+        Row: {
+          character_id: string
+          id: string
+          is_equipped: boolean | null
+          item_id: string
+          obtained_at: string | null
+          quantity: number | null
+        }
+        Insert: {
+          character_id: string
+          id?: string
+          is_equipped?: boolean | null
+          item_id: string
+          obtained_at?: string | null
+          quantity?: number | null
+        }
+        Update: {
+          character_id?: string
+          id?: string
+          is_equipped?: boolean | null
+          item_id?: string
+          obtained_at?: string | null
+          quantity?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_items_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "character_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_mounts: {
+        Row: {
+          captured_at: string | null
+          character_id: string
+          id: string
+          is_active: boolean | null
+          mount_id: string
+        }
+        Insert: {
+          captured_at?: string | null
+          character_id: string
+          id?: string
+          is_active?: boolean | null
+          mount_id: string
+        }
+        Update: {
+          captured_at?: string | null
+          character_id?: string
+          id?: string
+          is_active?: boolean | null
+          mount_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_mounts_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "character_mounts_mount_id_fkey"
+            columns: ["mount_id"]
+            isOneToOne: false
+            referencedRelation: "mounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_titles: {
+        Row: {
+          character_id: string
+          description: string | null
+          earned_at: string | null
+          id: string
+          title_name: string
+        }
+        Insert: {
+          character_id: string
+          description?: string | null
+          earned_at?: string | null
+          id?: string
+          title_name: string
+        }
+        Update: {
+          character_id?: string
+          description?: string | null
+          earned_at?: string | null
+          id?: string
+          title_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_titles_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      characters: {
+        Row: {
+          agility: number | null
+          class: Database["public"]["Enums"]["character_class"]
+          created_at: string | null
+          current_biome: Database["public"]["Enums"]["biome_type"] | null
+          experience: number | null
+          gold: number | null
+          health: number | null
+          id: string
+          intelligence: number | null
+          level: number | null
+          luck: number | null
+          mana: number | null
+          max_health: number | null
+          max_mana: number | null
+          name: string
+          position_x: number | null
+          position_y: number | null
+          strength: number | null
+          updated_at: string | null
+          user_id: string
+          vitality: number | null
+        }
+        Insert: {
+          agility?: number | null
+          class: Database["public"]["Enums"]["character_class"]
+          created_at?: string | null
+          current_biome?: Database["public"]["Enums"]["biome_type"] | null
+          experience?: number | null
+          gold?: number | null
+          health?: number | null
+          id?: string
+          intelligence?: number | null
+          level?: number | null
+          luck?: number | null
+          mana?: number | null
+          max_health?: number | null
+          max_mana?: number | null
+          name: string
+          position_x?: number | null
+          position_y?: number | null
+          strength?: number | null
+          updated_at?: string | null
+          user_id: string
+          vitality?: number | null
+        }
+        Update: {
+          agility?: number | null
+          class?: Database["public"]["Enums"]["character_class"]
+          created_at?: string | null
+          current_biome?: Database["public"]["Enums"]["biome_type"] | null
+          experience?: number | null
+          gold?: number | null
+          health?: number | null
+          id?: string
+          intelligence?: number | null
+          level?: number | null
+          luck?: number | null
+          mana?: number | null
+          max_health?: number | null
+          max_mana?: number | null
+          name?: string
+          position_x?: number | null
+          position_y?: number | null
+          strength?: number | null
+          updated_at?: string | null
+          user_id?: string
+          vitality?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "characters_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guild_members: {
+        Row: {
+          character_id: string
+          guild_id: string
+          id: string
+          joined_at: string | null
+          role: string | null
+        }
+        Insert: {
+          character_id: string
+          guild_id: string
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+        }
+        Update: {
+          character_id?: string
+          guild_id?: string
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_members_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guild_members_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guilds: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          leader_id: string
+          max_members: number | null
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          leader_id: string
+          max_members?: number | null
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          leader_id?: string
+          max_members?: number | null
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guilds_leader_id_fkey"
+            columns: ["leader_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      items: {
+        Row: {
+          agility_bonus: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          intelligence_bonus: number | null
+          luck_bonus: number | null
+          name: string
+          rarity: Database["public"]["Enums"]["rarity_type"] | null
+          required_class: Database["public"]["Enums"]["character_class"] | null
+          required_level: number | null
+          strength_bonus: number | null
+          type: Database["public"]["Enums"]["item_type"]
+          value: number | null
+          vitality_bonus: number | null
+        }
+        Insert: {
+          agility_bonus?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          intelligence_bonus?: number | null
+          luck_bonus?: number | null
+          name: string
+          rarity?: Database["public"]["Enums"]["rarity_type"] | null
+          required_class?: Database["public"]["Enums"]["character_class"] | null
+          required_level?: number | null
+          strength_bonus?: number | null
+          type: Database["public"]["Enums"]["item_type"]
+          value?: number | null
+          vitality_bonus?: number | null
+        }
+        Update: {
+          agility_bonus?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          intelligence_bonus?: number | null
+          luck_bonus?: number | null
+          name?: string
+          rarity?: Database["public"]["Enums"]["rarity_type"] | null
+          required_class?: Database["public"]["Enums"]["character_class"] | null
+          required_level?: number | null
+          strength_bonus?: number | null
+          type?: Database["public"]["Enums"]["item_type"]
+          value?: number | null
+          vitality_bonus?: number | null
+        }
+        Relationships: []
+      }
+      mounts: {
+        Row: {
+          biome: Database["public"]["Enums"]["biome_type"]
+          capture_difficulty: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          rarity: Database["public"]["Enums"]["rarity_type"] | null
+          special_ability: string | null
+          speed_bonus: number | null
+          stamina_bonus: number | null
+        }
+        Insert: {
+          biome: Database["public"]["Enums"]["biome_type"]
+          capture_difficulty?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          rarity?: Database["public"]["Enums"]["rarity_type"] | null
+          special_ability?: string | null
+          speed_bonus?: number | null
+          stamina_bonus?: number | null
+        }
+        Update: {
+          biome?: Database["public"]["Enums"]["biome_type"]
+          capture_difficulty?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          rarity?: Database["public"]["Enums"]["rarity_type"] | null
+          special_ability?: string | null
+          speed_bonus?: number | null
+          stamina_bonus?: number | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          display_name: string | null
+          id: string
+          is_online: boolean | null
+          last_login: string | null
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_name?: string | null
+          id: string
+          is_online?: boolean | null
+          last_login?: string | null
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          display_name?: string | null
+          id?: string
+          is_online?: boolean | null
+          last_login?: string | null
+          updated_at?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +409,10 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      biome_type: "caatinga" | "agreste" | "litoral" | "santa_cruz"
+      character_class: "warrior" | "mage" | "archer" | "healer" | "assassin"
+      item_type: "weapon" | "armor" | "consumable" | "material" | "mount"
+      rarity_type: "common" | "uncommon" | "rare" | "epic" | "legendary"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +539,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      biome_type: ["caatinga", "agreste", "litoral", "santa_cruz"],
+      character_class: ["warrior", "mage", "archer", "healer", "assassin"],
+      item_type: ["weapon", "armor", "consumable", "material", "mount"],
+      rarity_type: ["common", "uncommon", "rare", "epic", "legendary"],
+    },
   },
 } as const
