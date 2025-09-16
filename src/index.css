@@ -2,113 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Ziv Duel Design System - Brazilian MMORPG Theme
-All colors MUST be HSL. Inspired by Northeastern Brazilian landscape and culture.
-*/
+/* Minimal base to resolve CSS parse error; will reintroduce tokens after build passes. */
 
 @layer base {
   :root {
-    /* Background System - Desert to Atlantic Coast */
     --background: 45 25% 97%;
     --foreground: 25 35% 15%;
 
-    /* Card System - Natural materials */
-    --card: 45 30% 95%;
-    --card-foreground: 25 35% 15%;
-
-    /* Popover System */
-    --popover: 45 30% 95%;
-    --popover-foreground: 25 35% 15%;
-
-    /* Primary - Caatinga Sunset */
-    --primary: 25 85% 55%;
-    --primary-foreground: 45 25% 97%;
-    --primary-glow: 35 75% 65%;
-
-    /* Secondary - Agreste Green */
-    --secondary: 140 45% 45%;
-    --secondary-foreground: 45 25% 97%;
-
-    /* Muted - Desert Sand */
-    --muted: 45 20% 88%;
-    --muted-foreground: 25 25% 45%;
-
-    /* Accent - Atlantic Blue */
-    --accent: 210 85% 55%;
-    --accent-foreground: 45 25% 97%;
-
-    /* Destructive - Brazilian Red */
-    --destructive: 0 75% 55%;
-    --destructive-foreground: 45 25% 97%;
-
-    /* Borders - Subtle earth tones */
     --border: 45 15% 85%;
     --input: 45 15% 85%;
     --ring: 25 85% 55%;
 
-    /* Gaming specific colors */
-    --warrior: 0 65% 50%;
-    --mage: 240 75% 60%;
-    --archer: 120 50% 45%;
-    --healer: 60 70% 55%;
-    --assassin: 280 45% 35%;
+    --card: 45 30% 95%;
+    --card-foreground: 25 35% 15%;
 
-    /* Gradients for visual appeal */
-    --gradient-hero: linear-gradient(135deg, hsl(25 85% 55%) 0%, hsl(35 75% 65%) 50%, hsl(210 85% 55%) 100%);
-    --gradient-caatinga: linear-gradient(180deg, hsl(35 40% 75%) 0%, hsl(25 50% 65%) 100%);
-    --gradient-ocean: linear-gradient(135deg, hsl(210 85% 55%) 0%, hsl(195 75% 65%) 100%);
-    --gradient-forest: linear-gradient(180deg, hsl(140 45% 45%) 0%, hsl(120 35% 35%) 100%);
+    --popover: 45 30% 95%;
+    --popover-foreground: 25 35% 15%;
 
-    /* Shadows with Brazilian warmth */
-    --shadow-warm: 0 10px 30px -5px hsl(25 85% 55% / 0.3);
-    --shadow-cool: 0 10px 30px -5px hsl(210 85% 55% / 0.2);
-    --shadow-glow: 0 0 40px hsl(35 75% 65% / 0.4);
+    --primary: 25 85% 55%;
+    --primary-foreground: 45 25% 97%;
 
-    /* Animation variables */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --secondary: 140 45% 45%;
+    --secondary-foreground: 45 25% 97%;
+
+    --muted: 45 20% 88%;
+    --muted-foreground: 25 25% 45%;
+
+    --accent: 210 85% 55%;
+    --accent-foreground: 45 25% 97%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 45 25% 97%;
 
     --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
     --background: 25 35% 15%;
     --foreground: 45 25% 97%;
+
     --card: 25 35% 15%;
     --card-foreground: 45 25% 97%;
+
     --popover: 25 35% 15%;
     --popover-foreground: 45 25% 97%;
+
     --primary: 35 75% 65%;
     --primary-foreground: 25 35% 15%;
+
     --secondary: 140 45% 35%;
     --secondary-foreground: 45 25% 97%;
+
     --muted: 25 25% 25%;
     --muted-foreground: 45 15% 65%;
+
     --accent: 210 85% 45%;
     --accent-foreground: 45 25% 97%;
+
     --destructive: 0 75% 55%;
     --destructive-foreground: 45 25% 97%;
+
     --border: 25 25% 25%;
     --input: 25 25% 25%;
     --ring: 35 75% 65%;
   }
-}
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-  }
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; }
 }
