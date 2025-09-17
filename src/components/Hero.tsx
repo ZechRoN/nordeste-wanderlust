@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Sword, Shield, Target, Heart, Zap } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Sword, Shield, Target, Heart, Zap, UserX } from "lucide-react";
 import heroImage from "@/assets/hero-banner.jpg";
 
 export const Hero = () => {
@@ -28,9 +29,11 @@ export const Hero = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <Button variant="hero" size="xl" className="min-w-48">
-              Jogar Agora
-            </Button>
+            <Link to="/auth">
+              <Button variant="hero" size="xl" className="min-w-48">
+                Jogar Agora
+              </Button>
+            </Link>
             <Button variant="outline" size="xl" className="min-w-48 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
               Ver Trailer
             </Button>
@@ -64,7 +67,7 @@ export const Hero = () => {
             </div>
             <div className="flex flex-col items-center group cursor-pointer">
               <div className="p-4 bg-assassin/20 rounded-full mb-2 group-hover:bg-assassin/40 transition-colors">
-                <Shield className="w-8 h-8 text-primary-foreground" />
+                <UserX className="w-8 h-8 text-primary-foreground" />
               </div>
               <span className="text-primary-foreground/80 text-sm">Assassino</span>
             </div>
