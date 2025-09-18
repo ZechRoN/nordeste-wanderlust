@@ -207,6 +207,111 @@ export type Database = {
           },
         ]
       }
+      creature_drops: {
+        Row: {
+          created_at: string | null
+          creature_id: string | null
+          drop_chance: number | null
+          id: string
+          item_id: string | null
+          quantity_max: number | null
+          quantity_min: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          creature_id?: string | null
+          drop_chance?: number | null
+          id?: string
+          item_id?: string | null
+          quantity_max?: number | null
+          quantity_min?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          creature_id?: string | null
+          drop_chance?: number | null
+          id?: string
+          item_id?: string | null
+          quantity_max?: number | null
+          quantity_min?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creature_drops_creature_id_fkey"
+            columns: ["creature_id"]
+            isOneToOne: false
+            referencedRelation: "creatures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creature_drops_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creatures: {
+        Row: {
+          agility: number | null
+          biome: Database["public"]["Enums"]["biome_type"]
+          created_at: string | null
+          description: string | null
+          experience_reward: number | null
+          gold_reward: number | null
+          health: number | null
+          id: string
+          intelligence: number | null
+          level: number | null
+          luck: number | null
+          max_health: number | null
+          name: string
+          rarity: Database["public"]["Enums"]["rarity_type"] | null
+          special_ability: string | null
+          strength: number | null
+          vitality: number | null
+        }
+        Insert: {
+          agility?: number | null
+          biome: Database["public"]["Enums"]["biome_type"]
+          created_at?: string | null
+          description?: string | null
+          experience_reward?: number | null
+          gold_reward?: number | null
+          health?: number | null
+          id?: string
+          intelligence?: number | null
+          level?: number | null
+          luck?: number | null
+          max_health?: number | null
+          name: string
+          rarity?: Database["public"]["Enums"]["rarity_type"] | null
+          special_ability?: string | null
+          strength?: number | null
+          vitality?: number | null
+        }
+        Update: {
+          agility?: number | null
+          biome?: Database["public"]["Enums"]["biome_type"]
+          created_at?: string | null
+          description?: string | null
+          experience_reward?: number | null
+          gold_reward?: number | null
+          health?: number | null
+          id?: string
+          intelligence?: number | null
+          level?: number | null
+          luck?: number | null
+          max_health?: number | null
+          name?: string
+          rarity?: Database["public"]["Enums"]["rarity_type"] | null
+          special_ability?: string | null
+          strength?: number | null
+          vitality?: number | null
+        }
+        Relationships: []
+      }
       guild_members: {
         Row: {
           character_id: string
@@ -329,6 +434,42 @@ export type Database = {
           type?: Database["public"]["Enums"]["item_type"]
           value?: number | null
           vitality_bonus?: number | null
+        }
+        Relationships: []
+      }
+      locations: {
+        Row: {
+          biome: Database["public"]["Enums"]["biome_type"]
+          created_at: string | null
+          description: string | null
+          id: string
+          is_discovered: boolean | null
+          location_type: string
+          name: string
+          position_x: number
+          position_y: number
+        }
+        Insert: {
+          biome: Database["public"]["Enums"]["biome_type"]
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_discovered?: boolean | null
+          location_type: string
+          name: string
+          position_x: number
+          position_y: number
+        }
+        Update: {
+          biome?: Database["public"]["Enums"]["biome_type"]
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_discovered?: boolean | null
+          location_type?: string
+          name?: string
+          position_x?: number
+          position_y?: number
         }
         Relationships: []
       }
