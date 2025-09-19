@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PixelCard, PixelCardContent, PixelCardHeader, PixelCardTitle } from '@/components/ui/pixel-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { MapPin, Swords, Building, Mountain, TreePine } from 'lucide-react';
 import { toast } from 'sonner';
+import { BIOME_SPRITES, UI_SPRITES } from '@/assets/sprites';
 
 interface Character {
   id: string;
@@ -163,23 +166,20 @@ export function WorldMap({ character, onCharacterUpdate, onStartCombat }: WorldM
     }
   };
 
-  const biomes = ['caatinga', 'agreste', 'litoral', 'santa_cruz'];
+  const biomes: ('caatinga' | 'agreste' | 'litoral' | 'santa_cruz')[] = ['caatinga', 'agreste', 'litoral', 'santa_cruz'];
   const biomeLocations = locations.filter(l => l.biome === selectedBiome);
   const biomeCreatures = creatures.filter(c => c.biome === selectedBiome);
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
+      <PixelCard>
+        <PixelCardHeader>
+          <PixelCardTitle className="flex items-center gap-2">
+            <span className="text-2xl">{UI_SPRITES.location}</span>
             Mundo de Oxente
-          </CardTitle>
-          <CardDescription>
-            Explore os biomas, descubra locais e enfrente criaturas
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </PixelCardTitle>
+        </PixelCardHeader>
+        <PixelCardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             {biomes.map((biome) => (
               <Button
@@ -212,8 +212,8 @@ export function WorldMap({ character, onCharacterUpdate, onStartCombat }: WorldM
               Explorar Área
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </PixelCardContent>
+      </PixelCard>
 
       <div className="grid md:grid-cols-2 gap-6">
         <Card>

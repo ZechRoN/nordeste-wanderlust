@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PixelCard, PixelCardContent, PixelCardHeader, PixelCardTitle } from '@/components/ui/pixel-card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, LogOut, Heart, Zap, Coins, MapPin } from 'lucide-react';
+import { CHARACTER_SPRITES, UI_SPRITES } from '@/assets/sprites';
 import { WorldMap } from './WorldMap';
 import { Inventory } from './Inventory';
 import { Combat } from './Combat';
@@ -27,7 +29,7 @@ interface Character {
   gold: number;
   position_x: number;
   position_y: number;
-  current_biome: string;
+  current_biome: 'caatinga' | 'agreste' | 'litoral' | 'santa_cruz';
 }
 
 interface CharacterDashboardProps {

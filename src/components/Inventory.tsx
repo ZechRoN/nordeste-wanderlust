@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PixelCard, PixelCardContent, PixelCardHeader, PixelCardTitle } from '@/components/ui/pixel-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { Package, Sword, Shield, Zap } from 'lucide-react';
 import { toast } from 'sonner';
+import { ITEM_SPRITES, RARITY_COLORS } from '@/assets/sprites';
 
 interface Character {
   id: string;
@@ -236,15 +238,18 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
         <CardContent>
           {equippedItems.length > 0 && (
             <div className="mb-6">
-              <h3 className="font-semibold mb-3">Itens Equipados</h3>
+              <h3 className="font-semibold mb-3 pixel-text flex items-center gap-2">
+                <span className="text-xl">⚔️</span>
+                Itens Equipados
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {equippedItems.map((characterItem) => {
-                  const IconComponent = getTypeIcon(characterItem.item.type);
+                  const itemSprite = ITEM_SPRITES[characterItem.item.type as keyof typeof ITEM_SPRITES] || '📦';
                   return (
-                    <div key={characterItem.id} className="flex items-center gap-3 p-3 bg-primary/10 border rounded-lg">
-                      <IconComponent className="h-5 w-5" />
+                    <div key={characterItem.id} className="pixel-inventory-slot bg-card/80 p-3 gap-3 h-auto w-auto justify-start">
+                      <span className="text-2xl">{itemSprite}</span>
                       <div className="flex-1">
-                        <h4 className={`font-medium ${getRarityColor(characterItem.item.rarity)}`}>
+                        <h4 className={`font-medium pixel-text`} style={{ color: RARITY_COLORS[characterItem.item.rarity as keyof typeof RARITY_COLORS] }}>
                           {characterItem.item.name}
                         </h4>
                         <p className="text-sm text-muted-foreground">
@@ -255,6 +260,7 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
                         size="sm"
                         variant="outline"
                         onClick={() => unequipItem(characterItem.id, characterItem.item)}
+                        className="pixel-button"
                       >
                         Desequipar
                       </Button>
