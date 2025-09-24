@@ -8,6 +8,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Swords, Heart, Zap, Shield, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 import { UI_SPRITES } from '@/assets/sprites';
+import { ActionFeedback } from './ActionFeedback';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 interface Character {
   id: string;
@@ -52,6 +54,12 @@ interface CombatProps {
 
 type CombatAction = 'attack' | 'defend' | 'special';
 
+interface DamageResult {
+  damage: number;
+  isCritical: boolean;
+  isMiss: boolean;
+}
+
 export function Combat({ character, creature, onCombatEnd }: CombatProps) {
   const [playerHealth, setPlayerHealth] = useState(character.health);
   const [playerMana, setPlayerMana] = useState(character.mana);
@@ -59,42 +67,73 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
   const [isPlayerTurn, setIsPlayerTurn] = useState(true);
   const [combatLog, setCombatLog] = useState<string[]>([]);
   const [isDefending, setIsDefending] = useState(false);
+  const [feedback, setFeedback] = useState<{ show: boolean; text: string; type: 'damage' | 'heal' | 'critical' | 'miss' | 'levelup' }>({
+    show: false,
+    text: '',
+    type: 'damage'
+  });
+  
+  // Atalhos de teclado para combate
+  useKeyboardShortcuts(isPlayerTurn && playerHealth > 0 && creatureHealth > 0, {
+    attack: () => playerAttack('attack'),
+    defend: () => playerAttack('defend'),
+    special: () => playerAttack('special')
+  });
 
   const addToCombatLog = (message: string) => {
     setCombatLog(prev => [...prev.slice(-4), message]);
   };
 
-  const calculateDamage = (attacker: any, defender: any, isSpecial = false) => {
-    const baseDamage = attacker.strength + (isSpecial ? attacker.intelligence : 0);
-    const defense = defender.vitality;
-    const critChance = attacker.luck / 100;
+  const calculateDamage = (attacker: any, defender: any, isSpecial = false): DamageResult => {
+    // Melhorado: balanceamento baseado no nível e bioma
+    const levelMultiplier = 1 + (attacker.level - 1) * 0.1;
+    const baseDamage = (attacker.strength + (isSpecial ? attacker.intelligence : 0)) * levelMultiplier;
+    const defense = defender.vitality * (1 + (defender.level - 1) * 0.05);
+    const critChance = Math.min(0.3, attacker.luck / 100); // Cap em 30%
     
-    let damage = Math.max(1, baseDamage - defense / 2);
+    let damage = Math.max(1, baseDamage - defense / 3); // Defesa menos impactante
+    
+    // Sistema de miss baseado em agilidade
+    const hitChance = 0.9 - (defender.agility - attacker.agility) / 200;
+    if (Math.random() > hitChance) {
+      return { damage: 0, isCritical: false, isMiss: true };
+    }
     
     // Chance de crítico
     if (Math.random() < critChance) {
-      damage *= 2;
-      return { damage: Math.floor(damage), isCritical: true };
+      damage *= 2.5; // Críticos mais poderosos
+      return { damage: Math.floor(damage), isCritical: true, isMiss: false };
     }
     
-    return { damage: Math.floor(damage), isCritical: false };
+    return { damage: Math.floor(damage), isCritical: false, isMiss: false };
   };
 
   const playerAttack = (action: CombatAction) => {
     if (!isPlayerTurn) return;
 
-    let damageResult = { damage: 0, isCritical: false };
+    let damageResult: DamageResult = { damage: 0, isCritical: false, isMiss: false };
     let manaCost = 0;
 
     switch (action) {
       case 'attack':
         damageResult = calculateDamage(character, creature);
-        addToCombatLog(`${character.name} ataca com ${damageResult.damage} de dano${damageResult.isCritical ? ' (CRÍTICO!)' : ''}!`);
+        if (damageResult.isMiss) {
+          addToCombatLog(`${character.name} erra o ataque!`);
+          setFeedback({ show: true, text: 'ERROU!', type: 'miss' });
+        } else {
+          addToCombatLog(`${character.name} ataca com ${damageResult.damage} de dano${damageResult.isCritical ? ' (CRÍTICO!)' : ''}!`);
+          setFeedback({ 
+            show: true, 
+            text: `-${damageResult.damage}`, 
+            type: damageResult.isCritical ? 'critical' : 'damage' 
+          });
+        }
         break;
         
       case 'defend':
         setIsDefending(true);
         addToCombatLog(`${character.name} assume posição defensiva!`);
+        setFeedback({ show: true, text: 'DEFENDENDO', type: 'heal' });
         break;
         
       case 'special':
@@ -104,7 +143,17 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
         }
         manaCost = 20;
         damageResult = calculateDamage(character, creature, true);
-        addToCombatLog(`${character.name} usa habilidade especial com ${damageResult.damage} de dano${damageResult.isCritical ? ' (CRÍTICO!)' : ''}!`);
+        if (damageResult.isMiss) {
+          addToCombatLog(`${character.name} erra a habilidade especial!`);
+          setFeedback({ show: true, text: 'ERROU!', type: 'miss' });
+        } else {
+          addToCombatLog(`${character.name} usa habilidade especial com ${damageResult.damage} de dano${damageResult.isCritical ? ' (CRÍTICO!)' : ''}!`);
+          setFeedback({ 
+            show: true, 
+            text: `-${damageResult.damage} ✦`, 
+            type: damageResult.isCritical ? 'critical' : 'damage' 
+          });
+        }
         break;
     }
 
@@ -148,9 +197,16 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
 
   const handleVictory = async () => {
     try {
-      // Calcular experiência e level up
-      const newExperience = character.experience + creature.experience_reward;
-      const newGold = character.gold + creature.gold_reward;
+      // Calcular experiência e level up com bonificações
+      const levelDifference = creature.level - character.level;
+      const difficultyBonus = Math.max(1, 1 + levelDifference * 0.2); // Bonus por desafio
+      const rarityBonus = creature.rarity === 'rare' ? 1.5 : creature.rarity === 'uncommon' ? 1.2 : 1;
+      
+      const baseExpReward = creature.experience_reward * difficultyBonus * rarityBonus;
+      const baseGoldReward = creature.gold_reward * difficultyBonus * rarityBonus;
+      
+      const newExperience = character.experience + Math.floor(baseExpReward);
+      const newGold = character.gold + Math.floor(baseGoldReward);
       const currentLevel = character.level;
       const experienceForNextLevel = currentLevel * 100;
       
@@ -185,6 +241,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
           .eq('id', character.id);
           
         toast.success(`Level Up! Agora você é nível ${newLevel}!`);
+        setFeedback({ show: true, text: `LEVEL UP! ${newLevel}`, type: 'levelup' });
       } else {
         await supabase
           .from('characters')
@@ -219,7 +276,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
         }
       }
 
-      addToCombatLog(`VITÓRIA! Ganhou ${creature.experience_reward} XP e ${creature.gold_reward} moedas!`);
+      addToCombatLog(`VITÓRIA! Ganhou ${Math.floor(baseExpReward)} XP e ${Math.floor(baseGoldReward)} moedas!`);
       
       setTimeout(() => {
         onCombatEnd(true, {
@@ -274,7 +331,13 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="relative">
+        <ActionFeedback
+          show={feedback.show}
+          text={feedback.text}
+          type={feedback.type}
+          onComplete={() => setFeedback({ ...feedback, show: false })}
+        />
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Swords className="h-5 w-5" />
@@ -343,23 +406,29 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
 
           {/* Ações do jogador */}
           {isPlayerTurn && playerHealth > 0 && creatureHealth > 0 && (
-            <div className="flex gap-3 justify-center mb-6">
-              <Button onClick={() => playerAttack('attack')}>
-                <Swords className="h-4 w-4 mr-2" />
-                Atacar
-              </Button>
-              <Button variant="outline" onClick={() => playerAttack('defend')}>
-                <Shield className="h-4 w-4 mr-2" />
-                Defender
-              </Button>
-              <Button 
-                variant="secondary" 
-                onClick={() => playerAttack('special')}
-                disabled={playerMana < 20}
-              >
-                <Zap className="h-4 w-4 mr-2" />
-                Especial (20 mana)
-              </Button>
+            <div className="space-y-2 mb-6">
+              <div className="flex gap-3 justify-center">
+                <Button onClick={() => playerAttack('attack')} className="animate-fade-in">
+                  <Swords className="h-4 w-4 mr-2" />
+                  Atacar (1)
+                </Button>
+                <Button variant="outline" onClick={() => playerAttack('defend')} className="animate-fade-in">
+                  <Shield className="h-4 w-4 mr-2" />
+                  Defender (2)
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => playerAttack('special')}
+                  disabled={playerMana < 20}
+                  className="animate-fade-in"
+                >
+                  <Zap className="h-4 w-4 mr-2" />
+                  Especial (3)
+                </Button>
+              </div>
+              <p className="text-center text-xs text-muted-foreground">
+                Use as teclas 1, 2 e 3 ou A, D, S para ações rápidas
+              </p>
             </div>
           )}
 

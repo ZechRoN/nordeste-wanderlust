@@ -5,11 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, LogOut, Heart, Zap, Coins, MapPin } from 'lucide-react';
+import { ArrowLeft, LogOut, Heart, Zap, Coins, MapPin, Tent } from 'lucide-react';
 import { CHARACTER_SPRITES, UI_SPRITES } from '@/assets/sprites';
 import { WorldMap } from './WorldMap';
 import { Inventory } from './Inventory';
 import { Combat } from './Combat';
+import { RestPoint } from './RestPoint';
+import { useRegeneration } from '@/hooks/useRegeneration';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 interface Character {
   id: string;
@@ -62,6 +65,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
   const [currentCharacter, setCurrentCharacter] = useState(character);
   const [combatCreature, setCombatCreature] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [showRestPoint, setShowRestPoint] = useState(false);
 
   const experienceToNextLevel = currentCharacter.level * 100;
   const experienceProgress = (currentCharacter.experience / experienceToNextLevel) * 100;
@@ -69,6 +73,16 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
   const handleCharacterUpdate = (updatedCharacter: any) => {
     setCurrentCharacter(updatedCharacter);
   };
+  
+  // Hook para regeneração automática
+  useRegeneration(currentCharacter, handleCharacterUpdate, !!combatCreature);
+  
+  // Atalhos de teclado
+  useKeyboardShortcuts(true, {
+    inventory: () => setActiveTab("inventory"),
+    map: () => setActiveTab("world"),
+    rest: () => setShowRestPoint(true)
+  });
 
   const handleStartCombat = (creature: any) => {
     setCombatCreature(creature);
@@ -175,11 +189,33 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
         <Progress value={experienceProgress} className="h-2" />
       </div>
 
+      <div className="flex gap-2 mb-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowRestPoint(!showRestPoint)}
+          className="animate-fade-in"
+        >
+          <Tent className="h-4 w-4 mr-2" />
+          Descansar (R)
+        </Button>
+      </div>
+
+      {showRestPoint && (
+        <div className="mb-6 animate-scale-in">
+          <RestPoint
+            character={currentCharacter}
+            onCharacterUpdate={handleCharacterUpdate}
+            biome={currentCharacter.current_biome}
+          />
+        </div>
+      )}
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Personagem</TabsTrigger>
-          <TabsTrigger value="inventory">Inventário</TabsTrigger>
-          <TabsTrigger value="world">Mundo</TabsTrigger>
+          <TabsTrigger value="inventory">Inventário (I)</TabsTrigger>
+          <TabsTrigger value="world">Mundo (M)</TabsTrigger>
           <TabsTrigger value="combat" disabled={!combatCreature}>Combate</TabsTrigger>
         </TabsList>
 
