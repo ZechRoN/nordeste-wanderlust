@@ -404,15 +404,27 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
             </div>
           </div>
 
+          {/* Indicador de Turno */}
+          <div className="text-center mb-4">
+            {playerHealth > 0 && creatureHealth > 0 && (
+              <Badge 
+                variant={isPlayerTurn ? "default" : "secondary"} 
+                className={isPlayerTurn ? "animate-pulse-glow" : ""}
+              >
+                {isPlayerTurn ? "🎯 Seu Turno!" : "⏳ Turno do Inimigo"}
+              </Badge>
+            )}
+          </div>
+
           {/* Ações do jogador */}
           {isPlayerTurn && playerHealth > 0 && creatureHealth > 0 && (
             <div className="space-y-2 mb-6">
               <div className="flex gap-3 justify-center">
-                <Button onClick={() => playerAttack('attack')} className="animate-fade-in">
+                <Button onClick={() => playerAttack('attack')} className="animate-fade-in combat-action-btn">
                   <Swords className="h-4 w-4 mr-2" />
                   Atacar (1)
                 </Button>
-                <Button variant="outline" onClick={() => playerAttack('defend')} className="animate-fade-in">
+                <Button variant="outline" onClick={() => playerAttack('defend')} className="animate-fade-in combat-action-btn">
                   <Shield className="h-4 w-4 mr-2" />
                   Defender (2)
                 </Button>
@@ -420,7 +432,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
                   variant="secondary" 
                   onClick={() => playerAttack('special')}
                   disabled={playerMana < 20}
-                  className="animate-fade-in"
+                  className="animate-fade-in combat-action-btn"
                 >
                   <Zap className="h-4 w-4 mr-2" />
                   Especial (3)
@@ -438,9 +450,14 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
               <CardTitle className="text-base">Log de Combate</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-1 max-h-32 overflow-y-auto">
+              <div 
+                className="space-y-1 max-h-32 overflow-y-auto scroll-smooth"
+                ref={(el) => {
+                  if (el) el.scrollTop = el.scrollHeight;
+                }}
+              >
                 {combatLog.map((message, index) => (
-                  <p key={index} className="text-sm">
+                  <p key={index} className="text-sm animate-fade-in">
                     {message}
                   </p>
                 ))}

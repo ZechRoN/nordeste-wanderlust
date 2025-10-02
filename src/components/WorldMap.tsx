@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { MapPin, Swords, Building, Mountain, TreePine } from 'lucide-react';
+import { MapPin, Swords, Building, Mountain, TreePine, Home } from 'lucide-react';
 import { toast } from 'sonner';
 import { BIOME_SPRITES, UI_SPRITES } from '@/assets/sprites';
+import { RestPoint } from './RestPoint';
 
 interface Character {
   id: string;
@@ -15,6 +16,11 @@ interface Character {
   position_y: number;
   current_biome: 'caatinga' | 'agreste' | 'litoral' | 'santa_cruz';
   gold: number;
+  health: number;
+  max_health: number;
+  mana: number;
+  max_mana: number;
+  level: number;
 }
 
 interface Location {
@@ -216,6 +222,26 @@ export function WorldMap({ character, onCharacterUpdate, onStartCombat }: WorldM
       </PixelCard>
 
       <div className="grid md:grid-cols-2 gap-6">
+        {/* Ponto de Descanso */}
+        <Card className="border-2 border-primary/50 animate-pulse-glow">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Home className="h-5 w-5" />
+              Ponto de Descanso
+            </CardTitle>
+            <CardDescription>
+              Recupere sua vida e mana aqui
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <RestPoint
+              character={character}
+              onCharacterUpdate={onCharacterUpdate}
+              biome={selectedBiome}
+            />
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -224,7 +250,7 @@ export function WorldMap({ character, onCharacterUpdate, onStartCombat }: WorldM
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-3 max-h-[300px] overflow-y-auto">
               {biomeLocations.map((location) => {
                 const IconComponent = getLocationIcon(location.location_type);
                 return (
@@ -243,45 +269,45 @@ export function WorldMap({ character, onCharacterUpdate, onStartCombat }: WorldM
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Swords className="h-5 w-5" />
-              Criaturas da Região
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {biomeCreatures.slice(0, 5).map((creature) => (
-                <div key={creature.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-medium">{creature.name}</h4>
-                      <Badge 
-                        variant={creature.rarity === 'common' ? 'secondary' : 
-                                creature.rarity === 'uncommon' ? 'default' :
-                                creature.rarity === 'rare' ? 'destructive' : 'outline'}
-                      >
-                        Nv. {creature.level}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{creature.description}</p>
-                    <p className="text-xs text-primary">{creature.special_ability}</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    onClick={() => onStartCombat(creature)}
-                    variant="outline"
-                  >
-                    Enfrentar
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Swords className="h-5 w-5" />
+            Criaturas da Região
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-3">
+            {biomeCreatures.slice(0, 6).map((creature) => (
+              <div key={creature.id} className="flex items-center gap-3 p-3 border rounded-lg hover:border-primary/50 transition-colors">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium">{creature.name}</h4>
+                    <Badge 
+                      variant={creature.rarity === 'common' ? 'secondary' : 
+                              creature.rarity === 'uncommon' ? 'default' :
+                              creature.rarity === 'rare' ? 'destructive' : 'outline'}
+                    >
+                      Nv. {creature.level}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{creature.description}</p>
+                  <p className="text-xs text-primary">{creature.special_ability}</p>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => onStartCombat(creature)}
+                  variant="outline"
+                >
+                  Enfrentar
+                </Button>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
