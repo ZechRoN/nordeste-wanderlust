@@ -40,7 +40,7 @@ export const Hero = () => {
           <div className="flex justify-center gap-8 mt-16">
             <div className="flex flex-col items-center group cursor-pointer">
               <div className="p-4 bg-warrior/20 rounded-full mb-2 group-hover:bg-warrior/40 transition-colors">
-                <Sword className="w-8 h-8 text-primary-foreground" />
+                <Sword className="w-8 h-8 text-primary-foreground bg-[#f0f0f0]/0" />
               </div>
               <span className="text-primary-foreground/80 text-sm text-gray-50">Guerreiro</span>
             </div>
@@ -48,25 +48,25 @@ export const Hero = () => {
               <div className="p-4 bg-mage/20 rounded-full mb-2 group-hover:bg-mage/40 transition-colors">
                 <Zap className="w-8 h-8 text-primary-foreground" />
               </div>
-              <span className="text-primary-foreground/80 text-sm">Mago</span>
+              <span className="text-primary-foreground/80 text-sm text-gray-50">Mago</span>
             </div>
             <div className="flex flex-col items-center group cursor-pointer">
               <div className="p-4 bg-archer/20 rounded-full mb-2 group-hover:bg-archer/40 transition-colors">
                 <Target className="w-8 h-8 text-primary-foreground" />
               </div>
-              <span className="text-primary-foreground/80 text-sm">Arqueiro</span>
+              <span className="text-primary-foreground/80 text-sm text-gray-50">Arqueiro</span>
             </div>
             <div className="flex flex-col items-center group cursor-pointer">
               <div className="p-4 bg-healer/20 rounded-full mb-2 group-hover:bg-healer/40 transition-colors">
                 <Heart className="w-8 h-8 text-primary-foreground" />
               </div>
-              <span className="text-primary-foreground/80 text-sm">Curandeiro</span>
+              <span className="text-primary-foreground/80 text-sm text-gray-50">Curandeiro</span>
             </div>
             <div className="flex flex-col items-center group cursor-pointer">
               <div className="p-4 bg-assassin/20 rounded-full mb-2 group-hover:bg-assassin/40 transition-colors">
                 <UserX className="w-8 h-8 text-primary-foreground" />
               </div>
-              <span className="text-primary-foreground/80 text-sm">Assassino</span>
+              <span className="text-primary-foreground/80 text-sm text-gray-50">Assassino</span>
             </div>
           </div>
         </div>
