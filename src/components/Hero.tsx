@@ -2,15 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Sword, Shield, Target, Heart, Zap, UserX } from "lucide-react";
 import heroImage from "@/assets/hero-banner.jpg";
-
 export const Hero = () => {
-  return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+  return <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${heroImage})` }}
-      >
+      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
+      backgroundImage: `url(${heroImage})`
+    }}>
         <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-transparent"></div>
       </div>
       
@@ -45,7 +42,7 @@ export const Hero = () => {
               <div className="p-4 bg-warrior/20 rounded-full mb-2 group-hover:bg-warrior/40 transition-colors">
                 <Sword className="w-8 h-8 text-primary-foreground" />
               </div>
-              <span className="text-primary-foreground/80 text-sm">Guerreiro</span>
+              <span className="text-primary-foreground/80 text-sm text-gray-50">Guerreiro</span>
             </div>
             <div className="flex flex-col items-center group cursor-pointer">
               <div className="p-4 bg-mage/20 rounded-full mb-2 group-hover:bg-mage/40 transition-colors">
@@ -81,6 +78,5 @@ export const Hero = () => {
           <div className="w-1 h-3 bg-primary-foreground/50 rounded-full mt-2 animate-pulse"></div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
