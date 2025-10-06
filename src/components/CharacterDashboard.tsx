@@ -11,6 +11,11 @@ import { WorldMap } from './WorldMap';
 import { Inventory } from './Inventory';
 import { Combat } from './Combat';
 import { RestPoint } from './RestPoint';
+import { Quests } from './Quests';
+import { NPCs } from './NPCs';
+import { Achievements } from './Achievements';
+import { Crafting } from './Crafting';
+import { Rankings } from './Rankings';
 import { useRegeneration } from '@/hooks/useRegeneration';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
@@ -212,10 +217,15 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-9 text-xs">
           <TabsTrigger value="overview">Personagem</TabsTrigger>
-          <TabsTrigger value="inventory">Inventário (I)</TabsTrigger>
-          <TabsTrigger value="world">Mundo (M)</TabsTrigger>
+          <TabsTrigger value="quests">Missões</TabsTrigger>
+          <TabsTrigger value="npcs">NPCs</TabsTrigger>
+          <TabsTrigger value="inventory">Inventário</TabsTrigger>
+          <TabsTrigger value="crafting">Crafting</TabsTrigger>
+          <TabsTrigger value="world">Mundo</TabsTrigger>
+          <TabsTrigger value="achievements">Conquistas</TabsTrigger>
+          <TabsTrigger value="rankings">Rankings</TabsTrigger>
           <TabsTrigger value="combat" disabled={!combatCreature}>Combate</TabsTrigger>
         </TabsList>
 
@@ -254,9 +264,30 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
           </Card>
         </TabsContent>
 
+        <TabsContent value="quests">
+          <Quests
+            character={currentCharacter}
+            onCharacterUpdate={handleCharacterUpdate}
+          />
+        </TabsContent>
+
+        <TabsContent value="npcs">
+          <NPCs
+            character={currentCharacter}
+            onCharacterUpdate={handleCharacterUpdate}
+          />
+        </TabsContent>
+
         <TabsContent value="inventory">
           <Inventory 
             character={currentCharacter} 
+            onCharacterUpdate={handleCharacterUpdate}
+          />
+        </TabsContent>
+
+        <TabsContent value="crafting">
+          <Crafting
+            character={currentCharacter}
             onCharacterUpdate={handleCharacterUpdate}
           />
         </TabsContent>
@@ -267,6 +298,14 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
             onCharacterUpdate={handleCharacterUpdate}
             onStartCombat={handleStartCombat}
           />
+        </TabsContent>
+
+        <TabsContent value="achievements">
+          <Achievements character={currentCharacter} />
+        </TabsContent>
+
+        <TabsContent value="rankings">
+          <Rankings character={currentCharacter} />
         </TabsContent>
 
         <TabsContent value="combat">
