@@ -16,6 +16,8 @@ import { NPCs } from './NPCs';
 import { Achievements } from './Achievements';
 import { Crafting } from './Crafting';
 import { Rankings } from './Rankings';
+import { Guilds } from './Guilds';
+import { Mounts } from './Mounts';
 import { useRegeneration } from '@/hooks/useRegeneration';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
@@ -217,12 +219,14 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-9 text-xs">
+        <TabsList className="grid w-full grid-cols-11 text-xs overflow-x-auto">
           <TabsTrigger value="overview">Personagem</TabsTrigger>
           <TabsTrigger value="quests">Missões</TabsTrigger>
           <TabsTrigger value="npcs">NPCs</TabsTrigger>
           <TabsTrigger value="inventory">Inventário</TabsTrigger>
           <TabsTrigger value="crafting">Crafting</TabsTrigger>
+          <TabsTrigger value="guilds">Guildas</TabsTrigger>
+          <TabsTrigger value="mounts">Montarias</TabsTrigger>
           <TabsTrigger value="world">Mundo</TabsTrigger>
           <TabsTrigger value="achievements">Conquistas</TabsTrigger>
           <TabsTrigger value="rankings">Rankings</TabsTrigger>
@@ -302,6 +306,14 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
 
         <TabsContent value="achievements">
           <Achievements character={currentCharacter} />
+        </TabsContent>
+
+        <TabsContent value="guilds">
+          <Guilds character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />
+        </TabsContent>
+
+        <TabsContent value="mounts">
+          <Mounts character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />
         </TabsContent>
 
         <TabsContent value="rankings">
