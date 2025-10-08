@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+          reward_type: string | null
+          reward_value: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+          reward_type?: string | null
+          reward_value?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          requirement_type?: string
+          requirement_value?: number
+          reward_type?: string | null
+          reward_value?: string | null
+        }
+        Relationships: []
+      }
+      character_achievements: {
+        Row: {
+          achievement_id: string
+          character_id: string
+          id: string
+          unlocked_at: string | null
+        }
+        Insert: {
+          achievement_id: string
+          character_id: string
+          id?: string
+          unlocked_at?: string | null
+        }
+        Update: {
+          achievement_id?: string
+          character_id?: string
+          id?: string
+          unlocked_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "character_achievements_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       character_items: {
         Row: {
           character_id: string
@@ -91,6 +163,51 @@ export type Database = {
             columns: ["mount_id"]
             isOneToOne: false
             referencedRelation: "mounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_quests: {
+        Row: {
+          accepted_at: string | null
+          character_id: string
+          completed_at: string | null
+          id: string
+          progress: Json | null
+          quest_id: string
+          status: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          character_id: string
+          completed_at?: string | null
+          id?: string
+          progress?: Json | null
+          quest_id: string
+          status?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          character_id?: string
+          completed_at?: string | null
+          id?: string
+          progress?: Json | null
+          quest_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_quests_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "character_quests_quest_id_fkey"
+            columns: ["quest_id"]
+            isOneToOne: false
+            referencedRelation: "quests"
             referencedColumns: ["id"]
           },
         ]
@@ -512,6 +629,42 @@ export type Database = {
         }
         Relationships: []
       }
+      npcs: {
+        Row: {
+          biome: Database["public"]["Enums"]["biome_type"]
+          created_at: string | null
+          description: string | null
+          dialogue: string | null
+          id: string
+          inventory: Json | null
+          name: string
+          npc_type: string
+          services: Json | null
+        }
+        Insert: {
+          biome: Database["public"]["Enums"]["biome_type"]
+          created_at?: string | null
+          description?: string | null
+          dialogue?: string | null
+          id?: string
+          inventory?: Json | null
+          name: string
+          npc_type: string
+          services?: Json | null
+        }
+        Update: {
+          biome?: Database["public"]["Enums"]["biome_type"]
+          created_at?: string | null
+          description?: string | null
+          dialogue?: string | null
+          id?: string
+          inventory?: Json | null
+          name?: string
+          npc_type?: string
+          services?: Json | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -539,6 +692,45 @@ export type Database = {
           last_login?: string | null
           updated_at?: string | null
           username?: string
+        }
+        Relationships: []
+      }
+      quests: {
+        Row: {
+          biome: Database["public"]["Enums"]["biome_type"]
+          created_at: string | null
+          description: string | null
+          experience_reward: number | null
+          gold_reward: number | null
+          id: string
+          level_required: number | null
+          name: string
+          objectives: Json | null
+          quest_type: string
+        }
+        Insert: {
+          biome: Database["public"]["Enums"]["biome_type"]
+          created_at?: string | null
+          description?: string | null
+          experience_reward?: number | null
+          gold_reward?: number | null
+          id?: string
+          level_required?: number | null
+          name: string
+          objectives?: Json | null
+          quest_type: string
+        }
+        Update: {
+          biome?: Database["public"]["Enums"]["biome_type"]
+          created_at?: string | null
+          description?: string | null
+          experience_reward?: number | null
+          gold_reward?: number | null
+          id?: string
+          level_required?: number | null
+          name?: string
+          objectives?: Json | null
+          quest_type?: string
         }
         Relationships: []
       }
