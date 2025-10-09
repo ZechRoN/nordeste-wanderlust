@@ -18,6 +18,8 @@ import { Crafting } from './Crafting';
 import { Rankings } from './Rankings';
 import { Guilds } from './Guilds';
 import { Mounts } from './Mounts';
+import { Titles } from './Titles';
+import { Arena } from './Arena';
 import { useRegeneration } from '@/hooks/useRegeneration';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
@@ -219,7 +221,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-11 text-xs overflow-x-auto">
+        <TabsList className="grid w-full grid-cols-13 text-xs overflow-x-auto">
           <TabsTrigger value="overview">Personagem</TabsTrigger>
           <TabsTrigger value="quests">Missões</TabsTrigger>
           <TabsTrigger value="npcs">NPCs</TabsTrigger>
@@ -229,6 +231,8 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
           <TabsTrigger value="mounts">Montarias</TabsTrigger>
           <TabsTrigger value="world">Mundo</TabsTrigger>
           <TabsTrigger value="achievements">Conquistas</TabsTrigger>
+          <TabsTrigger value="titles">Títulos</TabsTrigger>
+          <TabsTrigger value="arena">Arena</TabsTrigger>
           <TabsTrigger value="rankings">Rankings</TabsTrigger>
           <TabsTrigger value="combat" disabled={!combatCreature}>Combate</TabsTrigger>
         </TabsList>
@@ -314,6 +318,14 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
 
         <TabsContent value="mounts">
           <Mounts character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />
+        </TabsContent>
+
+        <TabsContent value="titles">
+          <Titles character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />
+        </TabsContent>
+
+        <TabsContent value="arena">
+          <Arena character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />
         </TabsContent>
 
         <TabsContent value="rankings">
