@@ -324,6 +324,47 @@ export type Database = {
           },
         ]
       }
+      crafting_recipes: {
+        Row: {
+          biome: Database["public"]["Enums"]["biome_type"] | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          required_level: number
+          result_item_id: string
+          result_quantity: number
+        }
+        Insert: {
+          biome?: Database["public"]["Enums"]["biome_type"] | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          required_level?: number
+          result_item_id: string
+          result_quantity?: number
+        }
+        Update: {
+          biome?: Database["public"]["Enums"]["biome_type"] | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          required_level?: number
+          result_item_id?: string
+          result_quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crafting_recipes_result_item_id_fkey"
+            columns: ["result_item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creature_drops: {
         Row: {
           created_at: string | null
@@ -733,6 +774,45 @@ export type Database = {
           quest_type?: string
         }
         Relationships: []
+      }
+      recipe_materials: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          quantity: number
+          recipe_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          quantity?: number
+          recipe_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          quantity?: number
+          recipe_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_materials_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_materials_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "crafting_recipes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
