@@ -5,8 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
-import { Swords, Trophy, Users, Flame, Shield, Target, Clock } from 'lucide-react';
+import { Swords, Trophy, Users, Flame, Shield, Target, Clock, Heart, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ArenaOpponent {
@@ -40,9 +41,13 @@ interface ArenaProps {
 
 export function Arena({ character, onCharacterUpdate }: ArenaProps) {
   const [opponents, setOpponents] = useState<ArenaOpponent[]>([]);
-  const [recentMatches, setRecentMatches] = useState<ArenaMatch[]>([]);
+  const [recentMatches, setRecentMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOpponent, setSelectedOpponent] = useState<ArenaOpponent | null>(null);
+  const [combatInProgress, setCombatInProgress] = useState(false);
+  const [combatLog, setCombatLog] = useState<string[]>([]);
+  const [playerHealth, setPlayerHealth] = useState(character.health);
+  const [opponentHealth, setOpponentHealth] = useState(0);
 
   useEffect(() => {
     loadArenaData();
@@ -63,6 +68,23 @@ export function Arena({ character, onCharacterUpdate }: ArenaProps) {
       console.error('Erro ao carregar oponentes:', opponentsError);
     } else {
       setOpponents((potentialOpponents as any) || []);
+    }
+
+    // Carregar histórico de partidas
+    const { data: matches, error: matchesError } = await supabase
+      .from('arena_matches')
+      .select(`
+        *,
+        player1:characters!arena_matches_player1_id_fkey(name, level, class),
+        player2:characters!arena_matches_player2_id_fkey(name, level, class),
+        winner:characters!arena_matches_winner_id_fkey(name)
+      `)
+      .or(`player1_id.eq.${character.id},player2_id.eq.${character.id}`)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (!matchesError && matches) {
+      setRecentMatches(matches);
     }
 
     setLoading(false);
@@ -96,9 +118,136 @@ export function Arena({ character, onCharacterUpdate }: ArenaProps) {
 
   const startDuel = async (opponent: ArenaOpponent) => {
     setSelectedOpponent(opponent);
-    toast.info('Funcionalidade de duelo será implementada em breve!', {
-      description: `Desafio contra ${opponent.name} iniciado`
-    });
+    setPlayerHealth(character.max_health);
+    setOpponentHealth(opponent.max_health);
+    setCombatLog([]);
+    setCombatInProgress(true);
+    
+    // Criar partida no banco de dados
+    const { data: match, error } = await supabase
+      .from('arena_matches')
+      .insert({
+        player1_id: character.id,
+        player2_id: opponent.id
+      })
+      .select()
+      .single();
+
+    if (error) {
+      toast.error('Erro ao iniciar duelo');
+      console.error(error);
+      setCombatInProgress(false);
+      return;
+    }
+
+    // Iniciar simulação de combate
+    simulateCombat(opponent, match.id);
+  };
+
+  const simulateCombat = async (opponent: ArenaOpponent, matchId: string) => {
+    const log: string[] = [];
+    let pHealth = character.max_health;
+    let oHealth = opponent.max_health;
+
+    log.push(`🥊 Combate iniciado entre ${character.name} e ${opponent.name}!`);
+
+    // Simular rodadas de combate
+    while (pHealth > 0 && oHealth > 0) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Turno do jogador
+      const playerDamage = Math.floor(
+        character.strength * 0.8 + 
+        character.intelligence * 0.5 + 
+        Math.random() * character.luck
+      );
+      oHealth -= playerDamage;
+      log.push(`⚔️ ${character.name} causou ${playerDamage} de dano! (HP oponente: ${Math.max(0, oHealth)})`);
+      setOpponentHealth(Math.max(0, oHealth));
+      setCombatLog([...log]);
+
+      if (oHealth <= 0) break;
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Turno do oponente
+      const opponentDamage = Math.floor(
+        opponent.strength * 0.8 + 
+        opponent.intelligence * 0.5 + 
+        Math.random() * opponent.luck
+      );
+      pHealth -= opponentDamage;
+      log.push(`🗡️ ${opponent.name} causou ${opponentDamage} de dano! (Seu HP: ${Math.max(0, pHealth)})`);
+      setPlayerHealth(Math.max(0, pHealth));
+      setCombatLog([...log]);
+    }
+
+    // Determinar vencedor
+    const playerWon = pHealth > 0;
+    const winnerId = playerWon ? character.id : opponent.id;
+    const arenaPoints = playerWon ? 50 : 10;
+
+    log.push(
+      playerWon 
+        ? `🏆 Vitória! Você derrotou ${opponent.name}!` 
+        : `💀 Derrota! ${opponent.name} venceu o duelo.`
+    );
+    log.push(`✨ +${arenaPoints} pontos de arena`);
+    setCombatLog([...log]);
+
+    // Atualizar partida no banco
+    await supabase
+      .from('arena_matches')
+      .update({
+        winner_id: winnerId,
+        player1_health_remaining: pHealth,
+        player2_health_remaining: oHealth,
+        arena_points_awarded: arenaPoints,
+        completed_at: new Date().toISOString(),
+        combat_log: log
+      })
+      .eq('id', matchId);
+
+    // Atualizar estatísticas do personagem
+    const updates: any = {
+      arena_points: character.arena_points + arenaPoints
+    };
+
+    if (playerWon) {
+      updates.arena_wins = (character.arena_wins || 0) + 1;
+      updates.gold = character.gold + arenaPoints * 10;
+      updates.experience = character.experience + arenaPoints * 5;
+    } else {
+      updates.arena_losses = (character.arena_losses || 0) + 1;
+    }
+
+    const { data: updatedChar } = await supabase
+      .from('characters')
+      .update(updates)
+      .eq('id', character.id)
+      .select()
+      .single();
+
+    if (updatedChar) {
+      onCharacterUpdate(updatedChar);
+    }
+
+    toast.success(
+      playerWon ? 'Vitória na Arena!' : 'Combate Concluído',
+      { description: `+${arenaPoints} pontos de arena` }
+    );
+
+    // Recarregar dados
+    setTimeout(() => {
+      setCombatInProgress(false);
+      setSelectedOpponent(null);
+      loadArenaData();
+    }, 3000);
+  };
+
+  const closeCombat = () => {
+    setCombatInProgress(false);
+    setSelectedOpponent(null);
   };
 
   const getClassIcon = (className: string) => {
@@ -131,8 +280,8 @@ export function Arena({ character, onCharacterUpdate }: ArenaProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground mt-1">Em breve</p>
+            <div className="text-3xl font-bold">{character.arena_wins || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">Duelos vencidos</p>
           </CardContent>
         </Card>
 
@@ -144,8 +293,8 @@ export function Arena({ character, onCharacterUpdate }: ArenaProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground mt-1">Em breve</p>
+            <div className="text-3xl font-bold">{character.arena_losses || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">Duelos perdidos</p>
           </CardContent>
         </Card>
 
@@ -153,12 +302,12 @@ export function Arena({ character, onCharacterUpdate }: ArenaProps) {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
               <Target className="h-4 w-4 text-blue-500" />
-              Taxa de Vitória
+              Pontos de Arena
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">0%</div>
-            <p className="text-xs text-muted-foreground mt-1">Em breve</p>
+            <div className="text-3xl font-bold">{character.arena_points || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">Pontuação total</p>
           </CardContent>
         </Card>
       </div>
@@ -176,10 +325,14 @@ export function Arena({ character, onCharacterUpdate }: ArenaProps) {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="ranked" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="ranked">
                 <Trophy className="h-4 w-4 mr-2" />
                 Ranqueado
+              </TabsTrigger>
+              <TabsTrigger value="history">
+                <Clock className="h-4 w-4 mr-2" />
+                Histórico
               </TabsTrigger>
               <TabsTrigger value="casual">
                 <Swords className="h-4 w-4 mr-2" />
@@ -269,9 +422,65 @@ export function Arena({ character, onCharacterUpdate }: ArenaProps) {
               )}
             </TabsContent>
 
+            <TabsContent value="history" className="mt-4">
+              {recentMatches.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Clock className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                  <p className="font-medium mb-2">Sem Histórico</p>
+                  <p className="text-sm">Você ainda não participou de nenhum duelo</p>
+                </div>
+              ) : (
+                <ScrollArea className="h-[500px] pr-4">
+                  <div className="space-y-3">
+                    {recentMatches.map((match: any) => {
+                      const isPlayer1 = match.player1_id === character.id;
+                      const won = match.winner_id === character.id;
+                      const opponent = isPlayer1 ? match.player2 : match.player1;
+                      
+                      return (
+                        <Card key={match.id} className={won ? 'border-green-500' : 'border-red-500'}>
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  {won ? (
+                                    <Trophy className="h-4 w-4 text-green-500" />
+                                  ) : (
+                                    <Swords className="h-4 w-4 text-red-500" />
+                                  )}
+                                  <span className="font-bold">
+                                    {won ? 'Vitória' : 'Derrota'}
+                                  </span>
+                                  <span className="text-muted-foreground text-sm">vs</span>
+                                  <span>{opponent.name}</span>
+                                  <Badge variant="outline">Nv. {opponent.level}</Badge>
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {new Date(match.created_at).toLocaleDateString('pt-BR')} às{' '}
+                                  {new Date(match.created_at).toLocaleTimeString('pt-BR', { 
+                                    hour: '2-digit', 
+                                    minute: '2-digit' 
+                                  })}
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-lg font-bold text-yellow-500">
+                                  +{match.arena_points_awarded} pts
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              )}
+            </TabsContent>
+
             <TabsContent value="casual" className="mt-4">
               <div className="text-center py-12 text-muted-foreground">
-                <Clock className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                <Swords className="h-16 w-16 mx-auto mb-4 opacity-30" />
                 <p className="font-medium mb-2">Modo Casual</p>
                 <p className="text-sm">
                   Duelos casuais sem afetar seu ranking serão implementados em breve
@@ -311,6 +520,67 @@ export function Arena({ character, onCharacterUpdate }: ArenaProps) {
           </ul>
         </CardContent>
       </Card>
+
+      {/* Modal de Combate */}
+      <Dialog open={combatInProgress} onOpenChange={closeCombat}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Swords className="h-5 w-5" />
+              Combate de Arena
+            </DialogTitle>
+            <DialogDescription>
+              {character.name} vs {selectedOpponent?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Barras de vida */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-medium">{character.name}</span>
+                  <span className="text-sm">{playerHealth}/{character.max_health}</span>
+                </div>
+                <Progress 
+                  value={(playerHealth / character.max_health) * 100} 
+                  className="h-3"
+                />
+              </div>
+              
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-medium">{selectedOpponent?.name}</span>
+                  <span className="text-sm">{opponentHealth}/{selectedOpponent?.max_health}</span>
+                </div>
+                <Progress 
+                  value={selectedOpponent ? (opponentHealth / selectedOpponent.max_health) * 100 : 0} 
+                  className="h-3"
+                />
+              </div>
+            </div>
+
+            {/* Log de combate */}
+            <Card>
+              <CardContent className="p-4">
+                <ScrollArea className="h-[300px]">
+                  <div className="space-y-2">
+                    {combatLog.map((entry, index) => (
+                      <div 
+                        key={index}
+                        className="text-sm animate-fade-in"
+                        style={{ animationDelay: `${index * 0.1}s` }}
+                      >
+                        {entry}
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

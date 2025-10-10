@@ -50,6 +50,67 @@ export type Database = {
         }
         Relationships: []
       }
+      arena_matches: {
+        Row: {
+          arena_points_awarded: number | null
+          combat_log: Json | null
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          player1_health_remaining: number | null
+          player1_id: string
+          player2_health_remaining: number | null
+          player2_id: string
+          winner_id: string | null
+        }
+        Insert: {
+          arena_points_awarded?: number | null
+          combat_log?: Json | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          player1_health_remaining?: number | null
+          player1_id: string
+          player2_health_remaining?: number | null
+          player2_id: string
+          winner_id?: string | null
+        }
+        Update: {
+          arena_points_awarded?: number | null
+          combat_log?: Json | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          player1_health_remaining?: number | null
+          player1_id?: string
+          player2_health_remaining?: number | null
+          player2_id?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "arena_matches_player1_id_fkey"
+            columns: ["player1_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arena_matches_player2_id_fkey"
+            columns: ["player2_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arena_matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       character_achievements: {
         Row: {
           achievement_id: string
@@ -247,6 +308,9 @@ export type Database = {
       characters: {
         Row: {
           agility: number | null
+          arena_losses: number | null
+          arena_points: number | null
+          arena_wins: number | null
           class: Database["public"]["Enums"]["character_class"]
           created_at: string | null
           current_biome: Database["public"]["Enums"]["biome_type"] | null
@@ -270,6 +334,9 @@ export type Database = {
         }
         Insert: {
           agility?: number | null
+          arena_losses?: number | null
+          arena_points?: number | null
+          arena_wins?: number | null
           class: Database["public"]["Enums"]["character_class"]
           created_at?: string | null
           current_biome?: Database["public"]["Enums"]["biome_type"] | null
@@ -293,6 +360,9 @@ export type Database = {
         }
         Update: {
           agility?: number | null
+          arena_losses?: number | null
+          arena_points?: number | null
+          arena_wins?: number | null
           class?: Database["public"]["Enums"]["character_class"]
           created_at?: string | null
           current_biome?: Database["public"]["Enums"]["biome_type"] | null
