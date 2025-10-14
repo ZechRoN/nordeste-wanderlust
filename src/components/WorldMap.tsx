@@ -9,6 +9,7 @@ import { MapPin, Swords, Building, Mountain, TreePine, Home } from 'lucide-react
 import { toast } from 'sonner';
 import { BIOME_SPRITES, UI_SPRITES } from '@/assets/sprites';
 import { RestPoint } from './RestPoint';
+import { useQuestProgress } from '@/hooks/useQuestProgress';
 
 interface Character {
   id: string;
@@ -85,6 +86,8 @@ export function WorldMap({ character, onCharacterUpdate, onStartCombat }: WorldM
   const [creatures, setCreatures] = useState<Creature[]>([]);
   const [isMoving, setIsMoving] = useState(false);
   const [selectedBiome, setSelectedBiome] = useState<'caatinga' | 'agreste' | 'litoral' | 'santa_cruz'>(character.current_biome);
+  
+  const { updateExploreProgress } = useQuestProgress();
 
   useEffect(() => {
     loadData();
@@ -125,6 +128,9 @@ export function WorldMap({ character, onCharacterUpdate, onStartCombat }: WorldM
       onCharacterUpdate(data);
       setSelectedBiome(newBiome);
       toast.success(`Movido para ${getBiomeDisplayName(newBiome)}`);
+      
+      // Atualizar progresso de quests de exploração
+      await updateExploreProgress(character.id, getBiomeDisplayName(newBiome));
       
       // Chance de encontrar criatura
       if (Math.random() < 0.3) {

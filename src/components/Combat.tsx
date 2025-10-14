@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { UI_SPRITES } from '@/assets/sprites';
 import { ActionFeedback } from './ActionFeedback';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { useQuestProgress } from '@/hooks/useQuestProgress';
 
 interface Character {
   id: string;
@@ -72,6 +73,8 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
     text: '',
     type: 'damage'
   });
+  
+  const { updateKillProgress } = useQuestProgress();
   
   // Atalhos de teclado para combate
   useKeyboardShortcuts(isPlayerTurn && playerHealth > 0 && creatureHealth > 0, {
@@ -197,6 +200,9 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
 
   const handleVictory = async () => {
     try {
+      // Atualizar progresso de quests de kill
+      await updateKillProgress(character.id, creature.name);
+      
       // Calcular experiência e level up com bonificações
       const levelDifference = creature.level - character.level;
       const difficultyBonus = Math.max(1, 1 + levelDifference * 0.2); // Bonus por desafio

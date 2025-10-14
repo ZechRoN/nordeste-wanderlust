@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Package, Sword, Shield, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { ITEM_SPRITES, RARITY_COLORS } from '@/assets/sprites';
+import { useQuestProgress } from '@/hooks/useQuestProgress';
 
 interface Character {
   id: string;
@@ -73,6 +74,8 @@ const getTypeIcon = (type: string) => {
 export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
   const [characterItems, setCharacterItems] = useState<CharacterItem[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  const { updateCollectProgress } = useQuestProgress();
 
   useEffect(() => {
     loadInventory();
@@ -186,6 +189,9 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
           .eq('id', characterItemId);
       }
 
+      // Atualizar progresso de quests de coleta
+      await updateCollectProgress(character.id, item.name, 1);
+      
       // Aplicar efeito do consumível (simplificado)
       let healthBonus = 0;
       let manaBonus = 0;
