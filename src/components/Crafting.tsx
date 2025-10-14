@@ -185,8 +185,8 @@ export function Crafting({ character, onCharacterUpdate }: CraftingProps) {
                   </p>
                 </div>
               ) : (
-                <ScrollArea className="h-[400px] pr-4">
-                  <div className="space-y-4">
+                <ScrollArea className="h-[600px] pr-4">
+                  <div className="space-y-4 pb-4">
                     {recipes.map((recipe) => {
                       const canCraftRecipe = canCraft(recipe);
                       
