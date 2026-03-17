@@ -2,7 +2,375 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Pixel Art Styles */
+/* ===== RPG GAME UI DESIGN SYSTEM ===== */
+
+:root {
+  /* RPG Panel colors */
+  --rpg-frame: 30 40% 22%;
+  --rpg-frame-light: 30 35% 35%;
+  --rpg-frame-dark: 30 45% 12%;
+  --rpg-panel-bg: 30 20% 15%;
+  --rpg-panel-inner: 220 15% 12%;
+  --rpg-slot-bg: 220 15% 18%;
+  --rpg-slot-border: 220 10% 30%;
+  --rpg-slot-hover: 220 15% 25%;
+  --rpg-gold: 45 90% 55%;
+  --rpg-text: 40 30% 85%;
+  --rpg-text-dim: 40 15% 55%;
+  --rpg-tab-bg: 30 20% 20%;
+  --rpg-tab-active: 30 30% 30%;
+
+  /* Rarity glow */
+  --rpg-common: 0 0% 60%;
+  --rpg-uncommon: 120 50% 45%;
+  --rpg-rare: 220 70% 55%;
+  --rpg-epic: 270 60% 55%;
+  --rpg-legendary: 45 90% 55%;
+}
+
+/* ===== RPG Panel (Window Frame) ===== */
+@layer components {
+  .rpg-panel {
+    background: hsl(var(--rpg-panel-bg));
+    border: 3px solid hsl(var(--rpg-frame-light));
+    border-radius: 4px;
+    box-shadow:
+      inset 0 0 0 1px hsl(var(--rpg-frame-dark)),
+      0 0 0 2px hsl(var(--rpg-frame-dark)),
+      0 8px 32px rgba(0, 0, 0, 0.6);
+    color: hsl(var(--rpg-text));
+    font-family: 'Courier New', monospace;
+    max-height: 100%;
+  }
+
+  .rpg-panel-header {
+    background: linear-gradient(
+      180deg,
+      hsl(var(--rpg-frame-light)) 0%,
+      hsl(var(--rpg-frame)) 50%,
+      hsl(var(--rpg-frame-dark)) 100%
+    );
+    padding: 6px 12px;
+    border-bottom: 2px solid hsl(var(--rpg-frame-dark));
+  }
+
+  .rpg-panel-title-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+  }
+
+  .rpg-panel-icon {
+    display: flex;
+    align-items: center;
+    color: hsl(var(--rpg-gold));
+  }
+
+  .rpg-panel-title {
+    font-size: 16px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: hsl(var(--rpg-gold));
+  }
+
+  .rpg-panel-close {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: hsl(0 60% 40%);
+    border: 2px solid hsl(0 40% 30%);
+    border-radius: 2px;
+    color: hsl(0 0% 90%);
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+
+  .rpg-panel-close:hover {
+    background: hsl(0 70% 50%);
+    transform: translateY(-50%) scale(1.1);
+  }
+
+  .rpg-panel-content {
+    padding: 8px;
+    background: hsl(var(--rpg-panel-inner));
+    margin: 4px;
+    border: 1px solid hsl(var(--rpg-frame-dark));
+    border-radius: 2px;
+  }
+
+  .rpg-panel-footer {
+    padding: 8px 12px;
+    background: linear-gradient(
+      0deg,
+      hsl(var(--rpg-frame-dark)) 0%,
+      hsl(var(--rpg-frame)) 100%
+    );
+    border-top: 2px solid hsl(var(--rpg-frame-dark));
+    font-size: 12px;
+  }
+
+  /* ===== Tabs ===== */
+  .rpg-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 4px 0;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .rpg-tab {
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: hsl(var(--rpg-tab-bg));
+    border: 2px solid hsl(var(--rpg-frame-dark));
+    border-radius: 2px;
+    color: hsl(var(--rpg-text-dim));
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+
+  .rpg-tab:hover {
+    background: hsl(var(--rpg-tab-active));
+    color: hsl(var(--rpg-text));
+  }
+
+  .rpg-tab-active {
+    background: hsl(var(--rpg-tab-active));
+    border-color: hsl(var(--rpg-gold));
+    color: hsl(var(--rpg-gold));
+    box-shadow: 0 0 6px hsl(var(--rpg-gold) / 0.3);
+  }
+
+  /* ===== Inventory Grid ===== */
+  .rpg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+    gap: 3px;
+    padding: 4px;
+  }
+
+  .rpg-slot {
+    width: 100%;
+    aspect-ratio: 1;
+    min-width: 48px;
+    max-width: 64px;
+    background: hsl(var(--rpg-slot-bg));
+    border: 2px solid hsl(var(--rpg-slot-border));
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.1s;
+    box-shadow: inset 1px 1px 0 hsl(var(--rpg-slot-border) / 0.3),
+                inset -1px -1px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  .rpg-slot:hover {
+    background: hsl(var(--rpg-slot-hover));
+    border-color: hsl(var(--rpg-text-dim));
+  }
+
+  .rpg-slot-filled {
+    background: hsl(var(--rpg-slot-bg));
+  }
+
+  .rpg-slot-selected {
+    border-color: hsl(var(--rpg-gold)) !important;
+    box-shadow: 0 0 8px hsl(var(--rpg-gold) / 0.5),
+                inset 0 0 8px hsl(var(--rpg-gold) / 0.15);
+  }
+
+  .rpg-slot-equipped {
+    border-color: hsl(120 50% 45%);
+    box-shadow: 0 0 6px hsl(120 50% 45% / 0.3);
+  }
+
+  .rpg-slot-icon {
+    font-size: 22px;
+    line-height: 1;
+    filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.5));
+  }
+
+  .rpg-slot-qty {
+    position: absolute;
+    bottom: 1px;
+    right: 2px;
+    font-size: 9px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.9),
+                -1px -1px 1px rgba(0, 0, 0, 0.9);
+    line-height: 1;
+  }
+
+  .rpg-slot-equipped-badge {
+    position: absolute;
+    top: 1px;
+    left: 2px;
+    font-size: 8px;
+    font-weight: bold;
+    color: hsl(120 80% 60%);
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.9);
+  }
+
+  /* Rarity borders */
+  .rpg-rarity-common .rpg-slot-icon { filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.5)); }
+  .rpg-rarity-uncommon.rpg-slot-filled { border-color: hsl(var(--rpg-uncommon) / 0.6); }
+  .rpg-rarity-rare.rpg-slot-filled { border-color: hsl(var(--rpg-rare) / 0.6); }
+  .rpg-rarity-epic.rpg-slot-filled { border-color: hsl(var(--rpg-epic) / 0.6); }
+  .rpg-rarity-legendary.rpg-slot-filled {
+    border-color: hsl(var(--rpg-legendary) / 0.8);
+    box-shadow: 0 0 8px hsl(var(--rpg-legendary) / 0.3);
+    animation: legendaryPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes legendaryPulse {
+    0%, 100% { box-shadow: 0 0 4px hsl(var(--rpg-legendary) / 0.2); }
+    50% { box-shadow: 0 0 12px hsl(var(--rpg-legendary) / 0.5); }
+  }
+
+  /* ===== Item Detail ===== */
+  .rpg-item-detail {
+    background: hsl(var(--rpg-slot-bg));
+    border: 1px solid hsl(var(--rpg-slot-border));
+    border-radius: 2px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+
+  .rpg-equipped-tag {
+    font-size: 9px;
+    padding: 1px 5px;
+    background: hsl(120 50% 25%);
+    border: 1px solid hsl(120 50% 40%);
+    border-radius: 2px;
+    color: hsl(120 60% 70%);
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+
+  .rpg-stat-bonus {
+    padding: 1px 6px;
+    background: hsl(var(--rpg-slot-bg));
+    border: 1px solid hsl(var(--rpg-slot-border));
+    border-radius: 2px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+  }
+
+  .rpg-stat-str { color: hsl(0 70% 60%); }
+  .rpg-stat-agi { color: hsl(120 60% 55%); }
+  .rpg-stat-int { color: hsl(220 70% 65%); }
+  .rpg-stat-vit { color: hsl(30 80% 55%); }
+  .rpg-stat-luk { color: hsl(280 60% 65%); }
+
+  /* ===== RPG Buttons ===== */
+  .rpg-btn {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.1s;
+    border: 2px solid;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+  }
+
+  .rpg-btn:active {
+    transform: translateY(1px);
+  }
+
+  .rpg-btn-sm { padding: 2px 8px; font-size: 10px; }
+  .rpg-btn-md { padding: 4px 12px; font-size: 12px; }
+  .rpg-btn-lg { padding: 6px 16px; font-size: 14px; }
+
+  .rpg-btn-primary {
+    background: linear-gradient(180deg, hsl(210 60% 45%) 0%, hsl(210 60% 35%) 100%);
+    border-color: hsl(210 50% 25%);
+    color: hsl(0 0% 95%);
+  }
+  .rpg-btn-primary:hover {
+    background: linear-gradient(180deg, hsl(210 60% 50%) 0%, hsl(210 60% 40%) 100%);
+  }
+
+  .rpg-btn-secondary {
+    background: linear-gradient(180deg, hsl(var(--rpg-frame-light)) 0%, hsl(var(--rpg-frame)) 100%);
+    border-color: hsl(var(--rpg-frame-dark));
+    color: hsl(var(--rpg-text));
+  }
+  .rpg-btn-secondary:hover {
+    background: linear-gradient(180deg, hsl(30 35% 40%) 0%, hsl(var(--rpg-frame-light)) 100%);
+  }
+
+  .rpg-btn-danger {
+    background: linear-gradient(180deg, hsl(0 50% 40%) 0%, hsl(0 50% 30%) 100%);
+    border-color: hsl(0 40% 20%);
+    color: hsl(0 0% 90%);
+  }
+  .rpg-btn-danger:hover {
+    background: linear-gradient(180deg, hsl(0 60% 45%) 0%, hsl(0 50% 35%) 100%);
+  }
+
+  .rpg-btn-gold {
+    background: linear-gradient(180deg, hsl(40 70% 45%) 0%, hsl(35 60% 30%) 100%);
+    border-color: hsl(30 50% 20%);
+    color: hsl(45 90% 90%);
+  }
+  .rpg-btn-gold:hover {
+    background: linear-gradient(180deg, hsl(40 80% 50%) 0%, hsl(35 70% 35%) 100%);
+  }
+
+  .rpg-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* ===== Gold & Capacity ===== */
+  .rpg-gold-display {
+    font-weight: bold;
+    color: hsl(var(--rpg-gold));
+    font-size: 13px;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+  }
+
+  .rpg-capacity {
+    font-size: 11px;
+    color: hsl(var(--rpg-text-dim));
+  }
+
+  .rpg-loading {
+    color: hsl(var(--rpg-text-dim));
+    font-family: 'Courier New', monospace;
+    animation: blink 1s infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+}
+
+/* ===== Pixel Art Styles (legacy) ===== */
 @layer components {
   .pixel-border {
     box-shadow: 
@@ -13,7 +381,7 @@
   }
   
   .pixel-text {
-    text-shadow: 1px 1px 0px hsl(var(--primary) / 0.2);
+    text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.5);
     font-family: 'Courier New', monospace;
     image-rendering: pixelated;
   }
@@ -29,37 +397,24 @@
   
   .pixel-button:hover {
     transform: translateY(-1px);
-    box-shadow: 
-      inset 2px 2px 0px hsl(var(--primary-foreground) / 0.3),
-      inset -2px -2px 0px hsl(var(--primary) / 0.9),
-      3px 3px 6px hsl(var(--primary) / 0.5);
   }
   
   .pixel-button:active {
     transform: translateY(1px);
-    box-shadow: 
-      inset 2px 2px 0px hsl(var(--primary) / 0.8),
-      inset -2px -2px 0px hsl(var(--primary-foreground) / 0.2);
   }
   
   .health-bar {
-    background: linear-gradient(90deg, 
-      hsl(var(--destructive)) 0%, 
-      hsl(var(--destructive)) 100%);
+    background: linear-gradient(90deg, hsl(var(--destructive)) 0%, hsl(var(--destructive)) 100%);
     box-shadow: inset 0 2px 0px hsl(var(--destructive) / 0.8);
   }
   
   .mana-bar {
-    background: linear-gradient(90deg, 
-      hsl(220, 100%, 50%) 0%, 
-      hsl(220, 100%, 70%) 100%);
+    background: linear-gradient(90deg, hsl(220, 100%, 50%) 0%, hsl(220, 100%, 70%) 100%);
     box-shadow: inset 0 2px 0px hsl(220, 100%, 40%);
   }
   
   .exp-bar {
-    background: linear-gradient(90deg, 
-      hsl(var(--secondary)) 0%, 
-      hsl(var(--secondary-foreground)) 100%);
+    background: linear-gradient(90deg, hsl(var(--secondary)) 0%, hsl(var(--secondary-foreground)) 100%);
     box-shadow: inset 0 2px 0px hsl(var(--secondary) / 0.8);
   }
   
@@ -68,9 +423,6 @@
     height: 48px;
     border: 2px solid hsl(var(--border));
     background: hsl(var(--background));
-    box-shadow: 
-      inset 2px 2px 0px hsl(var(--background) / 0.8),
-      inset -2px -2px 0px hsl(var(--border) / 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -81,9 +433,6 @@
   
   .pixel-inventory-slot:hover {
     background: hsl(var(--accent));
-    box-shadow: 
-      inset 2px 2px 0px hsl(var(--accent) / 0.8),
-      inset -2px -2px 0px hsl(var(--border) / 0.8);
   }
 
   .pixel-minimap {
@@ -98,53 +447,24 @@
   @apply transform transition-all duration-200 hover:scale-105 active:scale-95;
 }
 
-/* Enhanced Animations */
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.3s ease-out;
-}
-
-.animate-bounce-small {
-  animation: bounceSmall 0.5s ease-out;
-}
-
-.animate-pulse-slow {
-  animation: pulse 3s ease-in-out infinite;
-}
+/* Animations */
+.animate-fade-in { animation: fadeIn 0.5s ease-out; }
+.animate-scale-in { animation: scaleIn 0.3s ease-out; }
+.animate-bounce-small { animation: bounceSmall 0.5s ease-out; }
+.animate-pulse-slow { animation: pulse 3s ease-in-out infinite; }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 @keyframes bounceSmall {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-10px);
-  }
-  60% {
-    transform: translateY(-5px);
-  }
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
 }

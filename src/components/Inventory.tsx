@@ -1,14 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PixelCard, PixelCardContent, PixelCardHeader, PixelCardTitle } from '@/components/ui/pixel-card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Package, Sword, Shield, Zap } from 'lucide-react';
+import { Package, Sword, Shield, Zap, FlaskConical, Gem, ScrollText, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { ITEM_SPRITES, RARITY_COLORS } from '@/assets/sprites';
 import { useQuestProgress } from '@/hooks/useQuestProgress';
+import { GamePanel, GamePanelTabs, InventorySlot, GameButton } from '@/components/ui/game-panel';
 
 interface Character {
   id: string;
@@ -21,6 +17,8 @@ interface Character {
   max_health: number;
   mana: number;
   max_mana: number;
+  gold: number;
+  level: number;
 }
 
 interface Item {
@@ -51,30 +49,33 @@ interface InventoryProps {
   onCharacterUpdate: (updatedCharacter: any) => void;
 }
 
-const getRarityColor = (rarity: string) => {
-  const colors = {
-    common: 'text-gray-600',
-    uncommon: 'text-green-600',
-    rare: 'text-blue-600',
-    epic: 'text-purple-600',
-    legendary: 'text-yellow-600'
-  };
-  return colors[rarity as keyof typeof colors] || 'text-gray-600';
+const MAX_SLOTS = 60;
+
+const ITEM_ICONS: Record<string, string> = {
+  weapon: '⚔️',
+  armor: '🛡️',
+  consumable: '🧪',
+  material: '💎',
+  potion: '🧪',
+  quest: '📜',
+  gem: '💠',
 };
 
-const getTypeIcon = (type: string) => {
-  const icons = {
-    weapon: Sword,
-    armor: Shield,
-    consumable: Zap
-  };
-  return icons[type as keyof typeof icons] || Package;
-};
+const TABS = [
+  { key: 'all', label: 'Todos' },
+  { key: 'weapon', label: 'Armas' },
+  { key: 'armor', label: 'Armad.' },
+  { key: 'consumable', label: 'Poções' },
+  { key: 'material', label: 'Matl.' },
+  { key: 'quest', label: 'Quest' },
+  { key: 'misc', label: 'Misc' },
+];
 
 export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
   const [characterItems, setCharacterItems] = useState<CharacterItem[]>([]);
   const [loading, setLoading] = useState(true);
-  
+  const [activeTab, setActiveTab] = useState('all');
+  const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
   const { updateCollectProgress } = useQuestProgress();
 
   useEffect(() => {
@@ -85,117 +86,93 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
     try {
       const { data, error } = await supabase
         .from('character_items')
-        .select(`
-          *,
-          item:items(*)
-        `)
+        .select('*, item:items(*)')
         .eq('character_id', character.id);
-
       if (error) throw error;
       setCharacterItems(data || []);
-    } catch (error) {
+    } catch {
       toast.error('Erro ao carregar inventário');
     } finally {
       setLoading(false);
     }
   };
 
-  const equipItem = async (characterItemId: string, item: Item) => {
+  const filteredItems = useMemo(() => {
+    if (activeTab === 'all') return characterItems;
+    if (activeTab === 'misc') return characterItems.filter(ci => !['weapon', 'armor', 'consumable', 'material', 'quest'].includes(ci.item.type));
+    return characterItems.filter(ci => ci.item.type === activeTab);
+  }, [characterItems, activeTab]);
+
+  const selectedItem = selectedSlot !== null && selectedSlot < filteredItems.length
+    ? filteredItems[selectedSlot]
+    : null;
+
+  const equipItem = async (characterItem: CharacterItem) => {
     try {
-      // Desequipar outros itens do mesmo tipo se for weapon/armor
+      const item = characterItem.item;
       if (item.type === 'weapon' || item.type === 'armor') {
         await supabase
           .from('character_items')
           .update({ is_equipped: false })
           .eq('character_id', character.id)
-          .neq('id', characterItemId);
+          .neq('id', characterItem.id);
       }
-
-      // Equipar o item
       const { error } = await supabase
         .from('character_items')
         .update({ is_equipped: true })
-        .eq('id', characterItemId);
-
+        .eq('id', characterItem.id);
       if (error) throw error;
 
-      // Recalcular atributos do personagem
       const newStats = {
         strength: character.strength + item.strength_bonus,
         agility: character.agility + item.agility_bonus,
         intelligence: character.intelligence + item.intelligence_bonus,
         vitality: character.vitality + item.vitality_bonus,
-        luck: character.luck + item.luck_bonus
+        luck: character.luck + item.luck_bonus,
       };
-
-      await supabase
-        .from('characters')
-        .update(newStats)
-        .eq('id', character.id);
-
+      await supabase.from('characters').update(newStats).eq('id', character.id);
       onCharacterUpdate({ ...character, ...newStats });
       loadInventory();
       toast.success(`${item.name} equipado!`);
-    } catch (error) {
+    } catch {
       toast.error('Erro ao equipar item');
     }
   };
 
-  const unequipItem = async (characterItemId: string, item: Item) => {
+  const unequipItem = async (characterItem: CharacterItem) => {
     try {
+      const item = characterItem.item;
       await supabase
         .from('character_items')
         .update({ is_equipped: false })
-        .eq('id', characterItemId);
-
-      // Recalcular atributos do personagem
+        .eq('id', characterItem.id);
       const newStats = {
         strength: character.strength - item.strength_bonus,
         agility: character.agility - item.agility_bonus,
         intelligence: character.intelligence - item.intelligence_bonus,
         vitality: character.vitality - item.vitality_bonus,
-        luck: character.luck - item.luck_bonus
+        luck: character.luck - item.luck_bonus,
       };
-
-      await supabase
-        .from('characters')
-        .update(newStats)
-        .eq('id', character.id);
-
+      await supabase.from('characters').update(newStats).eq('id', character.id);
       onCharacterUpdate({ ...character, ...newStats });
       loadInventory();
       toast.success(`${item.name} desequipado!`);
-    } catch (error) {
+    } catch {
       toast.error('Erro ao desequipar item');
     }
   };
 
-  const useConsumable = async (characterItemId: string, item: Item) => {
+  const useConsumable = async (characterItem: CharacterItem) => {
     try {
-      const characterItem = characterItems.find(ci => ci.id === characterItemId);
-      if (!characterItem) return;
-
+      const item = characterItem.item;
       if (characterItem.quantity <= 1) {
-        // Remover item se quantidade for 1
-        await supabase
-          .from('character_items')
-          .delete()
-          .eq('id', characterItemId);
+        await supabase.from('character_items').delete().eq('id', characterItem.id);
       } else {
-        // Reduzir quantidade
-        await supabase
-          .from('character_items')
-          .update({ quantity: characterItem.quantity - 1 })
-          .eq('id', characterItemId);
+        await supabase.from('character_items').update({ quantity: characterItem.quantity - 1 }).eq('id', characterItem.id);
       }
-
-      // Atualizar progresso de quests de coleta
       await updateCollectProgress(character.id, item.name, 1);
-      
-      // Aplicar efeito do consumível (simplificado)
-      let healthBonus = 0;
-      let manaBonus = 0;
 
+      let healthBonus = 0, manaBonus = 0;
       if (item.name.includes('Cura Pequena')) healthBonus = 50;
       else if (item.name.includes('Cura Grande')) healthBonus = 150;
       else if (item.name.includes('Mana')) manaBonus = 30;
@@ -204,189 +181,117 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
         const updates: any = {};
         if (healthBonus > 0) updates.health = Math.min(character.health + healthBonus, character.max_health);
         if (manaBonus > 0) updates.mana = Math.min(character.mana + manaBonus, character.max_mana);
-
-        await supabase
-          .from('characters')
-          .update(updates)
-          .eq('id', character.id);
-
+        await supabase.from('characters').update(updates).eq('id', character.id);
         onCharacterUpdate({ ...character, ...updates });
       }
-
       loadInventory();
       toast.success(`${item.name} usado!`);
-    } catch (error) {
+    } catch {
       toast.error('Erro ao usar item');
     }
   };
 
-  if (loading) {
-    return <div className="text-center py-4">Carregando inventário...</div>;
-  }
+  const sellItem = async (characterItem: CharacterItem) => {
+    try {
+      const item = characterItem.item;
+      const sellValue = Math.floor(item.value * 0.6);
+      if (characterItem.quantity <= 1) {
+        await supabase.from('character_items').delete().eq('id', characterItem.id);
+      } else {
+        await supabase.from('character_items').update({ quantity: characterItem.quantity - 1 }).eq('id', characterItem.id);
+      }
+      const newGold = (character.gold || 0) + sellValue;
+      await supabase.from('characters').update({ gold: newGold }).eq('id', character.id);
+      onCharacterUpdate({ ...character, gold: newGold });
+      setSelectedSlot(null);
+      loadInventory();
+      toast.success(`${item.name} vendido por ${sellValue} 🪙`);
+    } catch {
+      toast.error('Erro ao vender item');
+    }
+  };
 
-  const weapons = characterItems.filter(ci => ci.item.type === 'weapon');
-  const armor = characterItems.filter(ci => ci.item.type === 'armor');
-  const consumables = characterItems.filter(ci => ci.item.type === 'consumable');
-  const equippedItems = characterItems.filter(ci => ci.is_equipped);
+  const totalItems = characterItems.reduce((sum, ci) => sum + ci.quantity, 0);
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            Inventário
-          </CardTitle>
-          <CardDescription>
-            Gerencie seus itens, equipamentos e consumíveis
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {equippedItems.length > 0 && (
-            <div className="mb-6">
-              <h3 className="font-semibold mb-3 pixel-text flex items-center gap-2">
-                <span className="text-xl">⚔️</span>
-                Itens Equipados
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {equippedItems.map((characterItem) => {
-                  const itemSprite = ITEM_SPRITES[characterItem.item.type as keyof typeof ITEM_SPRITES] || '📦';
-                  return (
-                    <div key={characterItem.id} className="pixel-inventory-slot bg-card/80 p-3 gap-3 h-auto w-auto justify-start">
-                      <span className="text-2xl">{itemSprite}</span>
-                      <div className="flex-1">
-                        <h4 className={`font-medium pixel-text`} style={{ color: RARITY_COLORS[characterItem.item.rarity as keyof typeof RARITY_COLORS] }}>
-                          {characterItem.item.name}
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          {characterItem.item.description}
-                        </p>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => unequipItem(characterItem.id, characterItem.item)}
-                        className="pixel-button"
-                      >
-                        Desequipar
-                      </Button>
-                    </div>
-                  );
-                })}
+    <GamePanel
+      title="Inventário"
+      icon={<Package className="h-5 w-5" />}
+      footer={
+        <div className="flex items-center justify-between w-full">
+          <div className="flex gap-1">
+            <GameButton size="sm" onClick={() => { /* sort */ }}>Ordenar</GameButton>
+            {selectedItem && selectedItem.item.type === 'consumable' && (
+              <GameButton size="sm" variant="primary" onClick={() => useConsumable(selectedItem)}>Usar</GameButton>
+            )}
+            {selectedItem && !selectedItem.is_equipped && (selectedItem.item.type === 'weapon' || selectedItem.item.type === 'armor') && (
+              <GameButton size="sm" variant="primary" onClick={() => equipItem(selectedItem)}>Equipar</GameButton>
+            )}
+            {selectedItem && selectedItem.is_equipped && (
+              <GameButton size="sm" onClick={() => unequipItem(selectedItem)}>Desequipar</GameButton>
+            )}
+            {selectedItem && (
+              <GameButton size="sm" variant="danger" onClick={() => sellItem(selectedItem)}>Vender</GameButton>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="rpg-gold-display">🪙 {(character.gold || 0).toLocaleString()}</span>
+            <span className="rpg-capacity">Capacidade: {totalItems}/{MAX_SLOTS}</span>
+          </div>
+        </div>
+      }
+    >
+      {loading ? (
+        <div className="flex items-center justify-center h-40">
+          <span className="rpg-loading">Carregando...</span>
+        </div>
+      ) : (
+        <>
+          <GamePanelTabs tabs={TABS} activeTab={activeTab} onTabChange={(t) => { setActiveTab(t); setSelectedSlot(null); }} />
+
+          {/* Selected item detail */}
+          {selectedItem && (
+            <div className="rpg-item-detail">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xl">{ITEM_ICONS[selectedItem.item.type] || '📦'}</span>
+                <span className="font-bold pixel-text" style={{ color: RARITY_COLORS[selectedItem.item.rarity as keyof typeof RARITY_COLORS] || '#9CA3AF' }}>
+                  {selectedItem.item.name}
+                </span>
+                {selectedItem.is_equipped && <span className="rpg-equipped-tag">Equipado</span>}
+              </div>
+              <p className="text-xs opacity-70 mb-1">{selectedItem.item.description}</p>
+              <div className="flex flex-wrap gap-2 text-xs">
+                {selectedItem.item.strength_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-str">+{selectedItem.item.strength_bonus} FOR</span>}
+                {selectedItem.item.agility_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-agi">+{selectedItem.item.agility_bonus} AGI</span>}
+                {selectedItem.item.intelligence_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-int">+{selectedItem.item.intelligence_bonus} INT</span>}
+                {selectedItem.item.vitality_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-vit">+{selectedItem.item.vitality_bonus} VIT</span>}
+                {selectedItem.item.luck_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-luk">+{selectedItem.item.luck_bonus} SOR</span>}
+                <span className="rpg-stat-bonus">🪙 {selectedItem.item.value}</span>
               </div>
             </div>
           )}
 
-          <Tabs defaultValue="weapons" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="weapons">Armas ({weapons.length})</TabsTrigger>
-              <TabsTrigger value="armor">Armaduras ({armor.length})</TabsTrigger>
-              <TabsTrigger value="consumables">Consumíveis ({consumables.length})</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="weapons" className="space-y-3">
-              {weapons.length === 0 ? (
-                <p className="text-center text-muted-foreground py-4">Nenhuma arma no inventário</p>
-              ) : (
-                weapons.map((characterItem) => (
-                  <ItemCard
-                    key={characterItem.id}
-                    characterItem={characterItem}
-                    onEquip={() => equipItem(characterItem.id, characterItem.item)}
-                    onUnequip={() => unequipItem(characterItem.id, characterItem.item)}
-                  />
-                ))
-              )}
-            </TabsContent>
-
-            <TabsContent value="armor" className="space-y-3">
-              {armor.length === 0 ? (
-                <p className="text-center text-muted-foreground py-4">Nenhuma armadura no inventário</p>
-              ) : (
-                armor.map((characterItem) => (
-                  <ItemCard
-                    key={characterItem.id}
-                    characterItem={characterItem}
-                    onEquip={() => equipItem(characterItem.id, characterItem.item)}
-                    onUnequip={() => unequipItem(characterItem.id, characterItem.item)}
-                  />
-                ))
-              )}
-            </TabsContent>
-
-            <TabsContent value="consumables" className="space-y-3">
-              {consumables.length === 0 ? (
-                <p className="text-center text-muted-foreground py-4">Nenhum consumível no inventário</p>
-              ) : (
-                consumables.map((characterItem) => (
-                  <ItemCard
-                    key={characterItem.id}
-                    characterItem={characterItem}
-                    onUse={() => useConsumable(characterItem.id, characterItem.item)}
-                    isConsumable
-                  />
-                ))
-              )}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-interface ItemCardProps {
-  characterItem: CharacterItem;
-  onEquip?: () => void;
-  onUnequip?: () => void;
-  onUse?: () => void;
-  isConsumable?: boolean;
-}
-
-function ItemCard({ characterItem, onEquip, onUnequip, onUse, isConsumable }: ItemCardProps) {
-  const IconComponent = getTypeIcon(characterItem.item.type);
-  const item = characterItem.item;
-
-  return (
-    <div className="flex items-center gap-3 p-4 border rounded-lg">
-      <IconComponent className="h-6 w-6" />
-      <div className="flex-1">
-        <div className="flex items-center gap-2 mb-1">
-          <h4 className={`font-medium ${getRarityColor(item.rarity)}`}>
-            {item.name}
-          </h4>
-          <Badge variant="outline">{item.rarity}</Badge>
-          {characterItem.quantity > 1 && (
-            <Badge variant="secondary">x{characterItem.quantity}</Badge>
-          )}
-        </div>
-        <p className="text-sm text-muted-foreground mb-2">{item.description}</p>
-        <div className="flex gap-2 text-xs">
-          {item.strength_bonus > 0 && <span className="text-red-600">+{item.strength_bonus} FOR</span>}
-          {item.agility_bonus > 0 && <span className="text-green-600">+{item.agility_bonus} AGI</span>}
-          {item.intelligence_bonus > 0 && <span className="text-blue-600">+{item.intelligence_bonus} INT</span>}
-          {item.vitality_bonus > 0 && <span className="text-orange-600">+{item.vitality_bonus} VIT</span>}
-          {item.luck_bonus > 0 && <span className="text-purple-600">+{item.luck_bonus} SOR</span>}
-        </div>
-      </div>
-      <div className="flex flex-col gap-2">
-        {isConsumable ? (
-          <Button size="sm" onClick={onUse}>
-            Usar
-          </Button>
-        ) : characterItem.is_equipped ? (
-          <Button size="sm" variant="outline" onClick={onUnequip}>
-            Desequipar
-          </Button>
-        ) : (
-          <Button size="sm" onClick={onEquip}>
-            Equipar
-          </Button>
-        )}
-        <span className="text-xs text-muted-foreground text-center">
-          {item.value} moedas
-        </span>
-      </div>
-    </div>
+          {/* Grid */}
+          <div className="rpg-grid">
+            {filteredItems.map((ci, idx) => (
+              <InventorySlot
+                key={ci.id}
+                icon={ITEM_ICONS[ci.item.type] || '📦'}
+                quantity={ci.quantity}
+                rarity={ci.item.rarity}
+                isEquipped={ci.is_equipped}
+                onClick={() => setSelectedSlot(selectedSlot === idx ? null : idx)}
+                tooltip={ci.item.name}
+                className={selectedSlot === idx ? 'rpg-slot-selected' : ''}
+              />
+            ))}
+            {/* Empty slots */}
+            {Array.from({ length: Math.max(0, Math.min(MAX_SLOTS, 30) - filteredItems.length) }).map((_, i) => (
+              <InventorySlot key={`empty-${i}`} isEmpty />
+            ))}
+          </div>
+        </>
+      )}
+    </GamePanel>
   );
 }
