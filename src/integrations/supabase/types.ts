@@ -14,7 +14,793 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      achievements: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          objective_count: number
+          objective_type: string
+          reward_title: string | null
+          title: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          objective_count?: number
+          objective_type?: string
+          reward_title?: string | null
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          objective_count?: number
+          objective_type?: string
+          reward_title?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      arena_matches: {
+        Row: {
+          arena_points_awarded: number | null
+          combat_log: string[] | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          player1_health_remaining: number | null
+          player1_id: string
+          player2_health_remaining: number | null
+          player2_id: string
+          winner_id: string | null
+        }
+        Insert: {
+          arena_points_awarded?: number | null
+          combat_log?: string[] | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          player1_health_remaining?: number | null
+          player1_id: string
+          player2_health_remaining?: number | null
+          player2_id: string
+          winner_id?: string | null
+        }
+        Update: {
+          arena_points_awarded?: number | null
+          combat_log?: string[] | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          player1_health_remaining?: number | null
+          player1_id?: string
+          player2_health_remaining?: number | null
+          player2_id?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "arena_matches_player1_id_fkey"
+            columns: ["player1_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arena_matches_player2_id_fkey"
+            columns: ["player2_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arena_matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_achievements: {
+        Row: {
+          achievement_id: string
+          character_id: string
+          completed: boolean
+          completed_at: string | null
+          id: string
+          progress: number
+        }
+        Insert: {
+          achievement_id: string
+          character_id: string
+          completed?: boolean
+          completed_at?: string | null
+          id?: string
+          progress?: number
+        }
+        Update: {
+          achievement_id?: string
+          character_id?: string
+          completed?: boolean
+          completed_at?: string | null
+          id?: string
+          progress?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "character_achievements_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_items: {
+        Row: {
+          acquired_at: string
+          character_id: string
+          id: string
+          is_equipped: boolean
+          item_id: string
+          quantity: number
+        }
+        Insert: {
+          acquired_at?: string
+          character_id: string
+          id?: string
+          is_equipped?: boolean
+          item_id: string
+          quantity?: number
+        }
+        Update: {
+          acquired_at?: string
+          character_id?: string
+          id?: string
+          is_equipped?: boolean
+          item_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_items_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "character_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_mounts: {
+        Row: {
+          captured_at: string
+          character_id: string
+          id: string
+          is_active: boolean
+          mount_id: string
+        }
+        Insert: {
+          captured_at?: string
+          character_id: string
+          id?: string
+          is_active?: boolean
+          mount_id: string
+        }
+        Update: {
+          captured_at?: string
+          character_id?: string
+          id?: string
+          is_active?: boolean
+          mount_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_mounts_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "character_mounts_mount_id_fkey"
+            columns: ["mount_id"]
+            isOneToOne: false
+            referencedRelation: "mounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_quests: {
+        Row: {
+          accepted_at: string
+          character_id: string
+          completed: boolean
+          completed_at: string | null
+          id: string
+          progress: Json | null
+          quest_id: string
+          status: string
+        }
+        Insert: {
+          accepted_at?: string
+          character_id: string
+          completed?: boolean
+          completed_at?: string | null
+          id?: string
+          progress?: Json | null
+          quest_id: string
+          status?: string
+        }
+        Update: {
+          accepted_at?: string
+          character_id?: string
+          completed?: boolean
+          completed_at?: string | null
+          id?: string
+          progress?: Json | null
+          quest_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_quests_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "character_quests_quest_id_fkey"
+            columns: ["quest_id"]
+            isOneToOne: false
+            referencedRelation: "quests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      character_titles: {
+        Row: {
+          character_id: string
+          description: string | null
+          earned_at: string
+          id: string
+          is_active: boolean
+          title_name: string
+        }
+        Insert: {
+          character_id: string
+          description?: string | null
+          earned_at?: string
+          id?: string
+          is_active?: boolean
+          title_name: string
+        }
+        Update: {
+          character_id?: string
+          description?: string | null
+          earned_at?: string
+          id?: string
+          is_active?: boolean
+          title_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_titles_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      characters: {
+        Row: {
+          agility: number
+          class: string
+          created_at: string
+          current_biome: string
+          experience: number
+          gold: number
+          health: number
+          id: string
+          intelligence: number
+          level: number
+          luck: number
+          mana: number
+          max_health: number
+          max_mana: number
+          name: string
+          position_x: number
+          position_y: number
+          strength: number
+          updated_at: string
+          user_id: string
+          vitality: number
+        }
+        Insert: {
+          agility?: number
+          class?: string
+          created_at?: string
+          current_biome?: string
+          experience?: number
+          gold?: number
+          health?: number
+          id?: string
+          intelligence?: number
+          level?: number
+          luck?: number
+          mana?: number
+          max_health?: number
+          max_mana?: number
+          name: string
+          position_x?: number
+          position_y?: number
+          strength?: number
+          updated_at?: string
+          user_id: string
+          vitality?: number
+        }
+        Update: {
+          agility?: number
+          class?: string
+          created_at?: string
+          current_biome?: string
+          experience?: number
+          gold?: number
+          health?: number
+          id?: string
+          intelligence?: number
+          level?: number
+          luck?: number
+          mana?: number
+          max_health?: number
+          max_mana?: number
+          name?: string
+          position_x?: number
+          position_y?: number
+          strength?: number
+          updated_at?: string
+          user_id?: string
+          vitality?: number
+        }
+        Relationships: []
+      }
+      crafting_recipes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          required_level: number
+          result_item_id: string
+          result_quantity: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          required_level?: number
+          result_item_id: string
+          result_quantity?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          required_level?: number
+          result_item_id?: string
+          result_quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crafting_recipes_result_item_id_fkey"
+            columns: ["result_item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creature_drops: {
+        Row: {
+          creature_id: string
+          drop_chance: number
+          id: string
+          item_id: string
+          quantity_max: number
+          quantity_min: number
+        }
+        Insert: {
+          creature_id: string
+          drop_chance?: number
+          id?: string
+          item_id: string
+          quantity_max?: number
+          quantity_min?: number
+        }
+        Update: {
+          creature_id?: string
+          drop_chance?: number
+          id?: string
+          item_id?: string
+          quantity_max?: number
+          quantity_min?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creature_drops_creature_id_fkey"
+            columns: ["creature_id"]
+            isOneToOne: false
+            referencedRelation: "creatures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creature_drops_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creatures: {
+        Row: {
+          agility: number
+          biome: string
+          created_at: string
+          description: string | null
+          experience_reward: number
+          gold_reward: number
+          health: number
+          id: string
+          intelligence: number
+          level: number
+          luck: number
+          max_health: number
+          name: string
+          rarity: string
+          special_ability: string | null
+          strength: number
+          vitality: number
+        }
+        Insert: {
+          agility?: number
+          biome?: string
+          created_at?: string
+          description?: string | null
+          experience_reward?: number
+          gold_reward?: number
+          health?: number
+          id?: string
+          intelligence?: number
+          level?: number
+          luck?: number
+          max_health?: number
+          name: string
+          rarity?: string
+          special_ability?: string | null
+          strength?: number
+          vitality?: number
+        }
+        Update: {
+          agility?: number
+          biome?: string
+          created_at?: string
+          description?: string | null
+          experience_reward?: number
+          gold_reward?: number
+          health?: number
+          id?: string
+          intelligence?: number
+          level?: number
+          luck?: number
+          max_health?: number
+          name?: string
+          rarity?: string
+          special_ability?: string | null
+          strength?: number
+          vitality?: number
+        }
+        Relationships: []
+      }
+      guild_members: {
+        Row: {
+          character_id: string
+          guild_id: string
+          id: string
+          joined_at: string
+          role: string
+        }
+        Insert: {
+          character_id: string
+          guild_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+        }
+        Update: {
+          character_id?: string
+          guild_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_members_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guild_members_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guilds: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          leader_id: string | null
+          max_members: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          leader_id?: string | null
+          max_members?: number
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          leader_id?: string | null
+          max_members?: number
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guilds_leader_id_fkey"
+            columns: ["leader_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      items: {
+        Row: {
+          agility_bonus: number
+          biome: string | null
+          created_at: string
+          description: string | null
+          id: string
+          intelligence_bonus: number
+          luck_bonus: number
+          name: string
+          rarity: string
+          required_level: number
+          strength_bonus: number
+          type: string
+          value: number
+          vitality_bonus: number
+        }
+        Insert: {
+          agility_bonus?: number
+          biome?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          intelligence_bonus?: number
+          luck_bonus?: number
+          name: string
+          rarity?: string
+          required_level?: number
+          strength_bonus?: number
+          type?: string
+          value?: number
+          vitality_bonus?: number
+        }
+        Update: {
+          agility_bonus?: number
+          biome?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          intelligence_bonus?: number
+          luck_bonus?: number
+          name?: string
+          rarity?: string
+          required_level?: number
+          strength_bonus?: number
+          type?: string
+          value?: number
+          vitality_bonus?: number
+        }
+        Relationships: []
+      }
+      mounts: {
+        Row: {
+          biome: string
+          capture_difficulty: number
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          rarity: string
+          special_ability: string | null
+          speed_bonus: number
+          stamina_bonus: number
+        }
+        Insert: {
+          biome?: string
+          capture_difficulty?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          rarity?: string
+          special_ability?: string | null
+          speed_bonus?: number
+          stamina_bonus?: number
+        }
+        Update: {
+          biome?: string
+          capture_difficulty?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          rarity?: string
+          special_ability?: string | null
+          speed_bonus?: number
+          stamina_bonus?: number
+        }
+        Relationships: []
+      }
+      npcs: {
+        Row: {
+          biome: string
+          created_at: string
+          dialogue: string | null
+          id: string
+          name: string
+          npc_type: string
+        }
+        Insert: {
+          biome?: string
+          created_at?: string
+          dialogue?: string | null
+          id?: string
+          name: string
+          npc_type?: string
+        }
+        Update: {
+          biome?: string
+          created_at?: string
+          dialogue?: string | null
+          id?: string
+          name?: string
+          npc_type?: string
+        }
+        Relationships: []
+      }
+      quests: {
+        Row: {
+          biome: string
+          created_at: string
+          description: string | null
+          id: string
+          objective_count: number
+          objective_target: string
+          objective_type: string
+          objectives: Json | null
+          quest_type: string
+          required_level: number
+          reward_experience: number
+          reward_gold: number
+          title: string
+        }
+        Insert: {
+          biome?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          objective_count?: number
+          objective_target?: string
+          objective_type?: string
+          objectives?: Json | null
+          quest_type?: string
+          required_level?: number
+          reward_experience?: number
+          reward_gold?: number
+          title: string
+        }
+        Update: {
+          biome?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          objective_count?: number
+          objective_target?: string
+          objective_type?: string
+          objectives?: Json | null
+          quest_type?: string
+          required_level?: number
+          reward_experience?: number
+          reward_gold?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      recipe_materials: {
+        Row: {
+          id: string
+          item_id: string
+          quantity: number
+          recipe_id: string
+        }
+        Insert: {
+          id?: string
+          item_id: string
+          quantity?: number
+          recipe_id: string
+        }
+        Update: {
+          id?: string
+          item_id?: string
+          quantity?: number
+          recipe_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_materials_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_materials_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "crafting_recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
