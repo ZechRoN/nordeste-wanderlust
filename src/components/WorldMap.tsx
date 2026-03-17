@@ -100,8 +100,8 @@ export function WorldMap({ character, onCharacterUpdate, onStartCombat }: WorldM
         supabase.from('creatures').select('*')
       ]);
 
-      if (locationsResult.data) setLocations(locationsResult.data);
-      if (creaturesResult.data) setCreatures(creaturesResult.data);
+      if (locationsResult.data) setLocations(locationsResult.data as any);
+      if (creaturesResult.data) setCreatures(creaturesResult.data as any);
     } catch (error) {
       toast.error('Erro ao carregar o mapa');
     }
