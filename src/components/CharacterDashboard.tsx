@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, LogOut, Heart, Zap, Coins, MapPin, Tent, X, Backpack, Scroll, Swords, Users, Trophy, Crown, Shield, Hammer, Map } from 'lucide-react';
 import { CHARACTER_SPRITES, UI_SPRITES } from '@/assets/sprites';
 import { GameCanvas } from '@/engine/GameCanvas';
+import { GamePanel } from '@/components/ui/game-panel';
 import { WorldMap } from './WorldMap';
 import { Inventory } from './Inventory';
 import { Combat } from './Combat';
