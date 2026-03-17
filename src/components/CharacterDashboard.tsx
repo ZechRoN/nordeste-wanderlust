@@ -154,25 +154,26 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
 
       {/* Side panel overlay */}
       {activePanel && activePanel !== 'menu' && (
-        <div className="absolute top-0 right-0 z-30 w-full md:w-[480px] h-full bg-background/95 border-l border-border overflow-y-auto">
-          <div className="sticky top-0 z-10 flex items-center justify-between p-3 bg-background border-b border-border">
-            <h2 className="font-bold text-lg">{menuItems.find(m => m.key === activePanel)?.label}</h2>
-            <Button variant="ghost" size="icon" onClick={() => setActivePanel(null)}>
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-          <div className="p-4">
-            {activePanel === 'inventory' && <Inventory character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
-            {activePanel === 'quests' && <Quests character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
-            {activePanel === 'npcs' && <NPCs character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
-            {activePanel === 'crafting' && <Crafting character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
-            {activePanel === 'guilds' && <Guilds character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
-            {activePanel === 'mounts' && <Mounts character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
-            {activePanel === 'achievements' && <Achievements character={currentCharacter} />}
-            {activePanel === 'titles' && <Titles character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
-            {activePanel === 'arena' && <Arena character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
-            {activePanel === 'rankings' && <Rankings character={currentCharacter} />}
-          </div>
+        <div className="absolute top-0 right-0 z-30 w-full md:w-[480px] h-full flex flex-col p-2 md:p-3 bg-black/40">
+          {activePanel === 'inventory' ? (
+            <Inventory character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />
+          ) : (
+            <GamePanel
+              title={menuItems.find(m => m.key === activePanel)?.label || ''}
+              icon={menuItems.find(m => m.key === activePanel)?.icon}
+              onClose={() => setActivePanel(null)}
+            >
+              {activePanel === 'quests' && <Quests character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
+              {activePanel === 'npcs' && <NPCs character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
+              {activePanel === 'crafting' && <Crafting character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
+              {activePanel === 'guilds' && <Guilds character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
+              {activePanel === 'mounts' && <Mounts character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
+              {activePanel === 'achievements' && <Achievements character={currentCharacter} />}
+              {activePanel === 'titles' && <Titles character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
+              {activePanel === 'arena' && <Arena character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
+              {activePanel === 'rankings' && <Rankings character={currentCharacter} />}
+            </GamePanel>
+          )}
         </div>
       )}
 
