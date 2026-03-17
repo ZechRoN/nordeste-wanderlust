@@ -651,6 +651,42 @@ export type Database = {
         }
         Relationships: []
       }
+      locations: {
+        Row: {
+          biome: string
+          created_at: string
+          description: string | null
+          id: string
+          is_discovered: boolean
+          location_type: string
+          name: string
+          position_x: number
+          position_y: number
+        }
+        Insert: {
+          biome?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_discovered?: boolean
+          location_type?: string
+          name: string
+          position_x?: number
+          position_y?: number
+        }
+        Update: {
+          biome?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_discovered?: boolean
+          location_type?: string
+          name?: string
+          position_x?: number
+          position_y?: number
+        }
+        Relationships: []
+      }
       mounts: {
         Row: {
           biome: string
