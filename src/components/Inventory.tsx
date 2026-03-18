@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Package, Sword, Shield, Zap, FlaskConical, Gem, ScrollText, Sparkles } from 'lucide-react';
+import { Package } from 'lucide-react';
 import { toast } from 'sonner';
-import { ITEM_SPRITES, RARITY_COLORS } from '@/assets/sprites';
+import { RARITY_COLORS } from '@/assets/sprites';
 import { useQuestProgress } from '@/hooks/useQuestProgress';
 import { GamePanel, GamePanelTabs, InventorySlot, GameButton } from '@/components/ui/game-panel';
+import { ItemTooltip } from '@/components/inventory/ItemTooltip';
 
 interface Character {
   id: string;
@@ -76,11 +77,11 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const { updateCollectProgress } = useQuestProgress();
 
-  useEffect(() => {
-    loadInventory();
-  }, []);
+  useEffect(() => { loadInventory(); }, []);
 
   const loadInventory = async () => {
     try {
@@ -104,23 +105,77 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
   }, [characterItems, activeTab]);
 
   const selectedItem = selectedSlot !== null && selectedSlot < filteredItems.length
-    ? filteredItems[selectedSlot]
-    : null;
+    ? filteredItems[selectedSlot] : null;
+
+  // Drag and drop handlers
+  const handleDragStart = useCallback((idx: number) => {
+    setDragIndex(idx);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    setDragOverIndex(idx);
+  }, []);
+
+  const handleDrop = useCallback((targetIdx: number) => {
+    if (dragIndex === null || dragIndex === targetIdx) {
+      setDragIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    // Reorder items locally
+    setCharacterItems(prev => {
+      const allItems = activeTab === 'all' ? [...prev] : [...prev];
+      const filtered = activeTab === 'all' ? allItems :
+        activeTab === 'misc' ? allItems.filter(ci => !['weapon', 'armor', 'consumable', 'material', 'quest'].includes(ci.item.type)) :
+        allItems.filter(ci => ci.item.type === activeTab);
+
+      if (dragIndex < filtered.length && targetIdx < filtered.length) {
+        const dragItem = filtered[dragIndex];
+        const targetItem = filtered[targetIdx];
+
+        // If dropping on empty or swap positions
+        const dragAllIdx = allItems.findIndex(i => i.id === dragItem.id);
+        const targetAllIdx = allItems.findIndex(i => i.id === targetItem.id);
+
+        if (dragAllIdx !== -1 && targetAllIdx !== -1) {
+          [allItems[dragAllIdx], allItems[targetAllIdx]] = [allItems[targetAllIdx], allItems[dragAllIdx]];
+        }
+      }
+      return allItems;
+    });
+
+    setDragIndex(null);
+    setDragOverIndex(null);
+    setSelectedSlot(null);
+  }, [dragIndex, activeTab]);
+
+  const handleDragEnd = useCallback(() => {
+    setDragIndex(null);
+    setDragOverIndex(null);
+  }, []);
+
+  // Drop on equipment area (auto-equip)
+  const handleDropEquip = useCallback(async (idx: number) => {
+    if (dragIndex === null) return;
+    const item = filteredItems[dragIndex];
+    if (item && !item.is_equipped && (item.item.type === 'weapon' || item.item.type === 'armor')) {
+      await equipItem(item);
+    }
+    setDragIndex(null);
+    setDragOverIndex(null);
+  }, [dragIndex, filteredItems]);
 
   const equipItem = async (characterItem: CharacterItem) => {
     try {
       const item = characterItem.item;
       if (item.type === 'weapon' || item.type === 'armor') {
-        await supabase
-          .from('character_items')
-          .update({ is_equipped: false })
-          .eq('character_id', character.id)
-          .neq('id', characterItem.id);
+        await supabase.from('character_items').update({ is_equipped: false })
+          .eq('character_id', character.id).neq('id', characterItem.id);
       }
-      const { error } = await supabase
-        .from('character_items')
-        .update({ is_equipped: true })
-        .eq('id', characterItem.id);
+      const { error } = await supabase.from('character_items')
+        .update({ is_equipped: true }).eq('id', characterItem.id);
       if (error) throw error;
 
       const newStats = {
@@ -142,10 +197,7 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
   const unequipItem = async (characterItem: CharacterItem) => {
     try {
       const item = characterItem.item;
-      await supabase
-        .from('character_items')
-        .update({ is_equipped: false })
-        .eq('id', characterItem.id);
+      await supabase.from('character_items').update({ is_equipped: false }).eq('id', characterItem.id);
       const newStats = {
         strength: character.strength - item.strength_bonus,
         agility: character.agility - item.agility_bonus,
@@ -220,7 +272,7 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
       footer={
         <div className="flex items-center justify-between w-full">
           <div className="flex gap-1">
-            <GameButton size="sm" onClick={() => { /* sort */ }}>Ordenar</GameButton>
+            <GameButton size="sm" onClick={() => {}}>Ordenar</GameButton>
             {selectedItem && selectedItem.item.type === 'consumable' && (
               <GameButton size="sm" variant="primary" onClick={() => useConsumable(selectedItem)}>Usar</GameButton>
             )}
@@ -249,7 +301,6 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
         <>
           <GamePanelTabs tabs={TABS} activeTab={activeTab} onTabChange={(t) => { setActiveTab(t); setSelectedSlot(null); }} />
 
-          {/* Selected item detail */}
           {selectedItem && (
             <div className="rpg-item-detail">
               <div className="flex items-center gap-2 mb-1">
@@ -271,23 +322,34 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
             </div>
           )}
 
-          {/* Grid */}
           <div className="rpg-grid">
             {filteredItems.map((ci, idx) => (
-              <InventorySlot
-                key={ci.id}
-                icon={ITEM_ICONS[ci.item.type] || '📦'}
-                quantity={ci.quantity}
-                rarity={ci.item.rarity}
-                isEquipped={ci.is_equipped}
-                onClick={() => setSelectedSlot(selectedSlot === idx ? null : idx)}
-                tooltip={ci.item.name}
-                className={selectedSlot === idx ? 'rpg-slot-selected' : ''}
-              />
+              <ItemTooltip key={ci.id} item={ci.item} isEquipped={ci.is_equipped} quantity={ci.quantity}>
+                <div
+                  draggable
+                  onDragStart={() => handleDragStart(idx)}
+                  onDragOver={(e) => handleDragOver(e, idx)}
+                  onDrop={() => handleDrop(idx)}
+                  onDragEnd={handleDragEnd}
+                >
+                  <InventorySlot
+                    icon={ITEM_ICONS[ci.item.type] || '📦'}
+                    quantity={ci.quantity}
+                    rarity={ci.item.rarity}
+                    isEquipped={ci.is_equipped}
+                    onClick={() => setSelectedSlot(selectedSlot === idx ? null : idx)}
+                    className={`${selectedSlot === idx ? 'rpg-slot-selected' : ''} ${dragIndex === idx ? 'rpg-slot-dragging' : ''} ${dragOverIndex === idx ? 'rpg-slot-dragover' : ''}`}
+                  />
+                </div>
+              </ItemTooltip>
             ))}
-            {/* Empty slots */}
             {Array.from({ length: Math.max(0, Math.min(MAX_SLOTS, 30) - filteredItems.length) }).map((_, i) => (
-              <InventorySlot key={`empty-${i}`} isEmpty />
+              <InventorySlot
+                key={`empty-${i}`}
+                isEmpty
+                onDragOver={(e) => { e.preventDefault(); }}
+                onDrop={() => { if (dragIndex !== null) handleDrop(filteredItems.length + i); }}
+              />
             ))}
           </div>
         </>
