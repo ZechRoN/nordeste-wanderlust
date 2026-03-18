@@ -103,13 +103,11 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
   // Combat view takes over the whole screen
   if (combatCreature) {
     return (
-      <div className="fixed inset-0 z-50 bg-background">
-        <Combat
-          character={currentCharacter}
-          creature={combatCreature}
-          onCombatEnd={handleCombatEnd}
-        />
-      </div>
+      <Combat
+        character={currentCharacter}
+        creature={combatCreature}
+        onCombatEnd={handleCombatEnd}
+      />
     );
   }
 
