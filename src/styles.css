@@ -368,6 +368,215 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
   }
+
+  /* ===== Drag and Drop ===== */
+  .rpg-slot-dragging {
+    opacity: 0.4;
+    border-style: dashed !important;
+  }
+
+  .rpg-slot-dragover {
+    border-color: hsl(var(--rpg-gold)) !important;
+    background: hsl(var(--rpg-slot-hover)) !important;
+    box-shadow: 0 0 10px hsl(var(--rpg-gold) / 0.4);
+  }
+
+  /* ===== Tooltip ===== */
+  .rpg-tooltip-inner {
+    background: hsl(var(--rpg-panel-bg));
+    border: 2px solid hsl(var(--rpg-frame-light));
+    border-radius: 3px;
+    padding: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: hsl(var(--rpg-text));
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+    min-width: 160px;
+  }
+
+  .rpg-tooltip-header { margin-bottom: 4px; }
+  .rpg-tooltip-name { font-weight: bold; font-size: 12px; display: block; }
+  .rpg-tooltip-meta { display: flex; justify-content: space-between; font-size: 9px; opacity: 0.7; margin-top: 2px; }
+  .rpg-tooltip-sep { height: 1px; background: hsl(var(--rpg-slot-border)); margin: 4px 0; }
+  .rpg-tooltip-desc { font-size: 10px; opacity: 0.65; font-style: italic; margin-bottom: 4px; }
+  .rpg-tooltip-stats { display: flex; flex-direction: column; gap: 1px; font-size: 11px; font-weight: bold; }
+  .rpg-tooltip-footer { display: flex; gap: 8px; font-size: 10px; opacity: 0.7; }
+  .rpg-tooltip-equipped { color: hsl(120 60% 55%); font-weight: bold; }
+
+  /* ===== Combat RPG ===== */
+  .rpg-combatant {
+    background: hsl(var(--rpg-slot-bg));
+    border: 1px solid hsl(var(--rpg-slot-border));
+    border-radius: 2px;
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  .rpg-combatant-name {
+    font-weight: bold;
+    font-size: 14px;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+    font-family: 'Courier New', monospace;
+  }
+
+  .rpg-combatant-level {
+    font-size: 10px;
+    padding: 1px 6px;
+    background: hsl(var(--rpg-tab-bg));
+    border: 1px solid hsl(var(--rpg-slot-border));
+    border-radius: 2px;
+    display: inline-block;
+    margin-top: 2px;
+  }
+
+  .rpg-rarity-label-common { color: hsl(var(--rpg-common)); }
+  .rpg-rarity-label-uncommon { color: hsl(var(--rpg-uncommon)); }
+  .rpg-rarity-label-rare { color: hsl(var(--rpg-rare)); }
+  .rpg-rarity-label-epic { color: hsl(var(--rpg-epic)); }
+  .rpg-rarity-label-legendary { color: hsl(var(--rpg-legendary)); }
+
+  .rpg-bar-group { margin-top: 6px; }
+  .rpg-bar-label {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 10px; margin-bottom: 2px;
+    font-family: 'Courier New', monospace;
+  }
+
+  .rpg-bar {
+    height: 10px;
+    background: hsl(220 10% 12%);
+    border: 1px solid hsl(var(--rpg-slot-border));
+    border-radius: 1px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+
+  .rpg-bar-fill {
+    height: 100%;
+    transition: width 0.4s ease;
+  }
+
+  .rpg-bar-fill-hp { background: linear-gradient(90deg, hsl(0 60% 35%), hsl(0 70% 50%)); }
+  .rpg-bar-fill-mp { background: linear-gradient(90deg, hsl(220 60% 35%), hsl(220 70% 55%)); }
+
+  .rpg-defending-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; color: hsl(120 60% 55%);
+    margin-top: 4px; padding: 2px 6px;
+    border: 1px solid hsl(120 50% 30%);
+    background: hsl(120 30% 15%);
+    border-radius: 2px;
+  }
+
+  .rpg-turn-indicator {
+    display: inline-block; padding: 3px 12px;
+    font-size: 11px; font-weight: bold;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase; letter-spacing: 1px;
+    border-radius: 2px; border: 2px solid;
+  }
+
+  .rpg-turn-player {
+    color: hsl(var(--rpg-gold));
+    border-color: hsl(var(--rpg-gold));
+    background: hsl(45 30% 15%);
+    animation: legendaryPulse 1.5s ease-in-out infinite;
+  }
+
+  .rpg-turn-enemy {
+    color: hsl(0 50% 60%);
+    border-color: hsl(0 40% 35%);
+    background: hsl(0 20% 15%);
+  }
+
+  .rpg-combat-log {
+    background: hsl(220 15% 10%);
+    border: 1px solid hsl(var(--rpg-slot-border));
+    border-radius: 2px;
+    padding: 6px 8px;
+  }
+
+  .rpg-combat-log-title {
+    font-size: 10px; font-weight: bold;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    color: hsl(var(--rpg-text-dim));
+    margin-bottom: 4px;
+  }
+
+  .rpg-combat-log-entries {
+    max-height: 80px; overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+
+  .rpg-combat-log-entry {
+    font-size: 11px;
+    line-height: 1.4;
+    padding: 1px 0;
+    border-bottom: 1px solid hsl(var(--rpg-slot-border) / 0.3);
+  }
+
+  /* ===== Character Creation RPG ===== */
+  .rpg-label {
+    display: block;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: hsl(var(--rpg-gold));
+    font-family: 'Courier New', monospace;
+    margin-bottom: 4px;
+  }
+
+  .rpg-input {
+    width: 100%;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    background: hsl(var(--rpg-slot-bg));
+    border: 2px solid hsl(var(--rpg-slot-border));
+    border-radius: 2px;
+    color: hsl(var(--rpg-text));
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .rpg-input:focus {
+    border-color: hsl(var(--rpg-gold));
+    box-shadow: 0 0 6px hsl(var(--rpg-gold) / 0.2);
+  }
+
+  .rpg-input::placeholder {
+    color: hsl(var(--rpg-text-dim));
+  }
+
+  .rpg-class-card {
+    background: hsl(var(--rpg-slot-bg));
+    border: 2px solid hsl(var(--rpg-slot-border));
+    border-radius: 2px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: hsl(var(--rpg-text));
+  }
+
+  .rpg-class-card:hover {
+    border-color: hsl(var(--rpg-text-dim));
+    background: hsl(var(--rpg-slot-hover));
+  }
+
+  .rpg-class-selected {
+    border-color: hsl(var(--rpg-gold)) !important;
+    box-shadow: 0 0 8px hsl(var(--rpg-gold) / 0.3);
+    background: hsl(35 20% 18%) !important;
+  }
+
+  /* ===== Game BG ===== */
+  .rpg-game-bg {
+    background: hsl(220 15% 8%);
+    background-image:
+      radial-gradient(circle at 20% 50%, hsl(30 20% 12%) 0%, transparent 50%),
+      radial-gradient(circle at 80% 50%, hsl(220 15% 12%) 0%, transparent 50%);
+  }
 }
 
 /* ===== Pixel Art Styles (legacy) ===== */

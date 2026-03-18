@@ -344,12 +344,13 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
               </ItemTooltip>
             ))}
             {Array.from({ length: Math.max(0, Math.min(MAX_SLOTS, 30) - filteredItems.length) }).map((_, i) => (
-              <InventorySlot
+              <div
                 key={`empty-${i}`}
-                isEmpty
                 onDragOver={(e) => { e.preventDefault(); }}
                 onDrop={() => { if (dragIndex !== null) handleDrop(filteredItems.length + i); }}
-              />
+              >
+                <InventorySlot isEmpty />
+              </div>
             ))}
           </div>
         </>
