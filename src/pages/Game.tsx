@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CharacterCreation } from '@/components/CharacterCreation';
 import { CharacterDashboard } from '@/components/CharacterDashboard';
+import { GamePanel, GameButton } from '@/components/ui/game-panel';
+import { Swords, LogOut, Plus } from 'lucide-react';
 
 const Game = () => {
   const { user, signOut } = useAuth();
@@ -15,146 +15,93 @@ const Game = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-
+    if (!user) { navigate('/auth'); return; }
     loadCharacters();
   }, [user, navigate]);
 
   const loadCharacters = async () => {
     if (!user) return;
-
-    const { data, error } = await supabase
-      .from('characters')
-      .select('*')
-      .eq('user_id', user.id);
-
-    if (error) {
-      console.error('Error loading characters:', error);
-    } else {
-      setCharacters(data || []);
-    }
+    const { data, error } = await supabase.from('characters').select('*').eq('user_id', user.id);
+    if (error) console.error('Error loading characters:', error);
+    else setCharacters(data || []);
     setLoading(false);
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
-
-  const handleCharacterCreated = (character: any) => {
-    setCharacters(prev => [...prev, character]);
-    setSelectedCharacter(character);
-  };
-
-  const handleCharacterSelect = (character: any) => {
-    setSelectedCharacter(character);
-  };
+  const handleSignOut = async () => { await signOut(); navigate('/'); };
+  const handleCharacterCreated = (character: any) => { setCharacters(prev => [...prev, character]); setSelectedCharacter(character); };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando seus personagens...</p>
-        </div>
+      <div className="fixed inset-0 rpg-game-bg flex items-center justify-center">
+        <span className="rpg-loading text-lg">Carregando personagens...</span>
       </div>
     );
   }
 
-  if (selectedCharacter) {
-    return (
-      <CharacterDashboard 
-        character={selectedCharacter} 
-        onBack={() => setSelectedCharacter(null)}
-        onSignOut={handleSignOut}
-      />
-    );
+  if (selectedCharacter && selectedCharacter !== 'create') {
+    return <CharacterDashboard character={selectedCharacter} onBack={() => setSelectedCharacter(null)} onSignOut={handleSignOut} />;
   }
+
+  const classNames: Record<string, string> = {
+    warrior: 'Guerreiro', mage: 'Mago', archer: 'Arqueiro', healer: 'Curandeiro', assassin: 'Assassino'
+  };
+  const classIcons: Record<string, string> = {
+    warrior: '⚔️', mage: '🔮', archer: '🏹', healer: '💚', assassin: '🗡️'
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 p-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-amber-600 to-red-600 bg-clip-text text-transparent">
-              ZIV DUEL
-            </h1>
-            <p className="text-muted-foreground">Bem-vindo ao Sertão, {user?.email}</p>
-          </div>
-          <Button variant="outline" onClick={handleSignOut}>
-            Sair
-          </Button>
-        </div>
-
-        {characters.length === 0 ? (
-          <CharacterCreation onCharacterCreated={handleCharacterCreated} />
-        ) : (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Seus Personagens</h2>
-              <Button 
-                onClick={() => setSelectedCharacter('create')}
-                disabled={characters.length >= 5}
-              >
-                Criar Novo Personagem ({characters.length}/5)
-              </Button>
+    <div className="fixed inset-0 rpg-game-bg flex items-center justify-center p-4">
+      {selectedCharacter === 'create' ? (
+        <CharacterCreation onCharacterCreated={handleCharacterCreated} onCancel={() => setSelectedCharacter(null)} />
+      ) : characters.length === 0 ? (
+        <CharacterCreation onCharacterCreated={handleCharacterCreated} />
+      ) : (
+        <div className="w-full max-w-lg">
+          <GamePanel
+            title="ZIV DUEL"
+            icon={<Swords className="h-5 w-5" />}
+            footer={
+              <div className="flex gap-2 justify-between w-full">
+                <GameButton variant="danger" onClick={handleSignOut}><LogOut className="h-3 w-3 mr-1" /> Sair</GameButton>
+                <GameButton variant="gold" onClick={() => setSelectedCharacter('create')} disabled={characters.length >= 5}>
+                  <Plus className="h-3 w-3 mr-1" /> Novo ({characters.length}/5)
+                </GameButton>
+              </div>
+            }
+          >
+            <div className="text-center mb-4">
+              <p className="text-xs opacity-60">Bem-vindo, {user?.email}</p>
+              <p className="rpg-label mt-1">Selecione um Personagem</p>
             </div>
 
-            {selectedCharacter === 'create' ? (
-              <CharacterCreation 
-                onCharacterCreated={handleCharacterCreated}
-                onCancel={() => setSelectedCharacter(null)}
-              />
-            ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {characters.map((character) => (
-                  <Card 
-                    key={character.id} 
-                    className="cursor-pointer hover:shadow-lg transition-shadow"
-                    onClick={() => handleCharacterSelect(character)}
-                  >
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        {character.name}
-                        <span className="text-sm font-normal bg-primary/10 px-2 py-1 rounded">
-                          Nível {character.level}
-                        </span>
-                      </CardTitle>
-                      <CardDescription>
-                        {character.class === 'warrior' && 'Guerreiro'}
-                        {character.class === 'mage' && 'Mago'}
-                        {character.class === 'archer' && 'Arqueiro'}
-                        {character.class === 'healer' && 'Curandeiro'}
-                        {character.class === 'assassin' && 'Assassino'}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span>Bioma:</span>
-                          <span className="capitalize">{character.current_biome}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Gold:</span>
-                          <span>{character.gold}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Experiência:</span>
-                          <span>{character.experience}</span>
-                        </div>
+            <div className="space-y-2">
+              {characters.map((char) => (
+                <div
+                  key={char.id}
+                  className="rpg-class-card cursor-pointer"
+                  onClick={() => setSelectedCharacter(char)}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{classIcons[char.class] || '👤'}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold pixel-text text-sm">{char.name}</span>
+                        <span className="rpg-combatant-level">Nível {char.level}</span>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+                      <div className="text-[10px] opacity-60">{classNames[char.class] || char.class}</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 mt-2 text-[10px]">
+                    <span>🌍 {char.current_biome}</span>
+                    <span>🪙 {char.gold}</span>
+                    <span>⭐ {char.experience} XP</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </GamePanel>
+        </div>
+      )}
     </div>
   );
 };
