@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Swords, Heart, Zap, Shield, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ActionFeedback } from './ActionFeedback';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useQuestProgress } from '@/hooks/useQuestProgress';
@@ -41,6 +42,14 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
     show: false, text: '', type: 'damage'
   });
 
+  // Animation states
+  const [playerShake, setPlayerShake] = useState(false);
+  const [creatureShake, setCreatureShake] = useState(false);
+  const [playerFlash, setPlayerFlash] = useState(false);
+  const [creatureFlash, setCreatureFlash] = useState(false);
+  const [creatureDead, setCreatureDead] = useState(false);
+  const [playerDead, setPlayerDead] = useState(false);
+
   const { updateKillProgress } = useQuestProgress();
 
   useKeyboardShortcuts(isPlayerTurn && playerHealth > 0 && creatureHealth > 0, {
@@ -51,6 +60,18 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
 
   const addToCombatLog = (message: string) => {
     setCombatLog(prev => [...prev.slice(-4), message]);
+  };
+
+  const triggerShake = (target: 'player' | 'creature', isCritical: boolean) => {
+    if (target === 'player') {
+      setPlayerShake(true);
+      if (isCritical) setPlayerFlash(true);
+      setTimeout(() => { setPlayerShake(false); setPlayerFlash(false); }, 500);
+    } else {
+      setCreatureShake(true);
+      if (isCritical) setCreatureFlash(true);
+      setTimeout(() => { setCreatureShake(false); setCreatureFlash(false); }, 500);
+    }
   };
 
   const calculateDamage = (attacker: any, defender: any, isSpecial = false): DamageResult => {
@@ -80,6 +101,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
           addToCombatLog(`${character.name} erra o ataque!`);
           setFeedback({ show: true, text: 'ERROU!', type: 'miss' });
         } else {
+          triggerShake('creature', damageResult.isCritical);
           addToCombatLog(`${character.name} ataca com ${damageResult.damage} de dano${damageResult.isCritical ? ' (CRÍTICO!)' : ''}!`);
           setFeedback({ show: true, text: `-${damageResult.damage}`, type: damageResult.isCritical ? 'critical' : 'damage' });
         }
@@ -97,6 +119,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
           addToCombatLog(`${character.name} erra a habilidade especial!`);
           setFeedback({ show: true, text: 'ERROU!', type: 'miss' });
         } else {
+          triggerShake('creature', damageResult.isCritical);
           addToCombatLog(`${character.name} usa habilidade especial com ${damageResult.damage} de dano${damageResult.isCritical ? ' (CRÍTICO!)' : ''}!`);
           setFeedback({ show: true, text: `-${damageResult.damage} ✦`, type: damageResult.isCritical ? 'critical' : 'damage' });
         }
@@ -108,7 +131,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
     setCreatureHealth(newCreatureHealth);
     setPlayerMana(newPlayerMana);
 
-    if (newCreatureHealth <= 0) { handleVictory(); return; }
+    if (newCreatureHealth <= 0) { setCreatureDead(true); setTimeout(() => handleVictory(), 800); return; }
     setIsPlayerTurn(false);
     setTimeout(creatureAttack, 1500);
   };
@@ -121,11 +144,12 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
       addToCombatLog(`${creature.name} ataca, mas ${character.name} defende! Dano reduzido para ${finalDamage}!`);
       setIsDefending(false);
     } else {
+      triggerShake('player', damageResult.isCritical);
       addToCombatLog(`${creature.name} ataca com ${finalDamage} de dano${damageResult.isCritical ? ' (CRÍTICO!)' : ''}!`);
     }
     const newPlayerHealth = Math.max(0, playerHealth - finalDamage);
     setPlayerHealth(newPlayerHealth);
-    if (newPlayerHealth <= 0) { handleDefeat(); return; }
+    if (newPlayerHealth <= 0) { setPlayerDead(true); setTimeout(() => handleDefeat(), 800); return; }
     setIsPlayerTurn(true);
   };
 
@@ -209,7 +233,14 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
   const creatureHealthPercent = (creatureHealth / creature.max_health) * 100;
   const isCombatActive = playerHealth > 0 && creatureHealth > 0;
 
-  const rarityClass = `rpg-rarity-label-${creature.rarity}`;
+  const shakeAnimation = {
+    shake: { x: [0, -8, 8, -6, 6, -3, 3, 0], transition: { duration: 0.4 } },
+    idle: { x: 0 },
+  };
+
+  const flashStyle = (isFlashing: boolean) => isFlashing
+    ? { filter: 'brightness(3) saturate(0)', transition: 'filter 0.1s' }
+    : { filter: 'none', transition: 'filter 0.3s' };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
@@ -252,47 +283,108 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
           {/* Combatants */}
           <div className="grid grid-cols-2 gap-4 mb-4">
             {/* Player */}
-            <div className="rpg-combatant">
-              <div className="rpg-combatant-name">{character.name}</div>
-              <span className="rpg-combatant-level">Nível {character.level}</span>
-              <div className="rpg-bar-group">
-                <div className="rpg-bar-label"><Heart className="h-3 w-3" /> {playerHealth}/{character.max_health}</div>
-                <div className="rpg-bar rpg-bar-hp">
-                  <div className="rpg-bar-fill rpg-bar-fill-hp" style={{ width: `${playerHealthPercent}%` }} />
-                </div>
-                <div className="rpg-bar-label"><Zap className="h-3 w-3" /> {playerMana}/{character.max_mana}</div>
-                <div className="rpg-bar rpg-bar-mp">
-                  <div className="rpg-bar-fill rpg-bar-fill-mp" style={{ width: `${playerManaPercent}%` }} />
-                </div>
-              </div>
-              {isDefending && (
-                <div className="rpg-defending-badge"><Shield className="h-3 w-3" /> Defendendo</div>
-              )}
-            </div>
+            <motion.div
+              className="rpg-combatant"
+              variants={shakeAnimation}
+              animate={playerShake ? 'shake' : 'idle'}
+              style={flashStyle(playerFlash)}
+            >
+              <AnimatePresence>
+                {playerDead ? (
+                  <motion.div
+                    initial={{ opacity: 1 }}
+                    animate={{ opacity: 0, y: 20, scale: 0.8 }}
+                    transition={{ duration: 0.8 }}
+                  >
+                    <div className="rpg-combatant-name">{character.name}</div>
+                    <span className="rpg-combatant-level">Nível {character.level}</span>
+                    <p className="text-xs text-center mt-2" style={{ color: 'hsl(0 60% 55%)' }}>💀 Derrotado</p>
+                  </motion.div>
+                ) : (
+                  <div>
+                    <div className="rpg-combatant-name">{character.name}</div>
+                    <span className="rpg-combatant-level">Nível {character.level}</span>
+                    <div className="rpg-bar-group">
+                      <div className="rpg-bar-label"><Heart className="h-3 w-3" /> {playerHealth}/{character.max_health}</div>
+                      <div className="rpg-bar rpg-bar-hp">
+                        <motion.div className="rpg-bar-fill rpg-bar-fill-hp"
+                          animate={{ width: `${playerHealthPercent}%` }}
+                          transition={{ duration: 0.4, ease: 'easeOut' }}
+                        />
+                      </div>
+                      <div className="rpg-bar-label"><Zap className="h-3 w-3" /> {playerMana}/{character.max_mana}</div>
+                      <div className="rpg-bar rpg-bar-mp">
+                        <motion.div className="rpg-bar-fill rpg-bar-fill-mp"
+                          animate={{ width: `${playerManaPercent}%` }}
+                          transition={{ duration: 0.4, ease: 'easeOut' }}
+                        />
+                      </div>
+                    </div>
+                    {isDefending && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="rpg-defending-badge"
+                      >
+                        <Shield className="h-3 w-3" /> Defendendo
+                      </motion.div>
+                    )}
+                  </div>
+                )}
+              </AnimatePresence>
+            </motion.div>
 
-            {/* VS */}
-            <div className="rpg-combatant">
-              <div className="rpg-combatant-name">{creature.name}</div>
-              <span className={`rpg-combatant-level ${rarityClass}`}>Nível {creature.level} • {creature.rarity}</span>
-              <div className="rpg-bar-group">
-                <div className="rpg-bar-label"><Heart className="h-3 w-3" /> {creatureHealth}/{creature.max_health}</div>
-                <div className="rpg-bar rpg-bar-hp">
-                  <div className="rpg-bar-fill rpg-bar-fill-hp" style={{ width: `${creatureHealthPercent}%` }} />
-                </div>
-              </div>
-              <p className="text-[10px] opacity-60 mt-1">{creature.description}</p>
-              {creature.special_ability && (
-                <p className="text-[10px] mt-0.5" style={{ color: 'hsl(var(--rpg-gold))' }}>✦ {creature.special_ability}</p>
-              )}
-            </div>
+            {/* Creature */}
+            <motion.div
+              className="rpg-combatant"
+              variants={shakeAnimation}
+              animate={creatureShake ? 'shake' : 'idle'}
+              style={flashStyle(creatureFlash)}
+            >
+              <AnimatePresence>
+                {creatureDead ? (
+                  <motion.div
+                    initial={{ opacity: 1 }}
+                    animate={{ opacity: 0, y: 20, rotateZ: 15, scale: 0.7 }}
+                    transition={{ duration: 0.8 }}
+                  >
+                    <div className="rpg-combatant-name">{creature.name}</div>
+                    <p className="text-xs text-center mt-2" style={{ color: 'hsl(var(--rpg-gold))' }}>🏆 Derrotado!</p>
+                  </motion.div>
+                ) : (
+                  <div>
+                    <div className="rpg-combatant-name">{creature.name}</div>
+                    <span className={`rpg-combatant-level rpg-rarity-label-${creature.rarity}`}>Nível {creature.level} • {creature.rarity}</span>
+                    <div className="rpg-bar-group">
+                      <div className="rpg-bar-label"><Heart className="h-3 w-3" /> {creatureHealth}/{creature.max_health}</div>
+                      <div className="rpg-bar rpg-bar-hp">
+                        <motion.div className="rpg-bar-fill rpg-bar-fill-hp"
+                          animate={{ width: `${creatureHealthPercent}%` }}
+                          transition={{ duration: 0.4, ease: 'easeOut' }}
+                        />
+                      </div>
+                    </div>
+                    <p className="text-[10px] opacity-60 mt-1">{creature.description}</p>
+                    {creature.special_ability && (
+                      <p className="text-[10px] mt-0.5" style={{ color: 'hsl(var(--rpg-gold))' }}>✦ {creature.special_ability}</p>
+                    )}
+                  </div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           </div>
 
           {/* Turn indicator */}
           {isCombatActive && (
             <div className="text-center mb-3">
-              <span className={`rpg-turn-indicator ${isPlayerTurn ? 'rpg-turn-player' : 'rpg-turn-enemy'}`}>
+              <motion.span
+                key={isPlayerTurn ? 'player' : 'enemy'}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className={`rpg-turn-indicator ${isPlayerTurn ? 'rpg-turn-player' : 'rpg-turn-enemy'}`}
+              >
                 {isPlayerTurn ? '🎯 Seu Turno!' : '⏳ Turno do Inimigo'}
-              </span>
+              </motion.span>
             </div>
           )}
 
@@ -301,7 +393,14 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
             <div className="rpg-combat-log-title">Log de Combate</div>
             <div className="rpg-combat-log-entries" ref={(el) => { if (el) el.scrollTop = el.scrollHeight; }}>
               {combatLog.map((message, index) => (
-                <p key={index} className="rpg-combat-log-entry animate-fade-in">{message}</p>
+                <motion.p
+                  key={index}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="rpg-combat-log-entry"
+                >
+                  {message}
+                </motion.p>
               ))}
               {combatLog.length === 0 && (
                 <p className="rpg-combat-log-entry opacity-40">O combate começou...</p>
