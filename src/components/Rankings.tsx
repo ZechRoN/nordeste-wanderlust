@@ -1,200 +1,75 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
-import { Trophy, Target, Map, Coins, Swords } from 'lucide-react';
+import { Trophy, Target, Coins } from 'lucide-react';
+import { GamePanelTabs } from '@/components/ui/game-panel';
 
 interface RankedCharacter {
-  id: string;
-  name: string;
-  class: string;
-  level: number;
-  experience: number;
-  gold: number;
-  current_biome: string;
+  id: string; name: string; class: string; level: number;
+  experience: number; gold: number; current_biome: string;
 }
 
-interface RankingsProps {
-  character: any;
-}
+interface RankingsProps { character: any; }
+
+const CLASS_NAMES: Record<string, string> = {
+  warrior: 'Guerreiro', mage: 'Mago', archer: 'Arqueiro', healer: 'Curandeiro', assassin: 'Assassino'
+};
 
 export function Rankings({ character }: RankingsProps) {
   const [topByLevel, setTopByLevel] = useState<RankedCharacter[]>([]);
   const [topByGold, setTopByGold] = useState<RankedCharacter[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('level');
 
-  useEffect(() => {
-    loadRankings();
-  }, []);
+  useEffect(() => { loadRankings(); }, []);
 
   const loadRankings = async () => {
-    // Top por nível
-    const { data: levelData, error: levelError } = await supabase
-      .from('characters')
-      .select('id, name, class, level, experience, gold, current_biome')
-      .order('level', { ascending: false })
-      .order('experience', { ascending: false })
-      .limit(50);
-
-    // Top por ouro
-    const { data: goldData, error: goldError } = await supabase
-      .from('characters')
-      .select('id, name, class, level, experience, gold, current_biome')
-      .order('gold', { ascending: false })
-      .limit(50);
-
-    if (levelError) console.error('Erro ao carregar ranking por nível:', levelError);
-    if (goldError) console.error('Erro ao carregar ranking por ouro:', goldError);
-
-    setTopByLevel(levelData || []);
-    setTopByGold(goldData || []);
+    const { data: lvl } = await supabase.from('characters').select('id, name, class, level, experience, gold, current_biome')
+      .order('level', { ascending: false }).order('experience', { ascending: false }).limit(50);
+    const { data: gld } = await supabase.from('characters').select('id, name, class, level, experience, gold, current_biome')
+      .order('gold', { ascending: false }).limit(50);
+    setTopByLevel(lvl || []);
+    setTopByGold(gld || []);
     setLoading(false);
   };
 
-  const getRankIcon = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return '🥇';
-      case 2:
-        return '🥈';
-      case 3:
-        return '🥉';
-      default:
-        return `#${rank}`;
-    }
-  };
+  const getRankIcon = (r: number) => r === 1 ? '🥇' : r === 2 ? '🥈' : r === 3 ? '🥉' : `#${r}`;
 
-  const getClassDisplayName = (className: string) => {
-    const names: Record<string, string> = {
-      warrior: 'Guerreiro',
-      mage: 'Mago',
-      archer: 'Arqueiro',
-      healer: 'Curandeiro',
-      assassin: 'Assassino'
-    };
-    return names[className] || className;
-  };
+  if (loading) return <div className="flex items-center justify-center h-40"><span className="rpg-loading">Carregando...</span></div>;
 
-  const renderRankingList = (
-    characters: RankedCharacter[],
-    valueKey: 'level' | 'gold',
-    icon: React.ReactNode
-  ) => (
-    <ScrollArea className="h-[500px] pr-4">
-      <div className="space-y-2">
-        {characters.map((char, index) => {
-          const rank = index + 1;
-          const isCurrentUser = char.id === character.id;
-
-          return (
-            <Card
-              key={char.id}
-              className={`border ${
-                isCurrentUser ? 'border-primary bg-primary/5' : 'border-border'
-              }`}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                  <div className="text-2xl font-bold w-12 text-center">
-                    {getRankIcon(rank)}
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-bold">{char.name}</span>
-                      {isCurrentUser && (
-                        <Badge variant="outline" className="text-xs">
-                          Você
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span>{getClassDisplayName(char.class)}</span>
-                      <span>•</span>
-                      <span className="capitalize">{char.current_biome}</span>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <div className="flex items-center gap-1 font-bold text-lg">
-                      {icon}
-                      {valueKey === 'level' && (
-                        <>
-                          <span>{char.level}</span>
-                          <span className="text-xs text-muted-foreground ml-1">
-                            ({char.experience} XP)
-                          </span>
-                        </>
-                      )}
-                      {valueKey === 'gold' && (
-                        <span>{char.gold.toLocaleString()}</span>
-                      )}
-                    </div>
-                  </div>
+  const renderList = (chars: RankedCharacter[], key: 'level' | 'gold') => (
+    <div className="space-y-1 max-h-[500px] overflow-y-auto pr-1">
+      {chars.map((c, i) => {
+        const isSelf = c.id === character.id;
+        return (
+          <div key={c.id} className={`rpg-class-card !cursor-default !p-2 ${isSelf ? 'rpg-class-selected' : ''}`}>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold w-8 text-center">{getRankIcon(i + 1)}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1">
+                  <span className="font-bold text-xs pixel-text">{c.name}</span>
+                  {isSelf && <span className="rpg-equipped-tag text-[8px]">Você</span>}
                 </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-    </ScrollArea>
+                <span className="text-[9px] opacity-40">{CLASS_NAMES[c.class] || c.class} • {c.current_biome}</span>
+              </div>
+              <span className="font-bold text-xs pixel-text">
+                {key === 'level' ? `Nv.${c.level}` : `🪙${c.gold.toLocaleString()}`}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="py-8">
-          <p className="text-center text-muted-foreground">Carregando rankings...</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-yellow-500" />
-            Rankings Globais
-          </CardTitle>
-          <CardDescription>
-            Veja os melhores jogadores do ZIV DUEL
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="level" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="level">
-                <Target className="h-4 w-4 mr-2" />
-                Por Nível
-              </TabsTrigger>
-              <TabsTrigger value="gold">
-                <Coins className="h-4 w-4 mr-2" />
-                Por Riqueza
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="level" className="mt-4">
-              {renderRankingList(
-                topByLevel,
-                'level',
-                <Target className="h-5 w-5 text-blue-500" />
-              )}
-            </TabsContent>
-
-            <TabsContent value="gold" className="mt-4">
-              {renderRankingList(
-                topByGold,
-                'gold',
-                <Coins className="h-5 w-5 text-yellow-500" />
-              )}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+    <div>
+      <GamePanelTabs
+        tabs={[{ key: 'level', label: '🏅 Por Nível' }, { key: 'gold', label: '🪙 Por Riqueza' }]}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
+      {activeTab === 'level' && renderList(topByLevel, 'level')}
+      {activeTab === 'gold' && renderList(topByGold, 'gold')}
     </div>
   );
 }

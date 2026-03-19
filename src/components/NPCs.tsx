@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { ShoppingCart, User, Coins, Package } from 'lucide-react';
 import { toast } from 'sonner';
+import { GamePanelTabs, GameButton } from '@/components/ui/game-panel';
+import { ItemTooltip } from '@/components/inventory/ItemTooltip';
 
 interface NPC {
   id: string;
@@ -36,11 +33,22 @@ interface NPCsProps {
   onCharacterUpdate: (character: any) => void;
 }
 
+const NPC_TYPE_LABELS: Record<string, string> = {
+  merchant: 'Mercador',
+  quest_giver: 'Mestre de Missões',
+  healer: 'Curandeiro',
+};
+
+const RARITY_LABELS: Record<string, string> = {
+  common: 'Comum', uncommon: 'Incomum', rare: 'Raro', epic: 'Épico', legendary: 'Lendário',
+};
+
 export function NPCs({ character, onCharacterUpdate }: NPCsProps) {
   const [npcs, setNpcs] = useState<NPC[]>([]);
   const [shopItems, setShopItems] = useState<Item[]>([]);
   const [selectedNPC, setSelectedNPC] = useState<NPC | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeShopTab, setActiveShopTab] = useState('buy');
 
   useEffect(() => {
     loadNPCs();
@@ -53,12 +61,11 @@ export function NPCs({ character, onCharacterUpdate }: NPCsProps) {
       .select('*')
       .eq('biome', character.current_biome);
 
-    if (error) {
-      console.error('Erro ao carregar NPCs:', error);
-    } else {
+    if (error) console.error('Erro ao carregar NPCs:', error);
+    else {
       const npcsData = (data as any) || [];
       setNpcs(npcsData);
-      if (npcsData && npcsData.length > 0) {
+      if (npcsData.length > 0) {
         setSelectedNPC(npcsData.find((n: any) => n.npc_type === 'merchant') || npcsData[0]);
       }
     }
@@ -69,14 +76,12 @@ export function NPCs({ character, onCharacterUpdate }: NPCsProps) {
     const { data, error } = await supabase
       .from('items')
       .select('*')
+      .or(`biome.eq.${character.current_biome},biome.is.null`)
       .lte('required_level', character.level + 5)
       .order('value', { ascending: true });
 
-    if (error) {
-      console.error('Erro ao carregar itens:', error);
-    } else {
-      setShopItems(data || []);
-    }
+    if (error) console.error('Erro ao carregar itens:', error);
+    else setShopItems(data || []);
   };
 
   const buyItem = async (item: Item) => {
@@ -84,200 +89,150 @@ export function NPCs({ character, onCharacterUpdate }: NPCsProps) {
       toast.error('Ouro insuficiente!');
       return;
     }
-
-    // Adicionar item ao inventário
     const { error: itemError } = await supabase
       .from('character_items')
-      .insert({
-        character_id: character.id,
-        item_id: item.id,
-        quantity: 1
-      });
+      .insert({ character_id: character.id, item_id: item.id, quantity: 1 });
 
-    if (itemError) {
-      toast.error('Erro ao comprar item');
-      console.error(itemError);
-      return;
-    }
+    if (itemError) { toast.error('Erro ao comprar item'); return; }
 
-    // Atualizar ouro do personagem
     const newGold = character.gold - item.value;
     const { error: charError } = await supabase
       .from('characters')
       .update({ gold: newGold })
       .eq('id', character.id);
 
-    if (charError) {
-      toast.error('Erro ao atualizar ouro');
-      return;
-    }
+    if (charError) { toast.error('Erro ao atualizar ouro'); return; }
 
     toast.success(`${item.name} comprado por ${item.value} ouro!`);
     onCharacterUpdate({ ...character, gold: newGold });
   };
 
-  const getRarityColor = (rarity: string) => {
-    const colors: Record<string, string> = {
-      common: 'text-gray-500',
-      uncommon: 'text-green-500',
-      rare: 'text-blue-500',
-      epic: 'text-purple-500',
-      legendary: 'text-orange-500'
-    };
-    return colors[rarity] || 'text-gray-500';
+  const healCharacter = async () => {
+    if (character.health >= character.max_health && character.mana >= character.max_mana) {
+      toast.error('Você já está com a vida cheia!');
+      return;
+    }
+    const cost = Math.floor(character.level * 5);
+    if (character.gold < cost) { toast.error('Ouro insuficiente!'); return; }
+
+    const newGold = character.gold - cost;
+    const { error } = await supabase.from('characters').update({
+      health: character.max_health, mana: character.max_mana, gold: newGold,
+    }).eq('id', character.id);
+
+    if (error) { toast.error('Erro ao curar'); return; }
+    toast.success('Totalmente curado!');
+    onCharacterUpdate({ ...character, health: character.max_health, mana: character.max_mana, gold: newGold });
   };
 
-  const getNPCIcon = (type: string) => {
-    switch (type) {
-      case 'merchant':
-        return <ShoppingCart className="h-5 w-5" />;
-      case 'quest_giver':
-        return <Package className="h-5 w-5" />;
-      default:
-        return <User className="h-5 w-5" />;
-    }
-  };
+  const getRarityClass = (rarity: string) => `rpg-rarity-label-${rarity}`;
 
   if (loading) {
-    return (
-      <Card>
-        <CardContent className="py-8">
-          <p className="text-center text-muted-foreground">Carregando NPCs...</p>
-        </CardContent>
-      </Card>
-    );
+    return <div className="flex items-center justify-center h-40"><span className="rpg-loading">Carregando NPCs...</span></div>;
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            NPCs em {character.current_biome}
-          </CardTitle>
-          <CardDescription>
-            Interaja com os habitantes locais
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
-            {npcs.map((npc) => (
-              <Button
-                key={npc.id}
-                variant={selectedNPC?.id === npc.id ? "default" : "outline"}
-                onClick={() => setSelectedNPC(npc)}
-                className="flex items-center gap-2"
-              >
-                {getNPCIcon(npc.npc_type)}
-                {npc.name}
-              </Button>
-            ))}
+    <div className="space-y-3">
+      {/* NPC List */}
+      <div className="flex flex-wrap gap-1">
+        {npcs.map((npc) => (
+          <GameButton
+            key={npc.id}
+            variant={selectedNPC?.id === npc.id ? 'gold' : 'secondary'}
+            size="sm"
+            onClick={() => setSelectedNPC(npc)}
+          >
+            {npc.npc_type === 'merchant' ? '🛒' : npc.npc_type === 'healer' ? '💚' : '📜'} {npc.name}
+          </GameButton>
+        ))}
+      </div>
+
+      {/* Selected NPC */}
+      {selectedNPC && (
+        <div className="rpg-item-detail">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xl">{selectedNPC.npc_type === 'merchant' ? '🛒' : selectedNPC.npc_type === 'healer' ? '💚' : '📜'}</span>
+            <div>
+              <span className="font-bold pixel-text" style={{ color: 'hsl(var(--rpg-gold))' }}>{selectedNPC.name}</span>
+              <span className="rpg-combatant-level ml-2">{NPC_TYPE_LABELS[selectedNPC.npc_type] || 'NPC'}</span>
+            </div>
+          </div>
+          <p className="text-[11px] opacity-60 italic">"{selectedNPC.dialogue}"</p>
+        </div>
+      )}
+
+      {/* Healer NPC */}
+      {selectedNPC?.npc_type === 'healer' && (
+        <div className="rpg-item-detail">
+          <p className="text-xs opacity-70 mb-2">Restaura HP e MP completamente.</p>
+          <div className="flex items-center justify-between">
+            <span className="rpg-gold-display text-xs">Custo: 🪙 {Math.floor(character.level * 5)}</span>
+            <GameButton size="sm" variant="primary" onClick={healCharacter}
+              disabled={character.gold < Math.floor(character.level * 5) || (character.health >= character.max_health && character.mana >= character.max_mana)}>
+              💚 Curar
+            </GameButton>
+          </div>
+        </div>
+      )}
+
+      {/* Merchant NPC - Shop */}
+      {selectedNPC?.npc_type === 'merchant' && (
+        <div>
+          <GamePanelTabs
+            tabs={[{ key: 'buy', label: 'Comprar' }, { key: 'sell', label: 'Vender' }]}
+            activeTab={activeShopTab}
+            onTabChange={setActiveShopTab}
+          />
+
+          <div className="flex items-center justify-between text-xs mb-2 px-1">
+            <span className="opacity-60">Seu ouro:</span>
+            <span className="rpg-gold-display">🪙 {character.gold.toLocaleString()}</span>
           </div>
 
-          {selectedNPC && (
-            <Card className="border-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {getNPCIcon(selectedNPC.npc_type)}
-                  {selectedNPC.name}
-                </CardTitle>
-                <Badge variant="outline" className="w-fit">
-                  {selectedNPC.npc_type === 'merchant' ? 'Mercador' : 'NPC'}
-                </Badge>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4 italic">
-                  "{selectedNPC.dialogue}"
-                </p>
-
-                {selectedNPC.npc_type === 'merchant' && (
-                  <Tabs defaultValue="buy" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="buy">Comprar</TabsTrigger>
-                      <TabsTrigger value="sell">Vender</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="buy">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Seu ouro:</span>
-                          <span className="font-bold text-yellow-600 flex items-center gap-1">
-                            <Coins className="h-4 w-4" />
-                            {character.gold.toLocaleString()}
-                          </span>
-                        </div>
-
-                        <ScrollArea className="h-[400px] pr-4">
-                          <div className="space-y-3">
-                            {shopItems.map((item) => (
-                              <Card key={item.id} className="border">
-                                <CardContent className="p-4">
-                                  <div className="flex items-start justify-between mb-2">
-                                    <div className="flex-1">
-                                      <h4 className={`font-bold ${getRarityColor(item.rarity)}`}>
-                                        {item.name}
-                                      </h4>
-                                      <p className="text-xs text-muted-foreground mt-1">
-                                        {item.description}
-                                      </p>
-                                    </div>
-                                    <Badge variant="outline" className="ml-2">
-                                      Nv. {item.required_level}
-                                    </Badge>
-                                  </div>
-
-                                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                                    {item.strength_bonus > 0 && (
-                                      <span>+{item.strength_bonus} FOR</span>
-                                    )}
-                                    {item.agility_bonus > 0 && (
-                                      <span>+{item.agility_bonus} AGI</span>
-                                    )}
-                                    {item.intelligence_bonus > 0 && (
-                                      <span>+{item.intelligence_bonus} INT</span>
-                                    )}
-                                    {item.vitality_bonus > 0 && (
-                                      <span>+{item.vitality_bonus} VIT</span>
-                                    )}
-                                  </div>
-
-                                  <div className="flex items-center justify-between">
-                                    <span className="font-bold text-yellow-600 flex items-center gap-1">
-                                      <Coins className="h-4 w-4" />
-                                      {item.value}
-                                    </span>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => buyItem(item)}
-                                      disabled={
-                                        character.gold < item.value ||
-                                        character.level < item.required_level
-                                      }
-                                    >
-                                      Comprar
-                                    </Button>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
-                        </ScrollArea>
+          {activeShopTab === 'buy' && (
+            <div className="space-y-1 max-h-[400px] overflow-y-auto pr-1">
+              {shopItems.map((item) => (
+                <div key={item.id} className="rpg-class-card !p-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1">
+                        <span className={`font-bold text-xs pixel-text ${getRarityClass(item.rarity)}`}>{item.name}</span>
+                        <span className="text-[9px] opacity-40">{RARITY_LABELS[item.rarity]}</span>
                       </div>
-                    </TabsContent>
-
-                    <TabsContent value="sell">
-                      <div className="text-center text-muted-foreground py-8">
-                        Venda itens do seu inventário por 50% do valor
+                      <p className="text-[10px] opacity-50 truncate">{item.description}</p>
+                      <div className="flex gap-1 mt-1 flex-wrap">
+                        {item.strength_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-str text-[9px]">+{item.strength_bonus} FOR</span>}
+                        {item.agility_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-agi text-[9px]">+{item.agility_bonus} AGI</span>}
+                        {item.intelligence_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-int text-[9px]">+{item.intelligence_bonus} INT</span>}
+                        {item.vitality_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-vit text-[9px]">+{item.vitality_bonus} VIT</span>}
+                        {item.luck_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-luk text-[9px]">+{item.luck_bonus} SOR</span>}
                       </div>
-                    </TabsContent>
-                  </Tabs>
-                )}
-              </CardContent>
-            </Card>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      {item.required_level > 1 && <span className="text-[9px] opacity-40">Nv.{item.required_level}</span>}
+                      <span className="rpg-gold-display text-[11px]">🪙 {item.value}</span>
+                      <GameButton size="sm" variant="gold"
+                        onClick={() => buyItem(item)}
+                        disabled={character.gold < item.value || character.level < item.required_level}>
+                        Comprar
+                      </GameButton>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {shopItems.length === 0 && (
+                <p className="text-center text-xs opacity-40 py-4">Nenhum item à venda neste bioma.</p>
+              )}
+            </div>
           )}
-        </CardContent>
-      </Card>
+
+          {activeShopTab === 'sell' && (
+            <div className="text-center text-xs opacity-40 py-8">
+              Venda itens pelo inventário por 60% do valor.
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
