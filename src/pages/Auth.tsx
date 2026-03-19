@@ -12,7 +12,10 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
 
-  if (user) { navigate('/game'); return null; }
+  if (user) {
+    setTimeout(() => navigate('/game'), 0);
+    return null;
+  }
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
