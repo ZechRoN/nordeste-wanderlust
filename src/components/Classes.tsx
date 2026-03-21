@@ -1,115 +1,60 @@
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Sword, Zap, Target, Heart, Shield } from "lucide-react";
+import { motion } from "framer-motion";
 
 export const Classes = () => {
   const classes = [
-    {
-      name: "Guerreiro",
-      icon: <Sword className="w-16 h-16" />,
-      color: "warrior",
-      attribute: "Força",
-      specialty: "Ataque em Área",
-      description: "Mestre do combate corpo a corpo, o Guerreiro domina o campo de batalha com sua força bruta e resistência. Pode se especializar também como Arqueiro para builds híbridas.",
-      buttonVariant: "warrior" as const
-    },
-    {
-      name: "Mago", 
-      icon: <Zap className="w-16 h-16" />,
-      color: "mage",
-      attribute: "Inteligência",
-      specialty: "Magia Elemental",
-      description: "Manipulador dos elementos, o Mago causa devastação à distância com magias poderosas. Pode combinar habilidades com a classe Curandeiro.",
-      buttonVariant: "mage" as const
-    },
-    {
-      name: "Arqueiro",
-      icon: <Target className="w-16 h-16" />, 
-      color: "archer",
-      attribute: "Agilidade",
-      specialty: "Ataque à Distância",
-      description: "Preciso e letal, o Arqueiro elimina inimigos antes que se aproximem. Combina perfeitamente com habilidades de Guerreiro para versatilidade.",
-      buttonVariant: "archer" as const
-    },
-    {
-      name: "Curandeiro",
-      icon: <Heart className="w-16 h-16" />,
-      color: "healer", 
-      attribute: "Vontade",
-      specialty: "Cura e Buff",
-      description: "Guardião da vida, o Curandeiro mantém aliados vivos e fortalecidos. Pode aprender magias ofensivas da classe Mago.",
-      buttonVariant: "healer" as const
-    },
-    {
-      name: "Assassino",
-      icon: <Shield className="w-16 h-16" />,
-      color: "assassin",
-      attribute: "Velocidade", 
-      specialty: "Ataque Crítico",
-      description: "Sombra mortal, o Assassino elimina alvos com ataques críticos devastadores. Combina bem com habilidades de Arqueiro para maior alcance.",
-      buttonVariant: "assassin" as const
-    }
+    { name: 'Guerreiro', icon: '⚔️', attr: 'Força', spec: 'Ataque em Área', desc: 'Mestre do combate corpo a corpo com força bruta e resistência.' },
+    { name: 'Mago', icon: '🔮', attr: 'Inteligência', spec: 'Magia Elemental', desc: 'Manipulador dos elementos com magias devastadoras à distância.' },
+    { name: 'Arqueiro', icon: '🏹', attr: 'Agilidade', spec: 'Ataque à Distância', desc: 'Preciso e letal, elimina inimigos antes que se aproximem.' },
+    { name: 'Curandeiro', icon: '💚', attr: 'Vontade', spec: 'Cura e Buff', desc: 'Guardião da vida, mantém aliados vivos e fortalecidos.' },
+    { name: 'Assassino', icon: '🗡️', attr: 'Velocidade', spec: 'Ataque Crítico', desc: 'Sombra mortal com ataques críticos devastadores.' },
   ];
 
   return (
-    <section className="py-24 bg-gradient-forest">
+    <section className="py-20" style={{ background: 'hsl(var(--rpg-panel-inner))', borderTop: '3px solid hsl(var(--rpg-frame-dark))' }}>
       <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-6">
+        <div className="text-center mb-12">
+          <h2 className="rpg-panel-title text-2xl mb-3" style={{ color: 'hsl(var(--rpg-gold))' }}>
             Escolha Sua Classe
           </h2>
-          <p className="text-xl text-primary-foreground/80 max-w-3xl mx-auto">
-            Cinco classes principais com sistema de subclasses híbridas. 
-            Crie builds únicas combinando habilidades de diferentes classes.
+          <p className="text-sm max-w-xl mx-auto" style={{ color: 'hsl(var(--rpg-text-dim))', fontFamily: "'Courier New', monospace" }}>
+            Cinco classes com sistema de subclasses híbridas e builds únicas
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {classes.map((classInfo, index) => (
-            <Card key={index} className="p-8 bg-card/90 backdrop-blur-sm hover:scale-105 transition-transform duration-300">
-              <div className={`text-${classInfo.color} mb-6 flex justify-center`}>
-                {classInfo.icon}
-              </div>
-              <h3 className="text-2xl font-bold text-center text-card-foreground mb-4">
-                {classInfo.name}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 max-w-5xl mx-auto mb-8">
+          {classes.map((cls, i) => (
+            <motion.div
+              key={cls.name}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="rpg-class-card text-center hover:rpg-class-selected transition-all"
+            >
+              <span className="text-4xl block mb-2">{cls.icon}</span>
+              <h3 className="font-bold pixel-text text-sm mb-1" style={{ color: 'hsl(var(--rpg-gold))' }}>
+                {cls.name}
               </h3>
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Atributo:</span>
-                  <span className="text-card-foreground font-semibold">+{classInfo.attribute}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Especialidade:</span>
-                  <span className="text-card-foreground font-semibold">{classInfo.specialty}</span>
-                </div>
+              <div className="text-[9px] space-y-1 mb-2" style={{ color: 'hsl(var(--rpg-text-dim))' }}>
+                <p>+{cls.attr}</p>
+                <p>{cls.spec}</p>
               </div>
-              <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
-                {classInfo.description}
+              <p className="text-[10px] leading-relaxed" style={{ color: 'hsl(var(--rpg-text-dim))', fontFamily: "'Courier New', monospace" }}>
+                {cls.desc}
               </p>
-              <Button 
-                variant={classInfo.buttonVariant} 
-                className="w-full"
-                size="lg"
-              >
-                Escolher {classInfo.name}
-              </Button>
-            </Card>
+            </motion.div>
           ))}
         </div>
 
-        <div className="text-center">
-          <div className="bg-card/80 backdrop-blur-sm rounded-lg p-8 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-semibold text-card-foreground mb-4">
-              Sistema de Builds Híbridas
-            </h3>
-            <p className="text-muted-foreground">
-              Cada classe pode escolher uma subclasse, permitindo combinações únicas como 
-              <span className="text-warrior font-semibold"> Guerreiro/Arqueiro</span>, 
-              <span className="text-mage font-semibold"> Mago/Curandeiro</span>, ou 
-              <span className="text-assassin font-semibold"> Assassino/Arqueiro</span>.
-              Distribua pontos livremente entre atributos e skills para criar sua build ideal.
-            </p>
-          </div>
+        <div className="rpg-item-detail max-w-lg mx-auto text-center">
+          <h3 className="font-bold text-sm pixel-text mb-2" style={{ color: 'hsl(var(--rpg-gold))' }}>
+            Builds Híbridas
+          </h3>
+          <p className="text-[11px]" style={{ color: 'hsl(var(--rpg-text-dim))', fontFamily: "'Courier New', monospace" }}>
+            Combine habilidades: <span style={{ color: 'hsl(0 60% 55%)' }}>Guerreiro/Arqueiro</span>,{' '}
+            <span style={{ color: 'hsl(270 60% 60%)' }}>Mago/Curandeiro</span>,{' '}
+            <span style={{ color: 'hsl(0 0% 70%)' }}>Assassino/Arqueiro</span>
+          </p>
         </div>
       </div>
     </section>

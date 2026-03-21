@@ -17,6 +17,8 @@ import { Titles } from './Titles';
 import { Arena } from './Arena';
 import { Events } from './Events';
 import { GlobalChat } from './GlobalChat';
+import { GameNotifications } from './GameNotifications';
+import { Party } from './Party';
 import { useRegeneration } from '@/hooks/useRegeneration';
 import { useBackgroundMusic, SFX } from '@/hooks/useGameAudio';
 
@@ -41,7 +43,7 @@ const getClassDisplayName = (className: string): string => {
   return classNames[className] || className;
 };
 
-type OverlayPanel = 'inventory' | 'quests' | 'npcs' | 'crafting' | 'guilds' | 'mounts' | 'achievements' | 'titles' | 'arena' | 'rankings' | 'events' | 'menu' | null;
+type OverlayPanel = 'inventory' | 'quests' | 'npcs' | 'crafting' | 'guilds' | 'mounts' | 'achievements' | 'titles' | 'arena' | 'rankings' | 'events' | 'party' | 'menu' | null;
 
 export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDashboardProps) {
   const [currentCharacter, setCurrentCharacter] = useState(character);
@@ -69,6 +71,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
     { key: 'titles', label: 'Títulos', icon: <Crown className="h-4 w-4" /> },
     { key: 'arena', label: 'Arena PvP', icon: <Swords className="h-4 w-4" /> },
     { key: 'events', label: 'Eventos', icon: <Calendar className="h-4 w-4" /> },
+    { key: 'party', label: 'Party', icon: <Users className="h-4 w-4" /> },
     { key: 'rankings', label: 'Rankings', icon: <Trophy className="h-4 w-4" /> },
   ];
 
@@ -128,6 +131,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
               {activePanel === 'titles' && <Titles character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'arena' && <Arena character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'events' && <Events character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
+              {activePanel === 'party' && <Party character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'rankings' && <Rankings character={currentCharacter} />}
             </GamePanel>
           )}
@@ -137,6 +141,8 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
       {/* Global Chat - bottom left */}
       <GlobalChat character={{ id: currentCharacter.id, name: currentCharacter.name }} />
 
+      {/* Notifications */}
+      <GameNotifications characterId={currentCharacter.id} />
       {/* Menu overlay */}
       {activePanel === 'menu' && (
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 p-4">
