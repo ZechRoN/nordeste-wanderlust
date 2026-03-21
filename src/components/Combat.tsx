@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ActionFeedback } from './ActionFeedback';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useQuestProgress } from '@/hooks/useQuestProgress';
+import { SFX } from '@/hooks/useGameAudio';
 import { GamePanel, GameButton } from '@/components/ui/game-panel';
 
 interface Character {
