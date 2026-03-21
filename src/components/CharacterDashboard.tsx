@@ -17,6 +17,8 @@ import { Titles } from './Titles';
 import { Arena } from './Arena';
 import { Events } from './Events';
 import { GlobalChat } from './GlobalChat';
+import { GameNotifications } from './GameNotifications';
+import { Party } from './Party';
 import { useRegeneration } from '@/hooks/useRegeneration';
 import { useBackgroundMusic, SFX } from '@/hooks/useGameAudio';
 
