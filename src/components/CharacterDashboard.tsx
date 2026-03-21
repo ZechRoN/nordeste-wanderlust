@@ -100,7 +100,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
             key={item.key}
             variant={activePanel === item.key ? 'gold' : 'secondary'}
             size="sm"
-            onClick={() => setActivePanel(activePanel === item.key ? null : item.key)}
+            onClick={() => { SFX.menuClick(); setActivePanel(activePanel === item.key ? null : item.key); }}
           >
             {item.icon}
             <span className="hidden md:inline ml-1 text-[10px]">{item.label}</span>
