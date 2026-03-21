@@ -141,6 +141,8 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
       {/* Global Chat - bottom left */}
       <GlobalChat character={{ id: currentCharacter.id, name: currentCharacter.name }} />
 
+      {/* Notifications */}
+      <GameNotifications characterId={currentCharacter.id} />
       {/* Menu overlay */}
       {activePanel === 'menu' && (
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 p-4">
