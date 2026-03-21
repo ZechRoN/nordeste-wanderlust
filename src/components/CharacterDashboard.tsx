@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, LogOut, Heart, Zap, Coins, MapPin, X, Backpack, Scroll, Swords, Users, Trophy, Crown, Shield, Hammer, Map } from 'lucide-react';
+import { ArrowLeft, LogOut, Heart, Zap, Coins, MapPin, X, Backpack, Scroll, Swords, Users, Trophy, Crown, Shield, Hammer, Map, Calendar } from 'lucide-react';
 import { GameCanvas } from '@/engine/GameCanvas';
 import { GamePanel, GameButton } from '@/components/ui/game-panel';
 import { WorldMap } from './WorldMap';
@@ -15,7 +15,10 @@ import { Guilds } from './Guilds';
 import { Mounts } from './Mounts';
 import { Titles } from './Titles';
 import { Arena } from './Arena';
+import { Events } from './Events';
+import { GlobalChat } from './GlobalChat';
 import { useRegeneration } from '@/hooks/useRegeneration';
+import { useBackgroundMusic, SFX } from '@/hooks/useGameAudio';
 
 interface Character {
   id: string; name: string; class: string; level: number; experience: number;
