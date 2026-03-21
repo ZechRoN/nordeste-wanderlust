@@ -82,8 +82,8 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
         character={currentCharacter}
         onCharacterUpdate={handleCharacterUpdate}
         onStartCombat={handleStartCombat}
-        onOpenMenu={() => setActivePanel(activePanel === 'menu' ? null : 'menu')}
-        onOpenInventory={() => setActivePanel(activePanel === 'inventory' ? null : 'inventory')}
+        onOpenMenu={() => { SFX.openPanel(); setActivePanel(activePanel === 'menu' ? null : 'menu'); }}
+        onOpenInventory={() => { SFX.openPanel(); setActivePanel(activePanel === 'inventory' ? null : 'inventory'); }}
       />
 
       {/* Top bar */}
