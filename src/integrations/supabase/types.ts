@@ -883,6 +883,47 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          character_id: string
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          notification_type: string
+          related_id: string | null
+          title: string
+        }
+        Insert: {
+          character_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          notification_type?: string
+          related_id?: string | null
+          title: string
+        }
+        Update: {
+          character_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          notification_type?: string
+          related_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       npcs: {
         Row: {
           biome: string
@@ -909,6 +950,77 @@ export type Database = {
           npc_type?: string
         }
         Relationships: []
+      }
+      parties: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          leader_id: string
+          max_members: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          leader_id: string
+          max_members?: number
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          leader_id?: string
+          max_members?: number
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parties_leader_id_fkey"
+            columns: ["leader_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      party_members: {
+        Row: {
+          character_id: string
+          id: string
+          joined_at: string
+          party_id: string
+        }
+        Insert: {
+          character_id: string
+          id?: string
+          joined_at?: string
+          party_id: string
+        }
+        Update: {
+          character_id?: string
+          id?: string
+          joined_at?: string
+          party_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "party_members_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "party_members_party_id_fkey"
+            columns: ["party_id"]
+            isOneToOne: false
+            referencedRelation: "parties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quests: {
         Row: {
