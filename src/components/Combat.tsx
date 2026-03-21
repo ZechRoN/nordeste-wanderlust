@@ -153,7 +153,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
     }
     const newPlayerHealth = Math.max(0, playerHealth - finalDamage);
     setPlayerHealth(newPlayerHealth);
-    if (newPlayerHealth <= 0) { setPlayerDead(true); setTimeout(() => handleDefeat(), 800); return; }
+    if (newPlayerHealth <= 0) { setPlayerDead(true); SFX.defeat(); setTimeout(() => handleDefeat(), 800); return; }
     setIsPlayerTurn(true);
   };
 
