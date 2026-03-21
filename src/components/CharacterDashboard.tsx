@@ -50,8 +50,9 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
 
   const handleCharacterUpdate = (updatedCharacter: any) => setCurrentCharacter(updatedCharacter);
   useRegeneration(currentCharacter, handleCharacterUpdate, !!combatCreature);
+  useBackgroundMusic(currentCharacter.current_biome, !combatCreature);
 
-  const handleStartCombat = (creature: any) => { setCombatCreature(creature); setActivePanel(null); };
+  const handleStartCombat = (creature: any) => { SFX.attack(); setCombatCreature(creature); setActivePanel(null); };
   const handleCombatEnd = (victory: boolean, updatedCharacter?: any) => {
     if (updatedCharacter) setCurrentCharacter(updatedCharacter);
     setCombatCreature(null);
