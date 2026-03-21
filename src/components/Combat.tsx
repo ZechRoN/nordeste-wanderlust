@@ -99,9 +99,11 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
       case 'attack':
         damageResult = calculateDamage(character, creature);
         if (damageResult.isMiss) {
+          SFX.miss();
           addToCombatLog(`${character.name} erra o ataque!`);
           setFeedback({ show: true, text: 'ERROU!', type: 'miss' });
         } else {
+          damageResult.isCritical ? SFX.critical() : SFX.attack();
           triggerShake('creature', damageResult.isCritical);
           addToCombatLog(`${character.name} ataca com ${damageResult.damage} de dano${damageResult.isCritical ? ' (CRÍTICO!)' : ''}!`);
           setFeedback({ show: true, text: `-${damageResult.damage}`, type: damageResult.isCritical ? 'critical' : 'damage' });
