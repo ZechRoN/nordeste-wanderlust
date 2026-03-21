@@ -147,6 +147,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
       addToCombatLog(`${creature.name} ataca, mas ${character.name} defende! Dano reduzido para ${finalDamage}!`);
       setIsDefending(false);
     } else {
+      SFX.hit();
       triggerShake('player', damageResult.isCritical);
       addToCombatLog(`${creature.name} ataca com ${finalDamage} de dano${damageResult.isCritical ? ' (CRÍTICO!)' : ''}!`);
     }
