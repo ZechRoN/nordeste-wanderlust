@@ -386,6 +386,38 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages: {
+        Row: {
+          character_id: string
+          character_name: string
+          created_at: string
+          id: string
+          message: string
+        }
+        Insert: {
+          character_id: string
+          character_name: string
+          created_at?: string
+          id?: string
+          message: string
+        }
+        Update: {
+          character_id?: string
+          character_name?: string
+          created_at?: string
+          id?: string
+          message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crafting_recipes: {
         Row: {
           created_at: string
@@ -525,6 +557,131 @@ export type Database = {
           vitality?: number
         }
         Relationships: []
+      }
+      event_participants: {
+        Row: {
+          character_id: string
+          damage_dealt: number
+          event_id: string
+          id: string
+          participated_at: string
+          reward_claimed: boolean
+        }
+        Insert: {
+          character_id: string
+          damage_dealt?: number
+          event_id: string
+          id?: string
+          participated_at?: string
+          reward_claimed?: boolean
+        }
+        Update: {
+          character_id?: string
+          damage_dealt?: number
+          event_id?: string
+          id?: string
+          participated_at?: string
+          reward_claimed?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_participants_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_participants_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          biome: string
+          boss_agility: number
+          boss_health: number
+          boss_intelligence: number
+          boss_level: number
+          boss_luck: number
+          boss_max_health: number
+          boss_name: string
+          boss_special_ability: string | null
+          boss_strength: number
+          boss_vitality: number
+          created_at: string
+          description: string | null
+          ends_at: string
+          event_type: string
+          id: string
+          is_active: boolean
+          reward_experience: number
+          reward_gold: number
+          reward_item_id: string | null
+          starts_at: string
+          title: string
+        }
+        Insert: {
+          biome?: string
+          boss_agility?: number
+          boss_health?: number
+          boss_intelligence?: number
+          boss_level?: number
+          boss_luck?: number
+          boss_max_health?: number
+          boss_name?: string
+          boss_special_ability?: string | null
+          boss_strength?: number
+          boss_vitality?: number
+          created_at?: string
+          description?: string | null
+          ends_at?: string
+          event_type?: string
+          id?: string
+          is_active?: boolean
+          reward_experience?: number
+          reward_gold?: number
+          reward_item_id?: string | null
+          starts_at?: string
+          title: string
+        }
+        Update: {
+          biome?: string
+          boss_agility?: number
+          boss_health?: number
+          boss_intelligence?: number
+          boss_level?: number
+          boss_luck?: number
+          boss_max_health?: number
+          boss_name?: string
+          boss_special_ability?: string | null
+          boss_strength?: number
+          boss_vitality?: number
+          created_at?: string
+          description?: string | null
+          ends_at?: string
+          event_type?: string
+          id?: string
+          is_active?: boolean
+          reward_experience?: number
+          reward_gold?: number
+          reward_item_id?: string | null
+          starts_at?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_reward_item_id_fkey"
+            columns: ["reward_item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       guild_members: {
         Row: {
