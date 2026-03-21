@@ -117,7 +117,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
             <GamePanel
               title={menuItems.find(m => m.key === activePanel)?.label || ''}
               icon={menuItems.find(m => m.key === activePanel)?.icon}
-              onClose={() => setActivePanel(null)}
+              onClose={() => { SFX.closePanel(); setActivePanel(null); }}
             >
               {activePanel === 'quests' && <Quests character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'npcs' && <NPCs character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
@@ -127,11 +127,15 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
               {activePanel === 'achievements' && <Achievements character={currentCharacter} />}
               {activePanel === 'titles' && <Titles character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'arena' && <Arena character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
+              {activePanel === 'events' && <Events character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'rankings' && <Rankings character={currentCharacter} />}
             </GamePanel>
           )}
         </div>
       )}
+
+      {/* Global Chat - bottom left */}
+      <GlobalChat character={{ id: currentCharacter.id, name: currentCharacter.name }} />
 
       {/* Menu overlay */}
       {activePanel === 'menu' && (
