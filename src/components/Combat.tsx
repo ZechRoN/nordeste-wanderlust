@@ -134,7 +134,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
     setCreatureHealth(newCreatureHealth);
     setPlayerMana(newPlayerMana);
 
-    if (newCreatureHealth <= 0) { setCreatureDead(true); setTimeout(() => handleVictory(), 800); return; }
+    if (newCreatureHealth <= 0) { setCreatureDead(true); SFX.victory(); setTimeout(() => handleVictory(), 800); return; }
     setIsPlayerTurn(false);
     setTimeout(creatureAttack, 1500);
   };
