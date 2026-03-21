@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, LogOut, Heart, Zap, Coins, MapPin, X, Backpack, Scroll, Swords, Users, Trophy, Crown, Shield, Hammer, Map } from 'lucide-react';
+import { ArrowLeft, LogOut, Heart, Zap, Coins, MapPin, X, Backpack, Scroll, Swords, Users, Trophy, Crown, Shield, Hammer, Map, Calendar } from 'lucide-react';
 import { GameCanvas } from '@/engine/GameCanvas';
 import { GamePanel, GameButton } from '@/components/ui/game-panel';
 import { WorldMap } from './WorldMap';
@@ -15,7 +15,10 @@ import { Guilds } from './Guilds';
 import { Mounts } from './Mounts';
 import { Titles } from './Titles';
 import { Arena } from './Arena';
+import { Events } from './Events';
+import { GlobalChat } from './GlobalChat';
 import { useRegeneration } from '@/hooks/useRegeneration';
+import { useBackgroundMusic, SFX } from '@/hooks/useGameAudio';
 
 interface Character {
   id: string; name: string; class: string; level: number; experience: number;
@@ -38,7 +41,7 @@ const getClassDisplayName = (className: string): string => {
   return classNames[className] || className;
 };
 
-type OverlayPanel = 'inventory' | 'quests' | 'npcs' | 'crafting' | 'guilds' | 'mounts' | 'achievements' | 'titles' | 'arena' | 'rankings' | 'menu' | null;
+type OverlayPanel = 'inventory' | 'quests' | 'npcs' | 'crafting' | 'guilds' | 'mounts' | 'achievements' | 'titles' | 'arena' | 'rankings' | 'events' | 'menu' | null;
 
 export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDashboardProps) {
   const [currentCharacter, setCurrentCharacter] = useState(character);
@@ -47,8 +50,9 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
 
   const handleCharacterUpdate = (updatedCharacter: any) => setCurrentCharacter(updatedCharacter);
   useRegeneration(currentCharacter, handleCharacterUpdate, !!combatCreature);
+  useBackgroundMusic(currentCharacter.current_biome, !combatCreature);
 
-  const handleStartCombat = (creature: any) => { setCombatCreature(creature); setActivePanel(null); };
+  const handleStartCombat = (creature: any) => { SFX.attack(); setCombatCreature(creature); setActivePanel(null); };
   const handleCombatEnd = (victory: boolean, updatedCharacter?: any) => {
     if (updatedCharacter) setCurrentCharacter(updatedCharacter);
     setCombatCreature(null);
@@ -64,6 +68,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
     { key: 'achievements', label: 'Conquistas', icon: <Trophy className="h-4 w-4" /> },
     { key: 'titles', label: 'Títulos', icon: <Crown className="h-4 w-4" /> },
     { key: 'arena', label: 'Arena PvP', icon: <Swords className="h-4 w-4" /> },
+    { key: 'events', label: 'Eventos', icon: <Calendar className="h-4 w-4" /> },
     { key: 'rankings', label: 'Rankings', icon: <Trophy className="h-4 w-4" /> },
   ];
 
@@ -77,8 +82,8 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
         character={currentCharacter}
         onCharacterUpdate={handleCharacterUpdate}
         onStartCombat={handleStartCombat}
-        onOpenMenu={() => setActivePanel(activePanel === 'menu' ? null : 'menu')}
-        onOpenInventory={() => setActivePanel(activePanel === 'inventory' ? null : 'inventory')}
+        onOpenMenu={() => { SFX.openPanel(); setActivePanel(activePanel === 'menu' ? null : 'menu'); }}
+        onOpenInventory={() => { SFX.openPanel(); setActivePanel(activePanel === 'inventory' ? null : 'inventory'); }}
       />
 
       {/* Top bar */}
@@ -95,7 +100,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
             key={item.key}
             variant={activePanel === item.key ? 'gold' : 'secondary'}
             size="sm"
-            onClick={() => setActivePanel(activePanel === item.key ? null : item.key)}
+            onClick={() => { SFX.menuClick(); setActivePanel(activePanel === item.key ? null : item.key); }}
           >
             {item.icon}
             <span className="hidden md:inline ml-1 text-[10px]">{item.label}</span>
@@ -112,7 +117,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
             <GamePanel
               title={menuItems.find(m => m.key === activePanel)?.label || ''}
               icon={menuItems.find(m => m.key === activePanel)?.icon}
-              onClose={() => setActivePanel(null)}
+              onClose={() => { SFX.closePanel(); setActivePanel(null); }}
             >
               {activePanel === 'quests' && <Quests character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'npcs' && <NPCs character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
@@ -122,11 +127,15 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
               {activePanel === 'achievements' && <Achievements character={currentCharacter} />}
               {activePanel === 'titles' && <Titles character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'arena' && <Arena character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
+              {activePanel === 'events' && <Events character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'rankings' && <Rankings character={currentCharacter} />}
             </GamePanel>
           )}
         </div>
       )}
+
+      {/* Global Chat - bottom left */}
+      <GlobalChat character={{ id: currentCharacter.id, name: currentCharacter.name }} />
 
       {/* Menu overlay */}
       {activePanel === 'menu' && (
