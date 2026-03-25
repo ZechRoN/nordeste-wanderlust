@@ -135,6 +135,8 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
               {activePanel === 'titles' && <Titles character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'arena' && <Arena character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'events' && <Events character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
+              {activePanel === 'trade' && <Trade character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
+              {activePanel === 'dungeon' && <Dungeon character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'party' && <Party character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'rankings' && <Rankings character={currentCharacter} />}
             </GamePanel>
