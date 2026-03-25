@@ -73,6 +73,8 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
     { key: 'titles', label: 'Títulos', icon: <Crown className="h-4 w-4" /> },
     { key: 'arena', label: 'Arena PvP', icon: <Swords className="h-4 w-4" /> },
     { key: 'events', label: 'Eventos', icon: <Calendar className="h-4 w-4" /> },
+    { key: 'trade', label: 'Troca', icon: <ArrowLeftRight className="h-4 w-4" /> },
+    { key: 'dungeon', label: 'Dungeons', icon: <Skull className="h-4 w-4" /> },
     { key: 'party', label: 'Party', icon: <Users className="h-4 w-4" /> },
     { key: 'rankings', label: 'Rankings', icon: <Trophy className="h-4 w-4" /> },
   ];
