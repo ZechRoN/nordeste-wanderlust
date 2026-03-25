@@ -385,49 +385,119 @@ export function renderHUD(
     current_biome: string;
   }
 ) {
-  // HUD background
-  ctx.fillStyle = 'rgba(0,0,0,0.75)';
-  ctx.fillRect(8, 8, 220, 90);
-  ctx.strokeStyle = 'hsl(35, 75%, 55%)';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(8, 8, 220, 90);
+  const hudW = 260;
+  const hudH = 100;
+  const hudX = 10;
+  const hudY = 10;
+  const barW = 190;
+  const barH = 14;
+  const padding = 12;
 
-  // Name & level
-  ctx.fillStyle = '#f1c40f';
-  ctx.font = 'bold 12px monospace';
+  // Background with gradient effect
+  ctx.save();
+  ctx.fillStyle = 'rgba(12, 10, 8, 0.88)';
+  ctx.fillRect(hudX, hudY, hudW, hudH);
+
+  // Ornamental frame - double border
+  ctx.strokeStyle = '#8b6914';
+  ctx.lineWidth = 2.5;
+  ctx.strokeRect(hudX + 1, hudY + 1, hudW - 2, hudH - 2);
+  ctx.strokeStyle = '#c9a84c';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(hudX + 4, hudY + 4, hudW - 8, hudH - 8);
+
+  // Corner ornaments
+  const corners = [[hudX + 2, hudY + 2], [hudX + hudW - 8, hudY + 2], [hudX + 2, hudY + hudH - 8], [hudX + hudW - 8, hudY + hudH - 8]];
+  ctx.fillStyle = '#c9a84c';
+  corners.forEach(([cx, cy]) => ctx.fillRect(cx, cy, 6, 6));
+  ctx.fillStyle = '#8b6914';
+  corners.forEach(([cx, cy]) => ctx.fillRect(cx + 1, cy + 1, 4, 4));
+
+  // Name & level with better typography
+  ctx.fillStyle = '#f5d442';
+  ctx.font = 'bold 13px monospace';
   ctx.textAlign = 'left';
-  ctx.fillText(`${character.name} (Nv.${character.level})`, 16, 26);
+  ctx.shadowColor = 'rgba(0,0,0,0.8)';
+  ctx.shadowBlur = 3;
+  ctx.fillText(character.name, hudX + padding, hudY + 22);
+
+  // Level badge
+  const lvlText = `Nv.${character.level}`;
+  const lvlW = ctx.measureText(lvlText).width + 10;
+  ctx.fillStyle = 'rgba(245, 212, 66, 0.15)';
+  ctx.fillRect(hudX + hudW - padding - lvlW, hudY + 10, lvlW, 18);
+  ctx.strokeStyle = '#c9a84c';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(hudX + hudW - padding - lvlW, hudY + 10, lvlW, 18);
+  ctx.fillStyle = '#f5d442';
+  ctx.font = 'bold 11px monospace';
+  ctx.fillText(lvlText, hudX + hudW - padding - lvlW + 5, hudY + 23);
+
+  ctx.shadowBlur = 0;
 
   // Health bar
-  ctx.fillStyle = '#333';
-  ctx.fillRect(16, 34, 180, 12);
-  ctx.fillStyle = '#e74c3c';
-  ctx.fillRect(16, 34, 180 * (character.health / character.max_health), 12);
+  const hpY = hudY + 32;
+  // Bar background
+  ctx.fillStyle = '#1a1215';
+  ctx.fillRect(hudX + padding, hpY, barW, barH);
+  // Bar border
+  ctx.strokeStyle = '#4a2020';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(hudX + padding, hpY, barW, barH);
+  // Bar fill with gradient
+  const hpPct = character.health / character.max_health;
+  const hpGrad = ctx.createLinearGradient(hudX + padding, hpY, hudX + padding + barW * hpPct, hpY);
+  hpGrad.addColorStop(0, '#8b1a1a');
+  hpGrad.addColorStop(0.5, '#d42020');
+  hpGrad.addColorStop(1, '#ff4040');
+  ctx.fillStyle = hpGrad;
+  ctx.fillRect(hudX + padding + 1, hpY + 1, (barW - 2) * hpPct, barH - 2);
+  // Shine
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.fillRect(hudX + padding + 1, hpY + 1, (barW - 2) * hpPct, (barH - 2) / 2);
+  // Text
   ctx.fillStyle = '#fff';
-  ctx.font = '9px monospace';
-  ctx.fillText(`❤ ${character.health}/${character.max_health}`, 18, 44);
+  ctx.font = 'bold 10px monospace';
+  ctx.shadowColor = 'rgba(0,0,0,0.9)';
+  ctx.shadowBlur = 2;
+  ctx.fillText(`❤ ${character.health}/${character.max_health}`, hudX + padding + 4, hpY + 11);
+  ctx.shadowBlur = 0;
 
   // Mana bar
-  ctx.fillStyle = '#333';
-  ctx.fillRect(16, 50, 180, 12);
-  ctx.fillStyle = '#3498db';
-  ctx.fillRect(16, 50, 180 * (character.mana / character.max_mana), 12);
+  const mpY = hpY + barH + 4;
+  ctx.fillStyle = '#0f1520';
+  ctx.fillRect(hudX + padding, mpY, barW, barH);
+  ctx.strokeStyle = '#1a3060';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(hudX + padding, mpY, barW, barH);
+  const mpPct = character.mana / character.max_mana;
+  const mpGrad = ctx.createLinearGradient(hudX + padding, mpY, hudX + padding + barW * mpPct, mpY);
+  mpGrad.addColorStop(0, '#1a3a8b');
+  mpGrad.addColorStop(0.5, '#2060d4');
+  mpGrad.addColorStop(1, '#4090ff');
+  ctx.fillStyle = mpGrad;
+  ctx.fillRect(hudX + padding + 1, mpY + 1, (barW - 2) * mpPct, barH - 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.fillRect(hudX + padding + 1, mpY + 1, (barW - 2) * mpPct, (barH - 2) / 2);
   ctx.fillStyle = '#fff';
-  ctx.fillText(`💧 ${character.mana}/${character.max_mana}`, 18, 60);
+  ctx.font = 'bold 10px monospace';
+  ctx.shadowColor = 'rgba(0,0,0,0.9)';
+  ctx.shadowBlur = 2;
+  ctx.fillText(`💧 ${character.mana}/${character.max_mana}`, hudX + padding + 4, mpY + 11);
+  ctx.shadowBlur = 0;
 
-  // Gold
-  ctx.fillStyle = '#f1c40f';
+  // Gold and biome row
+  const infoY = mpY + barH + 6;
+  ctx.fillStyle = '#f5d442';
+  ctx.font = 'bold 11px monospace';
+  ctx.fillText(`🪙 ${character.gold}`, hudX + padding, infoY);
+
+  const biomeNames: Record<string, string> = { caatinga: 'Caatinga', agreste: 'Agreste', litoral: 'Litoral', santa_cruz: 'Santa Cruz' };
+  ctx.fillStyle = '#8a8a8a';
   ctx.font = '10px monospace';
-  ctx.fillText(`🪙 ${character.gold}`, 16, 78);
+  ctx.fillText(`📍 ${biomeNames[character.current_biome] || character.current_biome}`, hudX + padding + 80, infoY);
 
-  // Biome
-  ctx.fillStyle = '#aaa';
-  ctx.fillText(`📍 ${character.current_biome}`, 100, 78);
-
-  // Controls help (bottom)
-  ctx.fillStyle = 'rgba(0,0,0,0.6)';
-  ctx.fillRect(8, canvasWidth > 600 ? canvasWidth - 40 : 480 - 32, 300, 22);
-  // We render at bottom of canvas height, let's use a fixed position
+  ctx.restore();
 }
 
 // Draw controls hint at bottom

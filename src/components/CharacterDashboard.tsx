@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, LogOut, Heart, Zap, Coins, MapPin, X, Backpack, Scroll, Swords, Users, Trophy, Crown, Shield, Hammer, Map, Calendar } from 'lucide-react';
+import { ArrowLeft, LogOut, Heart, Zap, Coins, MapPin, X, Backpack, Scroll, Swords, Users, Trophy, Crown, Shield, Hammer, Map, Calendar, ArrowLeftRight, Skull } from 'lucide-react';
 import { GameCanvas } from '@/engine/GameCanvas';
 import { GamePanel, GameButton } from '@/components/ui/game-panel';
 import { WorldMap } from './WorldMap';
@@ -16,6 +16,8 @@ import { Mounts } from './Mounts';
 import { Titles } from './Titles';
 import { Arena } from './Arena';
 import { Events } from './Events';
+import { Trade } from './Trade';
+import { Dungeon } from './Dungeon';
 import { GlobalChat } from './GlobalChat';
 import { GameNotifications } from './GameNotifications';
 import { Party } from './Party';
@@ -43,7 +45,7 @@ const getClassDisplayName = (className: string): string => {
   return classNames[className] || className;
 };
 
-type OverlayPanel = 'inventory' | 'quests' | 'npcs' | 'crafting' | 'guilds' | 'mounts' | 'achievements' | 'titles' | 'arena' | 'rankings' | 'events' | 'party' | 'menu' | null;
+type OverlayPanel = 'inventory' | 'quests' | 'npcs' | 'crafting' | 'guilds' | 'mounts' | 'achievements' | 'titles' | 'arena' | 'rankings' | 'events' | 'party' | 'trade' | 'dungeon' | 'menu' | null;
 
 export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDashboardProps) {
   const [currentCharacter, setCurrentCharacter] = useState(character);
@@ -71,6 +73,8 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
     { key: 'titles', label: 'Títulos', icon: <Crown className="h-4 w-4" /> },
     { key: 'arena', label: 'Arena PvP', icon: <Swords className="h-4 w-4" /> },
     { key: 'events', label: 'Eventos', icon: <Calendar className="h-4 w-4" /> },
+    { key: 'trade', label: 'Troca', icon: <ArrowLeftRight className="h-4 w-4" /> },
+    { key: 'dungeon', label: 'Dungeons', icon: <Skull className="h-4 w-4" /> },
     { key: 'party', label: 'Party', icon: <Users className="h-4 w-4" /> },
     { key: 'rankings', label: 'Rankings', icon: <Trophy className="h-4 w-4" /> },
   ];
@@ -131,6 +135,8 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
               {activePanel === 'titles' && <Titles character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'arena' && <Arena character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'events' && <Events character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
+              {activePanel === 'trade' && <Trade character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
+              {activePanel === 'dungeon' && <Dungeon character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'party' && <Party character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'rankings' && <Rankings character={currentCharacter} />}
             </GamePanel>
