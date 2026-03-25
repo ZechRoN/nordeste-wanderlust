@@ -337,7 +337,7 @@ export function Dungeon({ character, onCharacterUpdate }: DungeonProps) {
             </span>
             <span className="rpg-combatant-level">Nv.{enemy.level}</span>
           </div>
-          {isBoss && enemy.special && (
+          {isBoss && 'special' in enemy && (
             <p className="text-[10px] mt-1" style={{ color: 'hsl(var(--rpg-gold))' }}>✦ {(enemy as any).special}</p>
           )}
           <div className="rpg-bar-group">
