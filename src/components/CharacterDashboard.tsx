@@ -16,6 +16,8 @@ import { Mounts } from './Mounts';
 import { Titles } from './Titles';
 import { Arena } from './Arena';
 import { Events } from './Events';
+import { Trade } from './Trade';
+import { Dungeon } from './Dungeon';
 import { GlobalChat } from './GlobalChat';
 import { GameNotifications } from './GameNotifications';
 import { Party } from './Party';
