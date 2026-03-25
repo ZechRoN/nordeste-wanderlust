@@ -1106,6 +1106,66 @@ export type Database = {
           },
         ]
       }
+      trades: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          receiver_confirmed: boolean
+          receiver_gold: number
+          receiver_id: string
+          receiver_items: Json
+          sender_confirmed: boolean
+          sender_gold: number
+          sender_id: string
+          sender_items: Json
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          receiver_confirmed?: boolean
+          receiver_gold?: number
+          receiver_id: string
+          receiver_items?: Json
+          sender_confirmed?: boolean
+          sender_gold?: number
+          sender_id: string
+          sender_items?: Json
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          receiver_confirmed?: boolean
+          receiver_gold?: number
+          receiver_id?: string
+          receiver_items?: Json
+          sender_confirmed?: boolean
+          sender_gold?: number
+          sender_id?: string
+          sender_items?: Json
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trades_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trades_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
