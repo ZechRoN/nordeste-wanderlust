@@ -58,6 +58,28 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
 
   const { updateKillProgress } = useQuestProgress();
 
+  // Load pet bonuses
+  useEffect(() => {
+    const loadPet = async () => {
+      const { data } = await supabase
+        .from('character_pets')
+        .select('*, pet:pets(*)')
+        .eq('character_id', character.id)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (data?.pet) {
+        setPetBonuses({
+          strength: data.pet.strength_bonus,
+          agility: data.pet.agility_bonus,
+          intelligence: data.pet.intelligence_bonus,
+          vitality: data.pet.vitality_bonus,
+          luck: data.pet.luck_bonus,
+        });
+      }
+    };
+    loadPet();
+  }, [character.id]);
+
   useKeyboardShortcuts(isPlayerTurn && playerHealth > 0 && creatureHealth > 0, {
     attack: () => playerAttack('attack'),
     defend: () => playerAttack('defend'),
