@@ -21,6 +21,8 @@ import { Dungeon } from './Dungeon';
 import { GlobalChat } from './GlobalChat';
 import { GameNotifications } from './GameNotifications';
 import { Party } from './Party';
+import { Pets } from './Pets';
+import { Enchantment } from './Enchantment';
 import { useRegeneration } from '@/hooks/useRegeneration';
 import { useBackgroundMusic, SFX } from '@/hooks/useGameAudio';
 
