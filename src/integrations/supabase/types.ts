@@ -231,6 +231,54 @@ export type Database = {
           },
         ]
       }
+      character_pets: {
+        Row: {
+          character_id: string
+          experience: number
+          id: string
+          is_active: boolean
+          level: number
+          nickname: string | null
+          pet_id: string
+          tamed_at: string
+        }
+        Insert: {
+          character_id: string
+          experience?: number
+          id?: string
+          is_active?: boolean
+          level?: number
+          nickname?: string | null
+          pet_id: string
+          tamed_at?: string
+        }
+        Update: {
+          character_id?: string
+          experience?: number
+          id?: string
+          is_active?: boolean
+          level?: number
+          nickname?: string | null
+          pet_id?: string
+          tamed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_pets_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "character_pets_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       character_quests: {
         Row: {
           accepted_at: string
@@ -757,6 +805,50 @@ export type Database = {
           },
         ]
       }
+      item_enchantments: {
+        Row: {
+          bonus_agility: number
+          bonus_intelligence: number
+          bonus_luck: number
+          bonus_strength: number
+          bonus_vitality: number
+          character_item_id: string
+          created_at: string
+          enchantment_level: number
+          id: string
+        }
+        Insert: {
+          bonus_agility?: number
+          bonus_intelligence?: number
+          bonus_luck?: number
+          bonus_strength?: number
+          bonus_vitality?: number
+          character_item_id: string
+          created_at?: string
+          enchantment_level?: number
+          id?: string
+        }
+        Update: {
+          bonus_agility?: number
+          bonus_intelligence?: number
+          bonus_luck?: number
+          bonus_strength?: number
+          bonus_vitality?: number
+          character_item_id?: string
+          created_at?: string
+          enchantment_level?: number
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_enchantments_character_item_id_fkey"
+            columns: ["character_item_id"]
+            isOneToOne: true
+            referencedRelation: "character_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       items: {
         Row: {
           agility_bonus: number
@@ -1021,6 +1113,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pets: {
+        Row: {
+          agility_bonus: number
+          biome: string
+          created_at: string
+          description: string | null
+          id: string
+          intelligence_bonus: number
+          luck_bonus: number
+          name: string
+          rarity: string
+          special_passive: string | null
+          strength_bonus: number
+          vitality_bonus: number
+        }
+        Insert: {
+          agility_bonus?: number
+          biome?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          intelligence_bonus?: number
+          luck_bonus?: number
+          name: string
+          rarity?: string
+          special_passive?: string | null
+          strength_bonus?: number
+          vitality_bonus?: number
+        }
+        Update: {
+          agility_bonus?: number
+          biome?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          intelligence_bonus?: number
+          luck_bonus?: number
+          name?: string
+          rarity?: string
+          special_passive?: string | null
+          strength_bonus?: number
+          vitality_bonus?: number
+        }
+        Relationships: []
       }
       quests: {
         Row: {
