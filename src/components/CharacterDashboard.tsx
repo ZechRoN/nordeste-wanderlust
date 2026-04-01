@@ -47,7 +47,7 @@ const getClassDisplayName = (className: string): string => {
   return classNames[className] || className;
 };
 
-type OverlayPanel = 'inventory' | 'quests' | 'npcs' | 'crafting' | 'guilds' | 'mounts' | 'achievements' | 'titles' | 'arena' | 'rankings' | 'events' | 'party' | 'trade' | 'dungeon' | 'menu' | null;
+type OverlayPanel = 'inventory' | 'quests' | 'npcs' | 'crafting' | 'guilds' | 'mounts' | 'achievements' | 'titles' | 'arena' | 'rankings' | 'events' | 'party' | 'trade' | 'dungeon' | 'pets' | 'enchant' | 'menu' | null;
 
 export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDashboardProps) {
   const [currentCharacter, setCurrentCharacter] = useState(character);
