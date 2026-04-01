@@ -102,13 +102,21 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
     }
   };
 
-  const calculateDamage = (attacker: any, defender: any, isSpecial = false): DamageResult => {
+  const calculateDamage = (attacker: any, defender: any, isSpecial = false, multiplier = 1): DamageResult => {
+    // Add pet bonuses for player
+    const atkStr = attacker === character ? attacker.strength + petBonuses.strength : attacker.strength;
+    const atkInt = attacker === character ? attacker.intelligence + petBonuses.intelligence : attacker.intelligence;
+    const atkLuck = attacker === character ? attacker.luck + petBonuses.luck : attacker.luck;
+    const atkAgi = attacker === character ? attacker.agility + petBonuses.agility : attacker.agility;
+    const defVit = defender === character ? defender.vitality + petBonuses.vitality : defender.vitality;
+    const defAgi = defender === character ? defender.agility + petBonuses.agility : defender.agility;
+
     const levelMultiplier = 1 + (attacker.level - 1) * 0.1;
-    const baseDamage = (attacker.strength + (isSpecial ? attacker.intelligence : 0)) * levelMultiplier;
-    const defense = defender.vitality * (1 + (defender.level - 1) * 0.05);
-    const critChance = Math.min(0.3, attacker.luck / 100);
+    const baseDamage = (atkStr + (isSpecial ? atkInt : 0)) * levelMultiplier * multiplier;
+    const defense = defVit * (1 + (defender.level - 1) * 0.05);
+    const critChance = Math.min(0.3, atkLuck / 100);
     let damage = Math.max(1, baseDamage - defense / 3);
-    const hitChance = 0.9 - (defender.agility - attacker.agility) / 200;
+    const hitChance = 0.9 - (defAgi - atkAgi) / 200;
     if (Math.random() > hitChance) return { damage: 0, isCritical: false, isMiss: true };
     if (Math.random() < critChance) {
       damage *= 2.5;
