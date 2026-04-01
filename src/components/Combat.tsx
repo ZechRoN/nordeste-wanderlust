@@ -187,7 +187,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
       setPlayerMana(playerMana - skill.manaCost);
       addToCombatLog(`${character.name} usa ${skill.name}! Restaura ${healAmount} HP!`);
       setFeedback({ show: true, text: `+${healAmount}`, type: 'heal' });
-      SFX.heal?.() || SFX.attack();
+      SFX.attack();
     } else if (skill.effect === 'buff' && skill.damageMultiplier === 0) {
       addToCombatLog(`${character.name} usa ${skill.name}! +${skill.effectValue}% buff!`);
       setFeedback({ show: true, text: `${skill.icon} BUFF!`, type: 'heal' });
