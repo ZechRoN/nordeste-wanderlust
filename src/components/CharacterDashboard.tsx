@@ -78,6 +78,8 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
     { key: 'trade', label: 'Troca', icon: <ArrowLeftRight className="h-4 w-4" /> },
     { key: 'dungeon', label: 'Dungeons', icon: <Skull className="h-4 w-4" /> },
     { key: 'party', label: 'Party', icon: <Users className="h-4 w-4" /> },
+    { key: 'pets', label: 'Pets', icon: <PawPrint className="h-4 w-4" /> },
+    { key: 'enchant', label: 'Aprimorar', icon: <Sparkles className="h-4 w-4" /> },
     { key: 'rankings', label: 'Rankings', icon: <Trophy className="h-4 w-4" /> },
   ];
 
