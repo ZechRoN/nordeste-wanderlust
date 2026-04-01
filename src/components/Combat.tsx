@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Swords, Heart, Zap, Shield, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
@@ -8,6 +8,8 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useQuestProgress } from '@/hooks/useQuestProgress';
 import { SFX } from '@/hooks/useGameAudio';
 import { GamePanel, GameButton } from '@/components/ui/game-panel';
+import { SkillBar, SkillEffect, CLASS_SKILLS } from './Skills';
+import type { Skill } from './Skills';
 
 interface Character {
   id: string; name: string; level: number;
