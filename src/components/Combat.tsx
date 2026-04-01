@@ -378,6 +378,9 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
             )
           }
         >
+          {activeSkillEffect && (
+            <SkillEffect skillId={activeSkillEffect} onComplete={() => setActiveSkillEffect(null)} />
+          )}
           <ActionFeedback
             show={feedback.show}
             text={feedback.text}
