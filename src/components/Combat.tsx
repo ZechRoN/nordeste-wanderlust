@@ -174,6 +174,65 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
     setTimeout(creatureAttack, 1500);
   };
 
+  const useSkill = (skill: Skill) => {
+    if (!isPlayerTurn || playerMana < skill.manaCost || (skillCooldowns[skill.id] || 0) > 0) return;
+
+    setActiveSkillEffect(skill.id);
+
+    // Handle heal skills
+    if (skill.effect === 'heal' && skill.damageMultiplier === 0) {
+      const healAmount = Math.floor(character.max_health * (skill.effectValue! / 100));
+      const newHealth = Math.min(character.max_health, playerHealth + healAmount);
+      setPlayerHealth(newHealth);
+      setPlayerMana(playerMana - skill.manaCost);
+      addToCombatLog(`${character.name} usa ${skill.name}! Restaura ${healAmount} HP!`);
+      setFeedback({ show: true, text: `+${healAmount}`, type: 'heal' });
+      SFX.heal?.() || SFX.attack();
+    } else if (skill.effect === 'buff' && skill.damageMultiplier === 0) {
+      addToCombatLog(`${character.name} usa ${skill.name}! +${skill.effectValue}% buff!`);
+      setFeedback({ show: true, text: `${skill.icon} BUFF!`, type: 'heal' });
+      setPlayerMana(playerMana - skill.manaCost);
+    } else {
+      // Damage skills
+      const result = calculateDamage(character, creature, true, skill.damageMultiplier);
+      if (result.isMiss) {
+        addToCombatLog(`${character.name} erra ${skill.name}!`);
+        setFeedback({ show: true, text: 'ERROU!', type: 'miss' });
+      } else {
+        triggerShake('creature', result.isCritical);
+        const newCreatureHp = Math.max(0, creatureHealth - result.damage);
+        setCreatureHealth(newCreatureHp);
+        addToCombatLog(`${character.name} usa ${skill.name}! ${result.damage} de dano${result.isCritical ? ' (CRÍTICO!)' : ''}!`);
+        setFeedback({ show: true, text: `-${result.damage} ${skill.icon}`, type: result.isCritical ? 'critical' : 'damage' });
+        result.isCritical ? SFX.critical() : SFX.attack();
+
+        if (newCreatureHp <= 0) {
+          setCreatureDead(true);
+          SFX.victory();
+          setPlayerMana(playerMana - skill.manaCost);
+          setSkillCooldowns(prev => ({ ...prev, [skill.id]: skill.cooldown }));
+          setTimeout(() => handleVictory(), 800);
+          return;
+        }
+      }
+      setPlayerMana(playerMana - skill.manaCost);
+    }
+
+    // Set cooldown
+    setSkillCooldowns(prev => ({ ...prev, [skill.id]: skill.cooldown }));
+
+    setIsPlayerTurn(false);
+    setTimeout(() => {
+      // Reduce cooldowns
+      setSkillCooldowns(prev => {
+        const next: Record<string, number> = {};
+        for (const [k, v] of Object.entries(prev)) next[k] = Math.max(0, v - 1);
+        return next;
+      });
+      creatureAttack();
+    }, 1500);
+  };
+
   const creatureAttack = () => {
     const damageResult = calculateDamage(creature, character);
     let finalDamage = damageResult.damage;
