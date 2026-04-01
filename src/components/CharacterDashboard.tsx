@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, LogOut, Heart, Zap, Coins, MapPin, X, Backpack, Scroll, Swords, Users, Trophy, Crown, Shield, Hammer, Map, Calendar, ArrowLeftRight, Skull } from 'lucide-react';
+import { ArrowLeft, LogOut, Heart, Zap, Coins, MapPin, X, Backpack, Scroll, Swords, Users, Trophy, Crown, Shield, Hammer, Map, Calendar, ArrowLeftRight, Skull, PawPrint, Sparkles } from 'lucide-react';
 import { GameCanvas } from '@/engine/GameCanvas';
 import { GamePanel, GameButton } from '@/components/ui/game-panel';
 import { WorldMap } from './WorldMap';
@@ -21,6 +21,8 @@ import { Dungeon } from './Dungeon';
 import { GlobalChat } from './GlobalChat';
 import { GameNotifications } from './GameNotifications';
 import { Party } from './Party';
+import { Pets } from './Pets';
+import { Enchantment } from './Enchantment';
 import { useRegeneration } from '@/hooks/useRegeneration';
 import { useBackgroundMusic, SFX } from '@/hooks/useGameAudio';
 
@@ -45,7 +47,7 @@ const getClassDisplayName = (className: string): string => {
   return classNames[className] || className;
 };
 
-type OverlayPanel = 'inventory' | 'quests' | 'npcs' | 'crafting' | 'guilds' | 'mounts' | 'achievements' | 'titles' | 'arena' | 'rankings' | 'events' | 'party' | 'trade' | 'dungeon' | 'menu' | null;
+type OverlayPanel = 'inventory' | 'quests' | 'npcs' | 'crafting' | 'guilds' | 'mounts' | 'achievements' | 'titles' | 'arena' | 'rankings' | 'events' | 'party' | 'trade' | 'dungeon' | 'pets' | 'enchant' | 'menu' | null;
 
 export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDashboardProps) {
   const [currentCharacter, setCurrentCharacter] = useState(character);
@@ -76,6 +78,8 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
     { key: 'trade', label: 'Troca', icon: <ArrowLeftRight className="h-4 w-4" /> },
     { key: 'dungeon', label: 'Dungeons', icon: <Skull className="h-4 w-4" /> },
     { key: 'party', label: 'Party', icon: <Users className="h-4 w-4" /> },
+    { key: 'pets', label: 'Pets', icon: <PawPrint className="h-4 w-4" /> },
+    { key: 'enchant', label: 'Aprimorar', icon: <Sparkles className="h-4 w-4" /> },
     { key: 'rankings', label: 'Rankings', icon: <Trophy className="h-4 w-4" /> },
   ];
 
@@ -138,6 +142,8 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
               {activePanel === 'trade' && <Trade character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'dungeon' && <Dungeon character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'party' && <Party character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
+              {activePanel === 'pets' && <Pets character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
+              {activePanel === 'enchant' && <Enchantment character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'rankings' && <Rankings character={currentCharacter} />}
             </GamePanel>
           )}

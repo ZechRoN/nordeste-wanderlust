@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Swords, Heart, Zap, Shield, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
@@ -8,9 +8,11 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useQuestProgress } from '@/hooks/useQuestProgress';
 import { SFX } from '@/hooks/useGameAudio';
 import { GamePanel, GameButton } from '@/components/ui/game-panel';
+import { SkillBar, SkillEffect, CLASS_SKILLS } from './Skills';
+import type { Skill } from './Skills';
 
 interface Character {
-  id: string; name: string; level: number;
+  id: string; name: string; class: string; level: number;
   health: number; max_health: number; mana: number; max_mana: number;
   strength: number; agility: number; intelligence: number; vitality: number; luck: number;
   experience: number; gold: number;
@@ -42,6 +44,9 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
   const [feedback, setFeedback] = useState<{ show: boolean; text: string; type: 'damage' | 'heal' | 'critical' | 'miss' | 'levelup' }>({
     show: false, text: '', type: 'damage'
   });
+  const [skillCooldowns, setSkillCooldowns] = useState<Record<string, number>>({});
+  const [activeSkillEffect, setActiveSkillEffect] = useState<string | null>(null);
+  const [petBonuses, setPetBonuses] = useState({ strength: 0, agility: 0, intelligence: 0, vitality: 0, luck: 0 });
 
   // Animation states
   const [playerShake, setPlayerShake] = useState(false);
@@ -52,6 +57,28 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
   const [playerDead, setPlayerDead] = useState(false);
 
   const { updateKillProgress } = useQuestProgress();
+
+  // Load pet bonuses
+  useEffect(() => {
+    const loadPet = async () => {
+      const { data } = await supabase
+        .from('character_pets')
+        .select('*, pet:pets(*)')
+        .eq('character_id', character.id)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (data?.pet) {
+        setPetBonuses({
+          strength: data.pet.strength_bonus,
+          agility: data.pet.agility_bonus,
+          intelligence: data.pet.intelligence_bonus,
+          vitality: data.pet.vitality_bonus,
+          luck: data.pet.luck_bonus,
+        });
+      }
+    };
+    loadPet();
+  }, [character.id]);
 
   useKeyboardShortcuts(isPlayerTurn && playerHealth > 0 && creatureHealth > 0, {
     attack: () => playerAttack('attack'),
@@ -75,13 +102,21 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
     }
   };
 
-  const calculateDamage = (attacker: any, defender: any, isSpecial = false): DamageResult => {
+  const calculateDamage = (attacker: any, defender: any, isSpecial = false, multiplier = 1): DamageResult => {
+    // Add pet bonuses for player
+    const atkStr = attacker === character ? attacker.strength + petBonuses.strength : attacker.strength;
+    const atkInt = attacker === character ? attacker.intelligence + petBonuses.intelligence : attacker.intelligence;
+    const atkLuck = attacker === character ? attacker.luck + petBonuses.luck : attacker.luck;
+    const atkAgi = attacker === character ? attacker.agility + petBonuses.agility : attacker.agility;
+    const defVit = defender === character ? defender.vitality + petBonuses.vitality : defender.vitality;
+    const defAgi = defender === character ? defender.agility + petBonuses.agility : defender.agility;
+
     const levelMultiplier = 1 + (attacker.level - 1) * 0.1;
-    const baseDamage = (attacker.strength + (isSpecial ? attacker.intelligence : 0)) * levelMultiplier;
-    const defense = defender.vitality * (1 + (defender.level - 1) * 0.05);
-    const critChance = Math.min(0.3, attacker.luck / 100);
+    const baseDamage = (atkStr + (isSpecial ? atkInt : 0)) * levelMultiplier * multiplier;
+    const defense = defVit * (1 + (defender.level - 1) * 0.05);
+    const critChance = Math.min(0.3, atkLuck / 100);
     let damage = Math.max(1, baseDamage - defense / 3);
-    const hitChance = 0.9 - (defender.agility - attacker.agility) / 200;
+    const hitChance = 0.9 - (defAgi - atkAgi) / 200;
     if (Math.random() > hitChance) return { damage: 0, isCritical: false, isMiss: true };
     if (Math.random() < critChance) {
       damage *= 2.5;
@@ -137,6 +172,65 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
     if (newCreatureHealth <= 0) { setCreatureDead(true); SFX.victory(); setTimeout(() => handleVictory(), 800); return; }
     setIsPlayerTurn(false);
     setTimeout(creatureAttack, 1500);
+  };
+
+  const useSkill = (skill: Skill) => {
+    if (!isPlayerTurn || playerMana < skill.manaCost || (skillCooldowns[skill.id] || 0) > 0) return;
+
+    setActiveSkillEffect(skill.id);
+
+    // Handle heal skills
+    if (skill.effect === 'heal' && skill.damageMultiplier === 0) {
+      const healAmount = Math.floor(character.max_health * (skill.effectValue! / 100));
+      const newHealth = Math.min(character.max_health, playerHealth + healAmount);
+      setPlayerHealth(newHealth);
+      setPlayerMana(playerMana - skill.manaCost);
+      addToCombatLog(`${character.name} usa ${skill.name}! Restaura ${healAmount} HP!`);
+      setFeedback({ show: true, text: `+${healAmount}`, type: 'heal' });
+      SFX.attack();
+    } else if (skill.effect === 'buff' && skill.damageMultiplier === 0) {
+      addToCombatLog(`${character.name} usa ${skill.name}! +${skill.effectValue}% buff!`);
+      setFeedback({ show: true, text: `${skill.icon} BUFF!`, type: 'heal' });
+      setPlayerMana(playerMana - skill.manaCost);
+    } else {
+      // Damage skills
+      const result = calculateDamage(character, creature, true, skill.damageMultiplier);
+      if (result.isMiss) {
+        addToCombatLog(`${character.name} erra ${skill.name}!`);
+        setFeedback({ show: true, text: 'ERROU!', type: 'miss' });
+      } else {
+        triggerShake('creature', result.isCritical);
+        const newCreatureHp = Math.max(0, creatureHealth - result.damage);
+        setCreatureHealth(newCreatureHp);
+        addToCombatLog(`${character.name} usa ${skill.name}! ${result.damage} de dano${result.isCritical ? ' (CRÍTICO!)' : ''}!`);
+        setFeedback({ show: true, text: `-${result.damage} ${skill.icon}`, type: result.isCritical ? 'critical' : 'damage' });
+        result.isCritical ? SFX.critical() : SFX.attack();
+
+        if (newCreatureHp <= 0) {
+          setCreatureDead(true);
+          SFX.victory();
+          setPlayerMana(playerMana - skill.manaCost);
+          setSkillCooldowns(prev => ({ ...prev, [skill.id]: skill.cooldown }));
+          setTimeout(() => handleVictory(), 800);
+          return;
+        }
+      }
+      setPlayerMana(playerMana - skill.manaCost);
+    }
+
+    // Set cooldown
+    setSkillCooldowns(prev => ({ ...prev, [skill.id]: skill.cooldown }));
+
+    setIsPlayerTurn(false);
+    setTimeout(() => {
+      // Reduce cooldowns
+      setSkillCooldowns(prev => {
+        const next: Record<string, number> = {};
+        for (const [k, v] of Object.entries(prev)) next[k] = Math.max(0, v - 1);
+        return next;
+      });
+      creatureAttack();
+    }, 1500);
   };
 
   const creatureAttack = () => {
@@ -257,16 +351,23 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
               <div className="flex flex-col items-center gap-2 w-full">
                 <div className="flex gap-2 justify-center">
                   <GameButton size="md" variant="primary" onClick={() => playerAttack('attack')} disabled={!isPlayerTurn}>
-                    <Swords className="h-4 w-4 mr-1" /> Atacar (1)
+                    <Swords className="h-4 w-4 mr-1" /> Atacar
                   </GameButton>
                   <GameButton size="md" onClick={() => playerAttack('defend')} disabled={!isPlayerTurn}>
-                    <Shield className="h-4 w-4 mr-1" /> Defender (2)
+                    <Shield className="h-4 w-4 mr-1" /> Defender
                   </GameButton>
                   <GameButton size="md" variant="gold" onClick={() => playerAttack('special')} disabled={!isPlayerTurn || playerMana < 20}>
-                    <Zap className="h-4 w-4 mr-1" /> Especial (3)
+                    <Zap className="h-4 w-4 mr-1" /> Especial
                   </GameButton>
                 </div>
-                <span className="text-[10px] opacity-50">Teclas 1, 2, 3 ou A, D, S</span>
+                <SkillBar
+                  characterClass={character.class}
+                  mana={playerMana}
+                  isPlayerTurn={isPlayerTurn}
+                  onUseSkill={useSkill}
+                  cooldowns={skillCooldowns}
+                />
+                <span className="text-[10px] opacity-50">Habilidades de classe acima • Pet ativo dá bônus passivo</span>
               </div>
             ) : (
               <div className="flex justify-center w-full">
@@ -277,6 +378,9 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
             )
           }
         >
+          {activeSkillEffect && (
+            <SkillEffect skillId={activeSkillEffect} onComplete={() => setActiveSkillEffect(null)} />
+          )}
           <ActionFeedback
             show={feedback.show}
             text={feedback.text}
