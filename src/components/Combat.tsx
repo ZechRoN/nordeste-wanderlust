@@ -12,7 +12,7 @@ import { SkillBar, SkillEffect, CLASS_SKILLS } from './Skills';
 import type { Skill } from './Skills';
 
 interface Character {
-  id: string; name: string; level: number;
+  id: string; name: string; class: string; level: number;
   health: number; max_health: number; mana: number; max_mana: number;
   strength: number; agility: number; intelligence: number; vitality: number; luck: number;
   experience: number; gold: number;
