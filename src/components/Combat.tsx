@@ -44,6 +44,9 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
   const [feedback, setFeedback] = useState<{ show: boolean; text: string; type: 'damage' | 'heal' | 'critical' | 'miss' | 'levelup' }>({
     show: false, text: '', type: 'damage'
   });
+  const [skillCooldowns, setSkillCooldowns] = useState<Record<string, number>>({});
+  const [activeSkillEffect, setActiveSkillEffect] = useState<string | null>(null);
+  const [petBonuses, setPetBonuses] = useState({ strength: 0, agility: 0, intelligence: 0, vitality: 0, luck: 0 });
 
   // Animation states
   const [playerShake, setPlayerShake] = useState(false);
