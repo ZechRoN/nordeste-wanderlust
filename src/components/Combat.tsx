@@ -351,16 +351,23 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
               <div className="flex flex-col items-center gap-2 w-full">
                 <div className="flex gap-2 justify-center">
                   <GameButton size="md" variant="primary" onClick={() => playerAttack('attack')} disabled={!isPlayerTurn}>
-                    <Swords className="h-4 w-4 mr-1" /> Atacar (1)
+                    <Swords className="h-4 w-4 mr-1" /> Atacar
                   </GameButton>
                   <GameButton size="md" onClick={() => playerAttack('defend')} disabled={!isPlayerTurn}>
-                    <Shield className="h-4 w-4 mr-1" /> Defender (2)
+                    <Shield className="h-4 w-4 mr-1" /> Defender
                   </GameButton>
                   <GameButton size="md" variant="gold" onClick={() => playerAttack('special')} disabled={!isPlayerTurn || playerMana < 20}>
-                    <Zap className="h-4 w-4 mr-1" /> Especial (3)
+                    <Zap className="h-4 w-4 mr-1" /> Especial
                   </GameButton>
                 </div>
-                <span className="text-[10px] opacity-50">Teclas 1, 2, 3 ou A, D, S</span>
+                <SkillBar
+                  characterClass={character.class}
+                  mana={playerMana}
+                  isPlayerTurn={isPlayerTurn}
+                  onUseSkill={useSkill}
+                  cooldowns={skillCooldowns}
+                />
+                <span className="text-[10px] opacity-50">Habilidades de classe acima • Pet ativo dá bônus passivo</span>
               </div>
             ) : (
               <div className="flex justify-center w-full">
