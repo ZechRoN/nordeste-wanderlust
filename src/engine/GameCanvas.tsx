@@ -63,11 +63,19 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
   const poisRef = useRef<MapPOI[]>([]);
   const lastMoveTimeRef = useRef(0);
   const [interactMessage, setInteractMessage] = useState<string | null>(null);
+  const exploredRef = useRef<Uint8Array | null>(null);
+  const minimapZoomRef = useRef(2);
+  const minimapAlphaRef = useRef(0.92);
+  const [minimapZoom, setMinimapZoom] = useState(2);
+  const [minimapAlpha, setMinimapAlpha] = useState(0.92);
+  const [activeQuestCount, setActiveQuestCount] = useState(0);
+  const activeQuestCountRef = useRef(0);
 
   // Initialize map and player position
   useEffect(() => {
     const map = generateTileMap(42);
     mapRef.current = map;
+    exploredRef.current = new Uint8Array(map.width * map.height);
 
     // Get spawn point based on current biome
     const spawn = getBiomeSpawnPoint(character.current_biome);
@@ -94,9 +102,40 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
     // Load POIs
     poisRef.current = getMapPOIs();
 
+    const markExplored = (x: number, y: number) => {
+      const explored = exploredRef.current;
+      if (!explored) return;
+      const radius = 4;
+      for (let dy = -radius; dy <= radius; dy++) {
+        for (let dx = -radius; dx <= radius; dx++) {
+          const tx = x + dx;
+          const ty = y + dy;
+          if (tx < 0 || ty < 0 || tx >= map.width || ty >= map.height) continue;
+          explored[ty * map.width + tx] = 1;
+        }
+      }
+    };
+
+    markExplored(spawnX, spawnY);
+
     // Load creatures from DB and spawn them
     loadCreatures();
   }, []);
+
+  useEffect(() => {
+    const loadActiveQuests = async () => {
+      const { data, error } = await supabase
+        .from('character_quests' as any)
+        .select('id')
+        .eq('character_id', character.id)
+        .eq('completed', false);
+      if (error) return;
+      const count = (data as any)?.length ?? 0;
+      setActiveQuestCount(count);
+      activeQuestCountRef.current = count;
+    };
+    loadActiveQuests();
+  }, [character.id]);
 
   const loadCreatures = async () => {
     try {
@@ -231,6 +270,18 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
             playerPosRef.current = { x: newX, y: newY };
             isMovingRef.current = true;
             lastMoveTimeRef.current = now;
+            const explored = exploredRef.current;
+            if (explored) {
+              const radius = 4;
+              for (let ry = -radius; ry <= radius; ry++) {
+                for (let rx = -radius; rx <= radius; rx++) {
+                  const tx = newX + rx;
+                  const ty = newY + ry;
+                  if (tx < 0 || ty < 0 || tx >= map.width || ty >= map.height) continue;
+                  explored[ty * map.width + tx] = 1;
+                }
+              }
+            }
 
             // Check biome change
             const newBiome = getBiomeAt(newX, newY);
@@ -278,7 +329,7 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Render map
-      renderMap(ctx, map, cameraRef.current.x, cameraRef.current.y, canvas.width, canvas.height);
+      renderMap(ctx, map, cameraRef.current.x, cameraRef.current.y, canvas.width, canvas.height, animFrameRef.current);
 
       // Render POIs
       for (const poi of poisRef.current) {
@@ -315,7 +366,13 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
 
       // HUD
       renderHUD(ctx, canvas.width, character);
-      renderMinimap(ctx, map, playerPosRef.current.x, playerPosRef.current.y, canvas.width, canvas.height);
+      renderMinimap(ctx, map, playerPosRef.current.x, playerPosRef.current.y, canvas.width, canvas.height, 170, {
+        zoom: minimapZoomRef.current,
+        alpha: minimapAlphaRef.current,
+        explored: exploredRef.current ?? undefined,
+        pois: poisRef.current,
+        trackedPoiTypes: activeQuestCountRef.current > 0 ? ['quest'] : [],
+      });
       renderControls(ctx, canvas.width, canvas.height);
 
       // Interaction message
@@ -365,6 +422,42 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
         tabIndex={0}
         onFocus={() => canvasRef.current?.focus()}
       />
+      <div className="absolute top-2 right-2 z-20 hidden md:block">
+        <div className="rpg-panel !p-2 !bg-[hsl(var(--rpg-panel-bg))]">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] opacity-70">Zoom</span>
+            <input
+              type="range"
+              min={1}
+              max={3}
+              step={1}
+              value={minimapZoom}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                setMinimapZoom(value);
+                minimapZoomRef.current = value;
+              }}
+              className="w-24"
+            />
+            <span className="text-[11px] opacity-70">α</span>
+            <input
+              type="range"
+              min={0.5}
+              max={1}
+              step={0.05}
+              value={minimapAlpha}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                setMinimapAlpha(value);
+                minimapAlphaRef.current = value;
+              }}
+              className="w-24"
+            />
+            <span className="text-[11px] opacity-70">Q</span>
+            <span className="text-[11px] font-bold">{activeQuestCount}</span>
+          </div>
+        </div>
+      </div>
       {/* Mobile controls */}
       <div className="absolute bottom-12 left-4 md:hidden flex flex-col items-center gap-1 opacity-70">
         <button

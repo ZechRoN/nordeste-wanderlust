@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ThemeProvider } from "next-themes";
 import Game from "./Game";
@@ -57,9 +57,11 @@ const characters = [
   },
 ];
 
+const mockUser = { id: "user-1", email: "user@example.com" };
+
 vi.mock("@/hooks/useAuth", () => ({
   useAuth: () => ({
-    user: { id: "user-1", email: "user@example.com" },
+    user: mockUser,
     signOut: vi.fn(async () => {}),
   }),
 }));
@@ -91,37 +93,31 @@ describe("Game - seleção de personagem", () => {
     const user = userEvent.setup();
     renderGame();
 
-    await screen.findByText("Seleção de personagem");
-    expect(screen.getByText("Ziv Guerreiro")).toBeInTheDocument();
-    expect(screen.getByText("Ziv Mago")).toBeInTheDocument();
+    await screen.findByText("Character");
+    expect(await screen.findByRole("button", { name: /Ziv Guerreiro/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Ziv Mago/i })).toBeInTheDocument();
 
-    const search = screen.getByLabelText("Buscar");
+    const search = screen.getByPlaceholderText("Search");
     await user.type(search, "mago");
-    expect(screen.queryByText("Ziv Guerreiro")).not.toBeInTheDocument();
-    expect(screen.getByText("Ziv Mago")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Ziv Guerreiro/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Ziv Mago/i })).toBeInTheDocument();
 
     await user.click(search);
     await user.keyboard("{Control>}{A}{/Control}{Backspace}");
 
-    const classTrigger = screen.getAllByRole("combobox")[0]!;
-    await user.click(classTrigger);
-    await user.click(await screen.findByRole("option", { name: /Mago/i }));
+    await user.click(screen.getByText(/🔮\s*Mago/i));
 
-    expect(screen.queryByText("Ziv Guerreiro")).not.toBeInTheDocument();
-    expect(screen.getByText("Ziv Mago")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Ziv Guerreiro/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Ziv Mago/i })).toBeInTheDocument();
   });
 
-  it("abre preview e entra com personagem", async () => {
+  it("entra com personagem", async () => {
     const user = userEvent.setup();
     renderGame();
 
-    await screen.findByText("Ziv Guerreiro");
-    await user.click(screen.getAllByRole("button", { name: "Preview" })[0]!);
-
-    const dialog = await screen.findByRole("dialog");
-    expect(within(dialog).getByText("Ziv Guerreiro")).toBeInTheDocument();
-
-    await user.click(within(dialog).getByRole("button", { name: /Entrar com Ziv Guerreiro/i }));
-    expect(await screen.findByText("Dashboard Ziv Guerreiro")).toBeInTheDocument();
+    await screen.findByRole("button", { name: /Ziv Guerreiro/i });
+    await user.click(screen.getByRole("button", { name: /Ziv Mago/i }));
+    await user.click(screen.getByRole("button", { name: "Entrar" }));
+    expect(await screen.findByText("Dashboard Ziv Mago")).toBeInTheDocument();
   });
 });

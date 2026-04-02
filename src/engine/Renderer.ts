@@ -139,12 +139,15 @@ export function renderMap(
   cameraX: number,
   cameraY: number,
   canvasWidth: number,
-  canvasHeight: number
+  canvasHeight: number,
+  animFrame: number = 0
 ) {
   const startTileX = Math.max(0, Math.floor(cameraX / TILE_SIZE) - 1);
   const startTileY = Math.max(0, Math.floor(cameraY / TILE_SIZE) - 1);
   const endTileX = Math.min(map.width, Math.ceil((cameraX + canvasWidth) / TILE_SIZE) + 1);
   const endTileY = Math.min(map.height, Math.ceil((cameraY + canvasHeight) / TILE_SIZE) + 1);
+
+  const visibleTiles: { x: number; y: number; tile: TileType }[] = [];
 
   for (let y = startTileY; y < endTileY; y++) {
     for (let x = startTileX; x < endTileX; x++) {
@@ -155,6 +158,53 @@ export function renderMap(
         x * TILE_SIZE - cameraX,
         y * TILE_SIZE - cameraY
       );
+
+      visibleTiles.push({ x, y, tile });
+
+      if (tile === TileType.WATER) {
+        const sx = x * TILE_SIZE - cameraX;
+        const sy = y * TILE_SIZE - cameraY;
+        const phase = (animFrame + x * 7 + y * 11) % 48;
+        ctx.fillStyle = phase < 24 ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+        ctx.fillRect(sx + 3, sy + 10 + (phase % 6), 10, 2);
+        ctx.fillRect(sx + 18, sy + 20 - (phase % 5), 11, 2);
+      }
+
+      if (tile === TileType.GRASS) {
+        const right = map.tiles[y]?.[x + 1] ?? TileType.EMPTY;
+        const down = map.tiles[y + 1]?.[x] ?? TileType.EMPTY;
+        const sx = x * TILE_SIZE - cameraX;
+        const sy = y * TILE_SIZE - cameraY;
+        if (right === TileType.SAND) {
+          ctx.fillStyle = 'rgba(194, 166, 69, 0.28)';
+          ctx.fillRect(sx + TILE_SIZE - 4, sy + 2, 4, TILE_SIZE - 4);
+        }
+        if (down === TileType.SAND) {
+          ctx.fillStyle = 'rgba(194, 166, 69, 0.28)';
+          ctx.fillRect(sx + 2, sy + TILE_SIZE - 4, TILE_SIZE - 4, 4);
+        }
+      }
+    }
+  }
+
+  for (const t of visibleTiles) {
+    const sx = t.x * TILE_SIZE - cameraX;
+    const sy = t.y * TILE_SIZE - cameraY;
+
+    if (t.tile === TileType.TREE) {
+      ctx.fillStyle = 'rgba(0,0,0,0.12)';
+      ctx.fillRect(sx + 10, sy + 20, 12, 8);
+      ctx.fillStyle = '#1d6a17';
+      ctx.fillRect(sx + 6, sy - 10, 20, 16);
+      ctx.fillStyle = '#2d8a27';
+      ctx.fillRect(sx + 8, sy - 8, 16, 12);
+    }
+
+    if (t.tile === TileType.PALM) {
+      ctx.fillStyle = '#2b8a20';
+      ctx.fillRect(sx + 2, sy - 8, 14, 6);
+      ctx.fillRect(sx + 16, sy - 6, 14, 6);
+      ctx.fillRect(sx + 10, sy - 2, 10, 4);
     }
   }
 }
@@ -320,54 +370,117 @@ export function renderMinimap(
   playerY: number,
   canvasWidth: number,
   canvasHeight: number,
-  minimapSize: number = 150
+  minimapSize: number = 150,
+  options?: {
+    zoom?: number;
+    alpha?: number;
+    explored?: Uint8Array;
+    pois?: MapPOI[];
+    trackedPoiTypes?: string[];
+    showLabels?: boolean;
+  }
 ) {
-  const mx = canvasWidth - minimapSize - 12;
+  const zoom = options?.zoom ?? 2;
+  const alpha = options?.alpha ?? 0.92;
+  const explored = options?.explored;
+  const pois = options?.pois ?? [];
+  const trackedPoiTypes = options?.trackedPoiTypes ?? ['quest'];
+  const showLabels = options?.showLabels ?? false;
+
+  const size = Math.max(120, Math.min(minimapSize, Math.floor(canvasWidth * 0.22)));
+  const mx = canvasWidth - size - 12;
   const my = 12;
-  const scaleX = minimapSize / map.width;
-  const scaleY = minimapSize / map.height;
 
-  // Background
-  ctx.fillStyle = 'rgba(0,0,0,0.7)';
-  ctx.fillRect(mx - 2, my - 2, minimapSize + 4, minimapSize + 4);
+  const tilePx = Math.max(2, Math.min(6, zoom * 2));
+  const tilesVisibleX = Math.max(10, Math.floor(size / tilePx));
+  const tilesVisibleY = tilesVisibleX;
 
-  // Biome colors
-  const biomeColors: Record<string, string> = {
-    caatinga: '#c2a645',
-    agreste: '#4a7c3f',
-    litoral: '#2d6a9f',
-    santa_cruz: '#8b7355',
+  const halfX = Math.floor(tilesVisibleX / 2);
+  const halfY = Math.floor(tilesVisibleY / 2);
+
+  const startX = Math.max(0, Math.min(map.width - tilesVisibleX, playerX - halfX));
+  const startY = Math.max(0, Math.min(map.height - tilesVisibleY, playerY - halfY));
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillRect(mx - 2, my - 2, size + 4, size + 4);
+
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.fillRect(mx, my, size, size);
+
+  for (let y = 0; y < tilesVisibleY; y++) {
+    const ty = startY + y;
+    for (let x = 0; x < tilesVisibleX; x++) {
+      const tx = startX + x;
+      const idx = ty * map.width + tx;
+      const isExplored = explored ? explored[idx] === 1 : true;
+      const tile = map.tiles[ty]?.[tx] ?? TileType.EMPTY;
+
+      const drawX = mx + x * tilePx;
+      const drawY = my + y * tilePx;
+
+      if (!isExplored) {
+        ctx.fillStyle = 'rgba(0,0,0,0.65)';
+        ctx.fillRect(drawX, drawY, tilePx, tilePx);
+        continue;
+      }
+
+      ctx.fillStyle = TILE_COLORS[tile] ?? '#1a1a2e';
+      ctx.fillRect(drawX, drawY, tilePx, tilePx);
+    }
+  }
+
+  const poiColors: Record<string, string> = {
+    npc: '#3498db',
+    creature: '#e74c3c',
+    shop: '#f39c12',
+    quest: '#e74c3c',
+    rest: '#2ecc71',
   };
 
-  // Draw biome regions
-  ctx.fillStyle = biomeColors.caatinga;
-  ctx.fillRect(mx, my, minimapSize / 2, minimapSize / 2);
-  ctx.fillStyle = biomeColors.agreste;
-  ctx.fillRect(mx + minimapSize / 2, my, minimapSize / 2, minimapSize / 2);
-  ctx.fillStyle = biomeColors.litoral;
-  ctx.fillRect(mx, my + minimapSize / 2, minimapSize / 2, minimapSize / 2);
-  ctx.fillStyle = biomeColors.santa_cruz;
-  ctx.fillRect(mx + minimapSize / 2, my + minimapSize / 2, minimapSize / 2, minimapSize / 2);
+  for (const poi of pois) {
+    if (poi.x < startX || poi.x >= startX + tilesVisibleX || poi.y < startY || poi.y >= startY + tilesVisibleY) continue;
+    const idx = poi.y * map.width + poi.x;
+    if (explored && explored[idx] !== 1) continue;
 
-  // Player dot
-  ctx.fillStyle = '#ff0000';
-  const px = mx + playerX * scaleX;
-  const py = my + playerY * scaleY;
-  ctx.fillRect(px - 2, py - 2, 5, 5);
+    const px = mx + (poi.x - startX) * tilePx;
+    const py = my + (poi.y - startY) * tilePx;
+    const color = poiColors[poi.type] ?? '#ffffff';
+    const isTracked = trackedPoiTypes.includes(poi.type);
+    ctx.fillStyle = color;
+    ctx.fillRect(px, py, tilePx, tilePx);
+    if (isTracked) {
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(px - 1, py - 1, tilePx + 2, tilePx + 2);
+    }
+  }
 
-  // Border
-  ctx.strokeStyle = 'hsl(35, 75%, 55%)';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(mx - 2, my - 2, minimapSize + 4, minimapSize + 4);
-
-  // Labels
+  const playerPx = mx + (playerX - startX) * tilePx;
+  const playerPy = my + (playerY - startY) * tilePx;
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 8px monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText('Caatinga', mx + minimapSize / 4, my + 12);
-  ctx.fillText('Agreste', mx + 3 * minimapSize / 4, my + 12);
-  ctx.fillText('Litoral', mx + minimapSize / 4, my + minimapSize / 2 + 12);
-  ctx.fillText('S. Cruz', mx + 3 * minimapSize / 4, my + minimapSize / 2 + 12);
+  ctx.fillRect(playerPx - 1, playerPy - 1, tilePx + 2, tilePx + 2);
+  ctx.fillStyle = '#e11d48';
+  ctx.fillRect(playerPx, playerPy, tilePx, tilePx);
+
+  ctx.strokeStyle = '#d49d2b';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(mx - 2, my - 2, size + 4, size + 4);
+
+  ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(mx, my, size, size);
+
+  if (showLabels) {
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 9px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('MAP', mx + 6, my + 12);
+  }
+
+  ctx.restore();
 }
 
 // Draw HUD overlay

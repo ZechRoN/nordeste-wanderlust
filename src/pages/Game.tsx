@@ -1,23 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useTheme } from "next-themes";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { CharacterCreation } from "@/components/CharacterCreation";
 import { CharacterDashboard } from "@/components/CharacterDashboard";
-import heroBanner from "@/assets/hero-banner.jpg";
 import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Slider } from "@/components/ui/slider";
-import { AnimatePresence, motion } from "framer-motion";
-import { LogOut, Moon, Plus, Search, Sun } from "lucide-react";
+import { GameButton, GamePanel, GamePanelTabs } from "@/components/ui/game-panel";
+import { LogOut, Plus, Search } from "lucide-react";
 
 type CharacterRow = {
   id: string;
@@ -46,11 +35,15 @@ const CLASS_META: Record<string, { label: string; accent: string; emoji: string 
   assassin: { label: "Assassino", accent: "assassin", emoji: "🗡️" },
 };
 
+const CLASS_TABS = [
+  { key: "all", label: "All" },
+  ...Object.entries(CLASS_META).map(([key, meta]) => ({ key, label: `${meta.emoji} ${meta.label}` })),
+];
+
 const Game = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { resolvedTheme, setTheme } = useTheme();
   const [characters, setCharacters] = useState<CharacterRow[]>([]);
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterRow | "create" | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,12 +53,12 @@ const Game = () => {
   const [classFilter, setClassFilter] = useState<string>("all");
   const [biomeFilter, setBiomeFilter] = useState<string>("all");
   const [levelRange, setLevelRange] = useState<[number, number]>([1, 60]);
-  const [previewCharacter, setPreviewCharacter] = useState<CharacterRow | null>(null);
+  const [focusedCharacterId, setFocusedCharacterId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
     loadCharacters();
-  }, [user, navigate]);
+  }, [user?.id, navigate]);
 
   const loadCharacters = async () => {
     if (!user) return;
@@ -120,36 +113,19 @@ const Game = () => {
       .sort((a, b) => (b.level ?? 0) - (a.level ?? 0));
   }, [biomeFilter, characters, classFilter, levelRange, query]);
 
+  const focusedCharacter = (() => {
+    const current = filteredCharacters.find((c) => c.id === focusedCharacterId);
+    return current ?? filteredCharacters[0] ?? null;
+  })();
+
+  useEffect(() => {
+    if (!focusedCharacterId && filteredCharacters[0]?.id) setFocusedCharacterId(filteredCharacters[0].id);
+  }, [filteredCharacters, focusedCharacterId]);
+
   if (loading) {
     return (
-      <div className="fixed inset-0 overflow-y-auto bg-[image:var(--gradient-hero)]">
-        <div className="mx-auto w-full max-w-6xl px-4 py-8">
-          <div className="flex items-center justify-between gap-4">
-            <div className="space-y-2">
-              <Skeleton className="h-7 w-56" />
-              <Skeleton className="h-4 w-72" />
-            </div>
-            <Skeleton className="h-9 w-28" />
-          </div>
-          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i}>
-                <CardHeader className="space-y-2">
-                  <Skeleton className="h-5 w-40" />
-                  <Skeleton className="h-4 w-24" />
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Skeleton className="h-36 w-full" />
-                  <div className="flex gap-2">
-                    <Skeleton className="h-5 w-16" />
-                    <Skeleton className="h-5 w-16" />
-                    <Skeleton className="h-5 w-16" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+      <div className="fixed inset-0 rpg-game-bg flex items-center justify-center">
+        <span className="rpg-loading text-lg">Carregando personagens...</span>
       </div>
     );
   }
@@ -159,276 +135,151 @@ const Game = () => {
   }
 
   return (
-    <div className="fixed inset-0 overflow-y-auto bg-[image:var(--gradient-hero)]">
+    <div className="fixed inset-0 rpg-game-bg flex items-center justify-center p-4">
       {selectedCharacter === "create" ? (
-        <div className="px-4 py-10">
-          <CharacterCreation onCharacterCreated={handleCharacterCreated} onCancel={() => setSelectedCharacter(null)} />
-        </div>
+        <CharacterCreation onCharacterCreated={handleCharacterCreated} onCancel={() => setSelectedCharacter(null)} />
       ) : characters.length === 0 ? (
-        <div className="px-4 py-10">
-          <CharacterCreation onCharacterCreated={handleCharacterCreated} />
-        </div>
+        <CharacterCreation onCharacterCreated={handleCharacterCreated} />
       ) : (
-        <div className="mx-auto w-full max-w-6xl px-4 py-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-semibold tracking-tight">Seleção de personagem</h1>
-                <Badge variant="secondary" className="hidden sm:inline-flex">
-                  {filteredCharacters.length}/{characters.length}
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Bem-vindo{user?.email ? `, ${user.email}` : ""}. Filtra, dá preview e entra no jogo.
-              </p>
-              {errorMessage && (
-                <p className="text-sm text-destructive">
-                  {errorMessage}
-                </p>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                aria-label={resolvedTheme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}
-                onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-              >
-                {resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
-              <Button variant="outline" onClick={handleSignOut}>
-                <LogOut className="mr-2 h-4 w-4" />
-                Sair
-              </Button>
-              <Button onClick={() => setSelectedCharacter("create")} disabled={characters.length >= 5}>
-                <Plus className="mr-2 h-4 w-4" />
-                Novo ({characters.length}/5)
-              </Button>
-            </div>
-          </div>
-
-          <Card className="mt-6">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-base">Filtros</CardTitle>
-              <CardDescription>Mobile-first e rápido: tudo aqui já atualiza na hora.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="space-y-2">
-                <Label htmlFor="character-search">Buscar</Label>
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="character-search"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    className="pl-9"
-                    placeholder="Nome do personagem"
-                  />
+        <div className="w-full max-w-5xl">
+          <GamePanel
+            title="Character"
+            onClose={undefined}
+            footer={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <GameButton variant="danger" onClick={handleSignOut}>
+                  <LogOut className="h-3 w-3 mr-1" />
+                  Sair
+                </GameButton>
+                <div className="flex items-center gap-2">
+                  <span className="rpg-capacity">Characters: {characters.length}/5</span>
+                  <GameButton variant="secondary" onClick={() => setSelectedCharacter("create")} disabled={characters.length >= 5}>
+                    <Plus className="h-3 w-3 mr-1" />
+                    Novo
+                  </GameButton>
+                  <GameButton
+                    variant="gold"
+                    disabled={!focusedCharacter}
+                    onClick={() => focusedCharacter && setSelectedCharacter(focusedCharacter)}
+                  >
+                    Entrar
+                  </GameButton>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <Label>Classe</Label>
-                <Select value={classFilter} onValueChange={setClassFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todas" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
-                    {Object.entries(CLASS_META).map(([key, meta]) => (
-                      <SelectItem key={key} value={key}>
-                        {meta.emoji} {meta.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Bioma</Label>
-                <Select value={biomeFilter} onValueChange={setBiomeFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    {biomeOptions.map((b) => (
-                      <SelectItem key={b} value={b}>
-                        {b}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Nível ({levelRange[0]}–{levelRange[1]})</Label>
-                <Slider
-                  value={levelRange}
-                  min={levelBounds[0]}
-                  max={levelBounds[1]}
-                  step={1}
-                  onValueChange={(v) => setLevelRange([v[0] ?? levelBounds[0], v[1] ?? levelBounds[1]])}
+            }
+          >
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <GamePanelTabs
+                tabs={CLASS_TABS}
+                activeTab={classFilter}
+                onTabChange={(key) => setClassFilter(key)}
+              />
+              <div className="relative w-[220px] shrink-0">
+                <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 opacity-60" />
+                <input
+                  className="rpg-input pl-8"
+                  placeholder="Search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
                 />
               </div>
-            </CardContent>
-          </Card>
-
-          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <AnimatePresence mode="popLayout">
-              {filteredCharacters.map((char) => {
-                const meta = CLASS_META[char.class] ?? { label: char.class, accent: "primary", emoji: "👤" };
-                return (
-                  <motion.div
-                    key={char.id}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.18 }}
-                  >
-                    <Card className="group h-full overflow-hidden">
-                      <CardHeader className="space-y-1">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <CardTitle className="truncate text-base">{char.name}</CardTitle>
-                            <CardDescription className="truncate">
-                              {meta.emoji} {meta.label} • Nível {char.level}
-                            </CardDescription>
-                          </div>
-                          <Badge variant="secondary" className="shrink-0">
-                            {char.current_biome}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-
-                      <CardContent className="space-y-3">
-                        <button
-                          type="button"
-                          className="relative block w-full overflow-hidden rounded-xl border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                          onClick={() => setPreviewCharacter(char)}
-                          aria-label={`Abrir preview de ${char.name}`}
-                        >
-                          <img
-                            src={heroBanner}
-                            alt=""
-                            className="h-36 w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/25 to-transparent" />
-                          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3">
-                            <Badge style={{ background: `hsl(var(--${meta.accent}))`, color: "white" }}>
-                              {meta.emoji} {meta.label}
-                            </Badge>
-                            <div className="text-xs font-medium text-foreground">
-                              🪙 {char.gold} • ⭐ {char.experience} XP
-                            </div>
-                          </div>
-                        </button>
-
-                        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                          <span>FOR {char.strength ?? "-"}</span>
-                          <span>AGI {char.agility ?? "-"}</span>
-                          <span>INT {char.intelligence ?? "-"}</span>
-                          <span>VIT {char.vitality ?? "-"}</span>
-                          <span>SOR {char.luck ?? "-"}</span>
-                        </div>
-                      </CardContent>
-
-                      <CardFooter className="flex items-center justify-between gap-2">
-                        <Button variant="outline" onClick={() => setPreviewCharacter(char)}>
-                          Preview
-                        </Button>
-                        <Button onClick={() => setSelectedCharacter(char)} aria-label={`Entrar com ${char.name}`}>
-                          Entrar
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </div>
-
-          {filteredCharacters.length === 0 && (
-            <div className="mt-10 text-center text-sm text-muted-foreground">
-              Nada encontrado. Ajusta os filtros e bora de novo.
             </div>
-          )}
 
-          <Dialog open={!!previewCharacter} onOpenChange={(open) => !open && setPreviewCharacter(null)}>
-            <DialogContent className="sm:max-w-2xl">
-              {previewCharacter && (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="overflow-hidden rounded-xl border">
-                    <img
-                      src={heroBanner}
-                      alt={`Imagem de ${previewCharacter.name}`}
-                      className="h-56 w-full object-cover sm:h-full"
-                      loading="eager"
-                      decoding="async"
-                    />
-                  </div>
+            {errorMessage && (
+              <div className="rpg-item-detail" style={{ borderColor: "hsl(0 65% 50%)" }}>
+                {errorMessage}
+              </div>
+            )}
 
-                  <div className="space-y-4">
-                    <DialogHeader className="space-y-1">
-                      <DialogTitle className="flex items-center justify-between gap-3">
-                        <span className="truncate">{previewCharacter.name}</span>
-                        <Badge variant="secondary">Nível {previewCharacter.level}</Badge>
-                      </DialogTitle>
-                      <DialogDescription>
-                        {CLASS_META[previewCharacter.class]?.emoji ?? "👤"} {CLASS_META[previewCharacter.class]?.label ?? previewCharacter.class} • {previewCharacter.current_biome}
-                      </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="rounded-xl border p-3">
-                        <div className="text-xs text-muted-foreground">Ouro</div>
-                        <div className="font-medium">🪙 {previewCharacter.gold}</div>
-                      </div>
-                      <div className="rounded-xl border p-3">
-                        <div className="text-xs text-muted-foreground">Experiência</div>
-                        <div className="font-medium">⭐ {previewCharacter.experience} XP</div>
-                      </div>
-                      <div className="rounded-xl border p-3">
-                        <div className="text-xs text-muted-foreground">Vida</div>
-                        <div className="font-medium">❤️ {previewCharacter.health ?? "-"} / {previewCharacter.max_health ?? "-"}</div>
-                      </div>
-                      <div className="rounded-xl border p-3">
-                        <div className="text-xs text-muted-foreground">Mana</div>
-                        <div className="font-medium">✨ {previewCharacter.mana ?? "-"} / {previewCharacter.max_mana ?? "-"}</div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-                      <div className="rounded-xl border p-3">FOR <span className="text-foreground">{previewCharacter.strength ?? "-"}</span></div>
-                      <div className="rounded-xl border p-3">AGI <span className="text-foreground">{previewCharacter.agility ?? "-"}</span></div>
-                      <div className="rounded-xl border p-3">INT <span className="text-foreground">{previewCharacter.intelligence ?? "-"}</span></div>
-                      <div className="rounded-xl border p-3">VIT <span className="text-foreground">{previewCharacter.vitality ?? "-"}</span></div>
-                      <div className="rounded-xl border p-3">SOR <span className="text-foreground">{previewCharacter.luck ?? "-"}</span></div>
-                    </div>
-
-                    <div className="flex items-center justify-end gap-2">
-                      <Button variant="outline" onClick={() => setPreviewCharacter(null)}>
-                        Fechar
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setSelectedCharacter(previewCharacter);
-                          setPreviewCharacter(null);
-                        }}
-                      >
-                        Entrar com {previewCharacter.name}
-                      </Button>
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-2">
+              <div className="space-y-2">
+                <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+                  <div className="text-[11px]">
+                    Guild: Main Street
                   </div>
                 </div>
-              )}
-            </DialogContent>
-          </Dialog>
+                <div className="space-y-1 max-h-[420px] overflow-y-auto pr-1">
+                  {filteredCharacters.map((char) => {
+                    const meta = CLASS_META[char.class] ?? { label: char.class, accent: "primary", emoji: "👤" };
+                    const isActive = focusedCharacter?.id === char.id;
+                    return (
+                      <button
+                        key={char.id}
+                        type="button"
+                        onClick={() => setFocusedCharacterId(char.id)}
+                        className={`rpg-class-card w-full text-left ${isActive ? "rpg-class-selected" : ""}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="rpg-slot rpg-slot-filled" style={{ width: 32, height: 32, maxWidth: 32, minWidth: 32 }}>
+                            <span className="rpg-slot-icon">{meta.emoji}</span>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-bold text-[12px] truncate">{char.name}</span>
+                              <span className="rpg-combatant-level">Lv. {char.level}</span>
+                            </div>
+                            <div className="text-[10px] opacity-70 truncate">{meta.label}</div>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {focusedCharacter ? (
+                  <>
+                    <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-bold text-[13px]">{focusedCharacter.name}</div>
+                        <div className="text-[11px] opacity-70">
+                          {CLASS_META[focusedCharacter.class]?.label ?? focusedCharacter.class} • Lv. {focusedCharacter.level}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+                        <div className="flex justify-between text-[11px]">
+                          <span>HP</span>
+                          <span>{focusedCharacter.health ?? "-"} / {focusedCharacter.max_health ?? "-"}</span>
+                        </div>
+                        <div className="flex justify-between text-[11px]">
+                          <span>MP</span>
+                          <span>{focusedCharacter.mana ?? "-"} / {focusedCharacter.max_mana ?? "-"}</span>
+                        </div>
+                        <div className="flex justify-between text-[11px]">
+                          <span>EXP</span>
+                          <span>{focusedCharacter.experience}</span>
+                        </div>
+                        <div className="flex justify-between text-[11px]">
+                          <span>Gold</span>
+                          <span>{focusedCharacter.gold}</span>
+                        </div>
+                        <div className="flex justify-between text-[11px]">
+                          <span>Biome</span>
+                          <span>{focusedCharacter.current_biome}</span>
+                        </div>
+                      </div>
+
+                      <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+                          <div className="flex justify-between"><span>STR</span><span>{focusedCharacter.strength ?? "-"}</span></div>
+                          <div className="flex justify-between"><span>AGI</span><span>{focusedCharacter.agility ?? "-"}</span></div>
+                          <div className="flex justify-between"><span>INT</span><span>{focusedCharacter.intelligence ?? "-"}</span></div>
+                          <div className="flex justify-between"><span>VIT</span><span>{focusedCharacter.vitality ?? "-"}</span></div>
+                          <div className="flex justify-between"><span>LUK</span><span>{focusedCharacter.luck ?? "-"}</span></div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="rpg-item-detail">Nenhum personagem encontrado.</div>
+                )}
+              </div>
+            </div>
+          </GamePanel>
         </div>
       )}
     </div>

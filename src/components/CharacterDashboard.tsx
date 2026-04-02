@@ -23,6 +23,7 @@ import { GameNotifications } from './GameNotifications';
 import { Party } from './Party';
 import { Pets } from './Pets';
 import { Enchantment } from './Enchantment';
+import { CharacterMenu } from './CharacterMenu';
 import { useRegeneration } from '@/hooks/useRegeneration';
 import { useBackgroundMusic, SFX } from '@/hooks/useGameAudio';
 
@@ -47,7 +48,7 @@ const getClassDisplayName = (className: string): string => {
   return classNames[className] || className;
 };
 
-type OverlayPanel = 'inventory' | 'quests' | 'npcs' | 'crafting' | 'guilds' | 'mounts' | 'achievements' | 'titles' | 'arena' | 'rankings' | 'events' | 'party' | 'trade' | 'dungeon' | 'pets' | 'enchant' | 'menu' | null;
+type OverlayPanel = 'character' | 'inventory' | 'quests' | 'npcs' | 'crafting' | 'guilds' | 'mounts' | 'achievements' | 'titles' | 'arena' | 'rankings' | 'events' | 'party' | 'trade' | 'dungeon' | 'pets' | 'enchant' | 'menu' | null;
 
 export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDashboardProps) {
   const [currentCharacter, setCurrentCharacter] = useState(character);
@@ -65,6 +66,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
   };
 
   const menuItems: { key: OverlayPanel; label: string; icon: React.ReactNode }[] = [
+    { key: 'character', label: 'Personagem', icon: <Heart className="h-4 w-4" /> },
     { key: 'inventory', label: 'Inventário', icon: <Backpack className="h-4 w-4" /> },
     { key: 'quests', label: 'Missões', icon: <Scroll className="h-4 w-4" /> },
     { key: 'npcs', label: 'NPCs', icon: <Users className="h-4 w-4" /> },
@@ -130,6 +132,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
               icon={menuItems.find(m => m.key === activePanel)?.icon}
               onClose={() => { SFX.closePanel(); setActivePanel(null); }}
             >
+              {activePanel === 'character' && <CharacterMenu character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'quests' && <Quests character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'npcs' && <NPCs character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
               {activePanel === 'crafting' && <Crafting character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />}
