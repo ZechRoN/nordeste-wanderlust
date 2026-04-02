@@ -853,15 +853,20 @@ export type Database = {
         Row: {
           agility_bonus: number
           biome: string | null
+          class_restriction: string | null
           created_at: string
           description: string | null
+          durability: number | null
+          equipment_slot: string | null
           id: string
           intelligence_bonus: number
           luck_bonus: number
+          max_durability: number | null
           name: string
           rarity: string
           required_level: number
           strength_bonus: number
+          subtype: string | null
           type: string
           value: number
           vitality_bonus: number
@@ -869,15 +874,20 @@ export type Database = {
         Insert: {
           agility_bonus?: number
           biome?: string | null
+          class_restriction?: string | null
           created_at?: string
           description?: string | null
+          durability?: number | null
+          equipment_slot?: string | null
           id?: string
           intelligence_bonus?: number
           luck_bonus?: number
+          max_durability?: number | null
           name: string
           rarity?: string
           required_level?: number
           strength_bonus?: number
+          subtype?: string | null
           type?: string
           value?: number
           vitality_bonus?: number
@@ -885,15 +895,20 @@ export type Database = {
         Update: {
           agility_bonus?: number
           biome?: string | null
+          class_restriction?: string | null
           created_at?: string
           description?: string | null
+          durability?: number | null
+          equipment_slot?: string | null
           id?: string
           intelligence_bonus?: number
           luck_bonus?: number
+          max_durability?: number | null
           name?: string
           rarity?: string
           required_level?: number
           strength_bonus?: number
+          subtype?: string | null
           type?: string
           value?: number
           vitality_bonus?: number
