@@ -16,7 +16,6 @@ vi.mock("react-router-dom", async () => {
 
 const signInMock = vi.fn(async () => ({ error: null }));
 const signUpMock = vi.fn(async () => ({ error: null }));
-const signInWithOAuthMock = vi.fn(async () => ({ error: null }));
 const resetPasswordMock = vi.fn(async () => ({ error: null }));
 
 vi.mock("@/hooks/useAuth", () => ({
@@ -24,7 +23,6 @@ vi.mock("@/hooks/useAuth", () => ({
     user: null,
     signIn: signInMock,
     signUp: signUpMock,
-    signInWithOAuth: signInWithOAuthMock,
     resetPassword: resetPasswordMock,
   }),
 }));
@@ -82,13 +80,5 @@ describe("Auth", () => {
     await user.click(submit);
 
     expect(resetPasswordMock).toHaveBeenCalledWith("reset@example.com");
-  });
-
-  it("faz login social", async () => {
-    const user = userEvent.setup();
-    renderAuth();
-
-    await user.click(screen.getByRole("button", { name: "Entrar com Google" }));
-    expect(signInWithOAuthMock).toHaveBeenCalledWith("google");
   });
 });

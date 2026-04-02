@@ -9,15 +9,13 @@ import { setAuthPersistence } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import heroBanner from "@/assets/hero-banner.jpg";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Apple, Chrome, Eye, EyeOff, Facebook, Lock, Moon, Sun } from "lucide-react";
+import { Eye, EyeOff, Moon, Sun } from "lucide-react";
 
 const loginSchema = z.object({
   username: z.string().min(3, "Informe seu nome de usuário ou email."),
@@ -47,10 +45,9 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { resolvedTheme, setTheme } = useTheme();
-  const { signIn, signUp, signInWithOAuth, resetPassword, user } = useAuth();
+  const { signIn, signUp, resetPassword, user } = useAuth();
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const [showPassword, setShowPassword] = useState(false);
-  const [oauthLoadingProvider, setOauthLoadingProvider] = useState<null | "google" | "facebook" | "apple">(null);
 
   const loginForm = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -108,13 +105,6 @@ const Auth = () => {
     setActiveTab("login");
   });
 
-  const handleOAuth = async (provider: "google" | "facebook" | "apple") => {
-    setOauthLoadingProvider(provider);
-    const { error } = await signInWithOAuth(provider);
-    if (error) toast({ title: "Erro no login social", description: error.message, variant: "destructive" });
-    setOauthLoadingProvider(null);
-  };
-
   const handleResetPassword = resetForm.handleSubmit(async (values) => {
     const { error } = await resetPassword(values.email);
     if (error) {
@@ -140,10 +130,6 @@ const Auth = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/35 to-transparent lg:bg-gradient-to-r lg:from-background/90 lg:via-background/40 lg:to-transparent" />
             <div className="absolute inset-0 flex flex-col justify-end p-6 lg:justify-center lg:p-10">
               <div className="max-w-md">
-                <div className="inline-flex items-center gap-2 rounded-full border bg-background/80 px-3 py-1 text-xs font-medium text-foreground backdrop-blur">
-                  <Lock className="h-3.5 w-3.5" />
-                  Acesso seguro
-                </div>
                 <h1 className="mt-4 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
                   ZIV DUEL
                 </h1>
@@ -154,10 +140,6 @@ const Auth = () => {
                   <div className="rounded-xl border bg-background/70 p-3 backdrop-blur">
                     <div className="font-medium">Personagens</div>
                     <div className="text-xs text-muted-foreground">Cards e filtros</div>
-                  </div>
-                  <div className="rounded-xl border bg-background/70 p-3 backdrop-blur">
-                    <div className="font-medium">Login social</div>
-                    <div className="text-xs text-muted-foreground">Google, Facebook, Apple</div>
                   </div>
                 </div>
               </div>
@@ -283,56 +265,6 @@ const Auth = () => {
                       {loginForm.formState.isSubmitting ? "Entrando..." : "Entrar"}
                     </Button>
                   </form>
-
-                  <div className="mt-5">
-                    <div className="flex items-center gap-3">
-                      <Separator className="flex-1" />
-                      <span className="text-xs text-muted-foreground">ou continue com</span>
-                      <Separator className="flex-1" />
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => handleOAuth("google")}
-                        disabled={oauthLoadingProvider !== null}
-                        aria-label="Entrar com Google"
-                      >
-                        <Chrome className="mr-2 h-4 w-4" />
-                        {oauthLoadingProvider === "google" ? "..." : "Google"}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => handleOAuth("facebook")}
-                        disabled={oauthLoadingProvider !== null}
-                        aria-label="Entrar com Facebook"
-                      >
-                        <Facebook className="mr-2 h-4 w-4" />
-                        {oauthLoadingProvider === "facebook" ? "..." : "Facebook"}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => handleOAuth("apple")}
-                        disabled={oauthLoadingProvider !== null}
-                        aria-label="Entrar com Apple"
-                      >
-                        <Apple className="mr-2 h-4 w-4" />
-                        {oauthLoadingProvider === "apple" ? "..." : "Apple"}
-                      </Button>
-                    </div>
-
-                    <div className="mt-4">
-                      <Alert>
-                        <AlertTitle>Atalho de experiência</AlertTitle>
-                        <AlertDescription>
-                          A validação aqui é em tempo real. Se algo estiver errado, você já vê na hora (sem susto no submit).
-                        </AlertDescription>
-                      </Alert>
-                    </div>
-                  </div>
                 </TabsContent>
 
                 <TabsContent value="signup" className="mt-4">
@@ -398,11 +330,6 @@ const Auth = () => {
                 </TabsContent>
               </Tabs>
             </CardContent>
-
-            <CardFooter className="flex flex-col items-start gap-2 text-xs text-muted-foreground">
-              <p>Ao entrar, você concorda com as regras do jogo e com o uso de cookies de sessão.</p>
-              <p>Compatível com teclado, leitor de tela e foco visível (WCAG 2.1 AA).</p>
-            </CardFooter>
           </Card>
         </div>
       </div>
