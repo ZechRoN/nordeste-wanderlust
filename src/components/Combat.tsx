@@ -138,7 +138,8 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
           addToCombatLog(`${character.name} erra o ataque!`);
           setFeedback({ show: true, text: 'ERROU!', type: 'miss' });
         } else {
-          damageResult.isCritical ? SFX.critical() : SFX.attack();
+          if (damageResult.isCritical) SFX.critical();
+          else SFX.attack();
           triggerShake('creature', damageResult.isCritical);
           addToCombatLog(`${character.name} ataca com ${damageResult.damage} de dano${damageResult.isCritical ? ' (CRÍTICO!)' : ''}!`);
           setFeedback({ show: true, text: `-${damageResult.damage}`, type: damageResult.isCritical ? 'critical' : 'damage' });
@@ -204,7 +205,8 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
         setCreatureHealth(newCreatureHp);
         addToCombatLog(`${character.name} usa ${skill.name}! ${result.damage} de dano${result.isCritical ? ' (CRÍTICO!)' : ''}!`);
         setFeedback({ show: true, text: `-${result.damage} ${skill.icon}`, type: result.isCritical ? 'critical' : 'damage' });
-        result.isCritical ? SFX.critical() : SFX.attack();
+        if (result.isCritical) SFX.critical();
+        else SFX.attack();
 
         if (newCreatureHp <= 0) {
           setCreatureDead(true);

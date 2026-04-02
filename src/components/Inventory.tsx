@@ -214,7 +214,7 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
     }
   };
 
-  const useConsumable = async (characterItem: CharacterItem) => {
+  const consumeItem = async (characterItem: CharacterItem) => {
     try {
       const item = characterItem.item;
       if (characterItem.quantity <= 1) {
@@ -274,7 +274,7 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
           <div className="flex gap-1">
             <GameButton size="sm" onClick={() => {}}>Ordenar</GameButton>
             {selectedItem && selectedItem.item.type === 'consumable' && (
-              <GameButton size="sm" variant="primary" onClick={() => useConsumable(selectedItem)}>Usar</GameButton>
+              <GameButton size="sm" variant="primary" onClick={() => consumeItem(selectedItem)}>Usar</GameButton>
             )}
             {selectedItem && !selectedItem.is_equipped && (selectedItem.item.type === 'weapon' || selectedItem.item.type === 'armor') && (
               <GameButton size="sm" variant="primary" onClick={() => equipItem(selectedItem)}>Equipar</GameButton>

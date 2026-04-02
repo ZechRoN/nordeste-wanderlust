@@ -8,9 +8,28 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+type AuthStorageMode = 'local' | 'session';
+
+const AUTH_STORAGE_MODE_KEY = 'zivduel_auth_storage_mode';
+
+export function setAuthPersistence(rememberMe: boolean) {
+  localStorage.setItem(AUTH_STORAGE_MODE_KEY, rememberMe ? 'local' : 'session');
+}
+
+function getAuthStorage(): Storage {
+  const mode = (localStorage.getItem(AUTH_STORAGE_MODE_KEY) as AuthStorageMode | null) ?? 'local';
+  return mode === 'session' ? sessionStorage : localStorage;
+}
+
+const dynamicStorage = {
+  getItem: (key: string) => getAuthStorage().getItem(key),
+  setItem: (key: string, value: string) => getAuthStorage().setItem(key, value),
+  removeItem: (key: string) => getAuthStorage().removeItem(key),
+} as Storage;
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
+    storage: dynamicStorage,
     persistSession: true,
     autoRefreshToken: true,
   }

@@ -1,64 +1,66 @@
 import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const World = () => {
   const biomes = [
-    { name: 'Caatinga', emoji: '🌵', desc: 'Sertão semiárido com fauna resistente', animals: ['Veado-catingueiro', 'Jaguatirica', 'Tatu', 'Preá'] },
-    { name: 'Agreste', emoji: '🌿', desc: 'Transição com vegetação mista', animals: ['Capivara', 'Macaco-prego', 'Sagui', 'Bem-te-vi'] },
-    { name: 'Litoral', emoji: '🌊', desc: 'Costa com mangues e praias', animals: ['Tartaruga', 'Peixe-boi', 'Golfinho', 'Caranguejo'] },
-    { name: 'Santa Cruz', emoji: '🏘️', desc: 'Capital comercial de Oxente', animals: ['Caramelo', 'Papagaio', 'Canário', 'Louro José'] },
+    { key: "caatinga", name: "Caatinga", emoji: "🌵", desc: "Sertão semiárido com fauna resistente", animals: ["Veado-catingueiro", "Jaguatirica", "Tatu", "Preá"], gradient: "var(--gradient-caatinga)" },
+    { key: "agreste", name: "Agreste", emoji: "🌿", desc: "Transição com vegetação mista", animals: ["Capivara", "Macaco-prego", "Sagui", "Bem-te-vi"], gradient: "var(--gradient-forest)" },
+    { key: "litoral", name: "Litoral", emoji: "🌊", desc: "Costa com mangues e praias", animals: ["Tartaruga", "Peixe-boi", "Golfinho", "Caranguejo"], gradient: "var(--gradient-ocean)" },
+    { key: "santa_cruz", name: "Santa Cruz", emoji: "🏘️", desc: "Capital comercial de Oxente", animals: ["Caramelo", "Papagaio", "Canário", "Louro José"], gradient: "var(--gradient-hero)" },
   ];
 
   return (
-    <section className="py-20 rpg-game-bg" style={{ borderTop: '3px solid hsl(var(--rpg-frame-dark))' }}>
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-12">
-          <h2 className="rpg-panel-title text-2xl mb-3" style={{ color: 'hsl(var(--rpg-gold))' }}>
-            O Mundo de Oxente
-          </h2>
-          <p className="text-sm max-w-xl mx-auto" style={{ color: 'hsl(var(--rpg-text-dim))', fontFamily: "'Courier New', monospace" }}>
-            Biomas autênticos do Nordeste com fauna e recursos únicos
+    <section id="world" className="border-t bg-background py-14 sm:py-16">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">O mundo de Oxente</h2>
+          <p className="mt-2 text-pretty text-sm text-muted-foreground sm:text-base">
+            Biomas autênticos do Nordeste com fauna, recursos e identidade própria.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto mb-8">
+        <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2">
           {biomes.map((b, i) => (
             <motion.div
-              key={b.name}
-              initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="rpg-combatant"
+              key={b.key}
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.2, delay: i * 0.04 }}
             >
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">{b.emoji}</span>
-                <div>
-                  <h3 className="rpg-combatant-name" style={{ color: 'hsl(var(--rpg-gold))' }}>{b.name}</h3>
-                  <p className="text-[10px]" style={{ color: 'hsl(var(--rpg-text-dim))' }}>{b.desc}</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-1 mt-2">
-                {b.animals.map(a => (
-                  <span
-                    key={a}
-                    className="rpg-combatant-level"
-                    style={{ fontSize: 9 }}
-                  >
-                    {a}
-                  </span>
-                ))}
-              </div>
+              <Card className="overflow-hidden">
+                <div className="h-2 w-full" style={{ backgroundImage: b.gradient }} />
+                <CardHeader className="space-y-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{b.emoji}</span>
+                      <CardTitle className="text-base">{b.name}</CardTitle>
+                    </div>
+                    <Badge variant="secondary" className="capitalize">
+                      {b.key.replace("_", " ")}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-muted-foreground">{b.desc}</div>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-2">
+                  {b.animals.map((a) => (
+                    <Badge key={a} variant="outline" className="bg-background">
+                      {a}
+                    </Badge>
+                  ))}
+                </CardContent>
+              </Card>
             </motion.div>
           ))}
         </div>
 
-        <div className="rpg-item-detail max-w-lg mx-auto text-center">
-          <h3 className="font-bold text-sm pixel-text mb-2" style={{ color: 'hsl(var(--rpg-gold))' }}>
-            🐴 Montarias Nativas
-          </h3>
-          <p className="text-[11px]" style={{ color: 'hsl(var(--rpg-text-dim))', fontFamily: "'Courier New', monospace" }}>
-            Dome animais de cada bioma: <strong>onça-pintada</strong>, <strong>capivara</strong>,{' '}
-            <strong>golfinhos</strong> e mais. Cada uma com habilidades únicas!
+        <div className="mx-auto mt-10 max-w-3xl rounded-2xl border bg-muted/30 p-6 text-center">
+          <div className="text-sm font-semibold">🐴 Montarias nativas</div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Dome animais de cada bioma: <span className="font-medium text-foreground">onça-pintada</span>,{" "}
+            <span className="font-medium text-foreground">capivara</span>,{" "}
+            <span className="font-medium text-foreground">golfinho</span> e mais. Cada uma com habilidade própria.
           </p>
         </div>
       </div>

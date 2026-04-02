@@ -1,133 +1,111 @@
+import heroBanner from "@/assets/hero-banner.jpg";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Sword, Zap, Target, Heart, UserX, Shield, Globe, Users, Trophy, Hammer, Mountain, ChevronDown, Swords } from "lucide-react";
-import { GameButton } from "@/components/ui/game-panel";
 import { motion } from "framer-motion";
+import { ChevronDown, ShieldCheck, Swords, Users, Zap } from "lucide-react";
 
 export const Hero = () => {
-  const classes = [
-    { name: 'Guerreiro', icon: '⚔️', color: 'hsl(0 60% 55%)' },
-    { name: 'Mago', icon: '🔮', color: 'hsl(270 60% 60%)' },
-    { name: 'Arqueiro', icon: '🏹', color: 'hsl(120 50% 50%)' },
-    { name: 'Curandeiro', icon: '💚', color: 'hsl(150 60% 45%)' },
-    { name: 'Assassino', icon: '🗡️', color: 'hsl(0 0% 70%)' },
+  const quickStats = [
+    { label: "5 classes", icon: <Swords className="h-4 w-4" /> },
+    { label: "4 biomas", icon: <Zap className="h-4 w-4" /> },
+    { label: "PvP & PvE", icon: <Users className="h-4 w-4" /> },
+    { label: "Conta segura", icon: <ShieldCheck className="h-4 w-4" /> },
   ];
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden rpg-game-bg">
-      {/* Animated background particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 20 }).map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full"
-            style={{
-              width: Math.random() * 4 + 2,
-              height: Math.random() * 4 + 2,
-              background: `hsl(${30 + Math.random() * 30} ${40 + Math.random() * 30}% ${40 + Math.random() * 20}% / 0.3)`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -30, 0],
-              opacity: [0.2, 0.6, 0.2],
-            }}
-            transition={{
-              duration: 3 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 3,
-            }}
-          />
-        ))}
+    <section className="relative overflow-hidden bg-[image:var(--gradient-hero)]">
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
+        <div className="absolute -bottom-28 -right-28 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-6 text-center">
-        <div className="max-w-3xl mx-auto">
-          {/* Logo */}
-          <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="rpg-panel inline-block mb-6" style={{ padding: 0 }}>
-              <div className="rpg-panel-header" style={{ padding: '12px 40px' }}>
-                <h1
-                  className="rpg-panel-title"
-                  style={{ fontSize: 'clamp(36px, 8vw, 64px)', letterSpacing: 4 }}
-                >
-                  ZIV DUEL
-                </h1>
-              </div>
-              <div className="rpg-panel-content" style={{ margin: 2, padding: '8px 24px' }}>
-                <p className="text-xs uppercase tracking-widest" style={{ color: 'hsl(var(--rpg-text-dim))' }}>
-                  O Mundo de Oxente
-                </p>
-              </div>
-            </div>
+      <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-4 py-14 sm:py-16 lg:grid-cols-2 lg:gap-12">
+        <div className="space-y-6">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+            <Badge variant="secondary" className="gap-2">
+              <Swords className="h-3.5 w-3.5" />
+              O MMORPG do Sertão Brasileiro
+            </Badge>
           </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: 0.05 }}
+            className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl"
+          >
+            ZIV DUEL
+          </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            className="text-sm md:text-base mb-8 max-w-xl mx-auto leading-relaxed"
-            style={{ color: 'hsl(var(--rpg-text-dim))', fontFamily: "'Courier New', monospace" }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: 0.1 }}
+            className="text-pretty text-base text-muted-foreground"
           >
-            Um MMORPG 2D inspirado na rica cultura e biodiversidade do Nordeste brasileiro.
-            Explore biomas únicos, dome montarias nativas e viva aventuras épicas.
+            Um MMORPG 2D inspirado na cultura e biodiversidade do Nordeste: explore biomas únicos, dome montarias nativas e evolua teu personagem com builds insanas.
           </motion.p>
 
-          {/* CTA */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="flex flex-col sm:flex-row gap-3 justify-center mb-12"
+            transition={{ duration: 0.25, delay: 0.15 }}
+            className="flex flex-col gap-3 sm:flex-row"
           >
-            <Link to="/auth">
-              <GameButton variant="gold" size="lg" className="min-w-48 text-base">
-                <Swords className="h-5 w-5 mr-2" /> Jogar Agora
-              </GameButton>
-            </Link>
-            <GameButton variant="secondary" size="lg" className="min-w-48 text-base">
-              Ver Trailer
-            </GameButton>
+            <Button asChild size="lg" className="h-11 px-6">
+              <Link to="/auth">Jogar agora</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="h-11 px-6">
+              <a href="#features">Ver recursos</a>
+            </Button>
           </motion.div>
 
-          {/* Class showcase */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="flex justify-center gap-4 flex-wrap"
-          >
-            {classes.map((cls, i) => (
-              <motion.div
-                key={cls.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1 + i * 0.1 }}
-                className="rpg-slot rpg-slot-filled cursor-pointer"
-                style={{ width: 64, height: 64, maxWidth: 64, borderColor: cls.color }}
-                title={cls.name}
-              >
-                <span className="text-2xl">{cls.icon}</span>
-              </motion.div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {quickStats.map((item) => (
+              <div key={item.label} className="rounded-xl border bg-background/70 p-3 text-sm backdrop-blur">
+                <div className="flex items-center gap-2 text-foreground">
+                  {item.icon}
+                  <span className="font-medium">{item.label}</span>
+                </div>
+              </div>
             ))}
-          </motion.div>
-          <p className="text-[10px] mt-2 opacity-30" style={{ fontFamily: "'Courier New', monospace" }}>
-            Guerreiro • Mago • Arqueiro • Curandeiro • Assassino
-          </p>
+          </div>
         </div>
+
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
+          <div className="relative overflow-hidden rounded-2xl border bg-card shadow-[var(--shadow-warm)]">
+            <img
+              src={heroBanner}
+              alt="Paisagem do sertão ao pôr do sol"
+              className="h-72 w-full object-cover sm:h-80 lg:h-[460px]"
+              loading="eager"
+              decoding="async"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge style={{ background: "hsl(var(--warrior))", color: "white" }}>⚔️ Guerreiro</Badge>
+                <Badge style={{ background: "hsl(var(--mage))", color: "white" }}>🔮 Mago</Badge>
+                <Badge style={{ background: "hsl(var(--archer))", color: "white" }}>🏹 Arqueiro</Badge>
+                <Badge style={{ background: "hsl(var(--healer))", color: "white" }}>💚 Curandeiro</Badge>
+                <Badge style={{ background: "hsl(var(--assassin))", color: "white" }}>🗡️ Assassino</Badge>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        className="absolute bottom-6 left-1/2 -translate-x-1/2"
-        animate={{ y: [0, 8, 0] }}
-        transition={{ repeat: Infinity, duration: 1.5 }}
-      >
-        <ChevronDown className="h-6 w-6" style={{ color: 'hsl(var(--rpg-text-dim))' }} />
-      </motion.div>
+      <div className="flex justify-center pb-10">
+        <a
+          href="#features"
+          className="inline-flex items-center gap-2 rounded-full border bg-background/60 px-4 py-2 text-sm text-muted-foreground backdrop-blur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label="Rolar para a seção de recursos"
+        >
+          <ChevronDown className="h-4 w-4" />
+          Explorar
+        </a>
+      </div>
     </section>
   );
 };

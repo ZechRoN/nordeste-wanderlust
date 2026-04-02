@@ -1,59 +1,59 @@
 import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const Classes = () => {
   const classes = [
-    { name: 'Guerreiro', icon: '⚔️', attr: 'Força', spec: 'Ataque em Área', desc: 'Mestre do combate corpo a corpo com força bruta e resistência.' },
-    { name: 'Mago', icon: '🔮', attr: 'Inteligência', spec: 'Magia Elemental', desc: 'Manipulador dos elementos com magias devastadoras à distância.' },
-    { name: 'Arqueiro', icon: '🏹', attr: 'Agilidade', spec: 'Ataque à Distância', desc: 'Preciso e letal, elimina inimigos antes que se aproximem.' },
-    { name: 'Curandeiro', icon: '💚', attr: 'Vontade', spec: 'Cura e Buff', desc: 'Guardião da vida, mantém aliados vivos e fortalecidos.' },
-    { name: 'Assassino', icon: '🗡️', attr: 'Velocidade', spec: 'Ataque Crítico', desc: 'Sombra mortal com ataques críticos devastadores.' },
+    { key: "warrior", name: "Guerreiro", icon: "⚔️", attr: "Força", spec: "Ataque em área", desc: "Combate corpo a corpo com força bruta e resistência." },
+    { key: "mage", name: "Mago", icon: "🔮", attr: "Inteligência", spec: "Magia elemental", desc: "Magias devastadoras à distância e controle de campo." },
+    { key: "archer", name: "Arqueiro", icon: "🏹", attr: "Agilidade", spec: "Ataque à distância", desc: "Preciso e letal: elimina antes que cheguem perto." },
+    { key: "healer", name: "Curandeiro", icon: "💚", attr: "Vontade", spec: "Cura e buff", desc: "Sustenta o time e transforma fight perdido em vitória." },
+    { key: "assassin", name: "Assassino", icon: "🗡️", attr: "Velocidade", spec: "Crítico", desc: "Dano explosivo e mobilidade, do jeitinho que dói." },
   ];
 
   return (
-    <section className="py-20" style={{ background: 'hsl(var(--rpg-panel-inner))', borderTop: '3px solid hsl(var(--rpg-frame-dark))' }}>
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-12">
-          <h2 className="rpg-panel-title text-2xl mb-3" style={{ color: 'hsl(var(--rpg-gold))' }}>
-            Escolha Sua Classe
-          </h2>
-          <p className="text-sm max-w-xl mx-auto" style={{ color: 'hsl(var(--rpg-text-dim))', fontFamily: "'Courier New', monospace" }}>
-            Cinco classes com sistema de subclasses híbridas e builds únicas
+    <section id="classes" className="border-t bg-muted/20 py-14 sm:py-16">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">Escolha tua classe</h2>
+          <p className="mt-2 text-pretty text-sm text-muted-foreground sm:text-base">
+            Cinco classes com estilos bem marcados e espaço pra builds híbridas.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 max-w-5xl mx-auto mb-8">
+        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {classes.map((cls, i) => (
             <motion.div
-              key={cls.name}
-              initial={{ opacity: 0, y: 20 }}
+              key={cls.key}
+              initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="rpg-class-card text-center hover:rpg-class-selected transition-all"
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.2, delay: i * 0.04 }}
             >
-              <span className="text-4xl block mb-2">{cls.icon}</span>
-              <h3 className="font-bold pixel-text text-sm mb-1" style={{ color: 'hsl(var(--rpg-gold))' }}>
-                {cls.name}
-              </h3>
-              <div className="text-[9px] space-y-1 mb-2" style={{ color: 'hsl(var(--rpg-text-dim))' }}>
-                <p>+{cls.attr}</p>
-                <p>{cls.spec}</p>
-              </div>
-              <p className="text-[10px] leading-relaxed" style={{ color: 'hsl(var(--rpg-text-dim))', fontFamily: "'Courier New', monospace" }}>
-                {cls.desc}
-              </p>
+              <Card className="h-full transition-shadow hover:shadow-[var(--shadow-warm)]">
+                <CardHeader className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-3xl">{cls.icon}</span>
+                    <Badge style={{ background: `hsl(var(--${cls.key}))`, color: "white" }}>{cls.name}</Badge>
+                  </div>
+                  <CardTitle className="text-sm">{cls.spec}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="text-xs text-muted-foreground">Atributo base: <span className="text-foreground">{cls.attr}</span></div>
+                  <p className="text-sm text-muted-foreground">{cls.desc}</p>
+                </CardContent>
+              </Card>
             </motion.div>
           ))}
         </div>
 
-        <div className="rpg-item-detail max-w-lg mx-auto text-center">
-          <h3 className="font-bold text-sm pixel-text mb-2" style={{ color: 'hsl(var(--rpg-gold))' }}>
-            Builds Híbridas
-          </h3>
-          <p className="text-[11px]" style={{ color: 'hsl(var(--rpg-text-dim))', fontFamily: "'Courier New', monospace" }}>
-            Combine habilidades: <span style={{ color: 'hsl(0 60% 55%)' }}>Guerreiro/Arqueiro</span>,{' '}
-            <span style={{ color: 'hsl(270 60% 60%)' }}>Mago/Curandeiro</span>,{' '}
-            <span style={{ color: 'hsl(0 0% 70%)' }}>Assassino/Arqueiro</span>
+        <div className="mx-auto mt-10 max-w-3xl rounded-2xl border bg-background p-5 text-center shadow-[var(--shadow-cool)]">
+          <div className="text-sm font-semibold">Builds híbridas</div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Misture estilos e cria tua assinatura:{" "}
+            <span className="font-medium text-foreground">Guerreiro/Arqueiro</span>,{" "}
+            <span className="font-medium text-foreground">Mago/Curandeiro</span>,{" "}
+            <span className="font-medium text-foreground">Assassino/Arqueiro</span>.
           </p>
         </div>
       </div>

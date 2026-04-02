@@ -5,6 +5,45 @@
 /* ===== RPG GAME UI DESIGN SYSTEM ===== */
 
 :root {
+  --background: 30 20% 98%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 35 75% 45%;
+  --primary-foreground: 0 0% 100%;
+  --primary-glow: 35 75% 65%;
+  --secondary: 220 12% 92%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 220 12% 92%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 35 35% 92%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 220 13% 85%;
+  --input: 220 13% 85%;
+  --ring: 35 75% 45%;
+  --radius: 0.9rem;
+
+  --warrior: 12 74% 55%;
+  --mage: 260 70% 60%;
+  --archer: 140 55% 45%;
+  --healer: 160 60% 40%;
+  --assassin: 215 65% 55%;
+
+  --gradient-hero: radial-gradient(1200px circle at 20% 10%, hsl(35 90% 70% / 0.35) 0%, transparent 45%),
+    radial-gradient(900px circle at 80% 40%, hsl(220 75% 65% / 0.18) 0%, transparent 48%),
+    linear-gradient(180deg, hsl(30 20% 98%) 0%, hsl(30 25% 94%) 100%);
+  --gradient-caatinga: linear-gradient(135deg, hsl(35 90% 60% / 0.55), hsl(20 70% 55% / 0.35));
+  --gradient-ocean: linear-gradient(135deg, hsl(200 90% 55% / 0.55), hsl(220 70% 55% / 0.35));
+  --gradient-forest: linear-gradient(135deg, hsl(135 60% 45% / 0.55), hsl(160 60% 40% / 0.35));
+
+  --shadow-warm: 0 12px 30px rgba(31, 21, 8, 0.18);
+  --shadow-cool: 0 12px 30px rgba(8, 12, 31, 0.16);
+  --shadow-glow: 0 0 0 0 hsl(35 90% 70% / 0.25);
+
   /* RPG Panel colors */
   --rpg-frame: 30 40% 22%;
   --rpg-frame-light: 30 35% 35%;
@@ -26,6 +65,46 @@
   --rpg-rare: 220 70% 55%;
   --rpg-epic: 270 60% 55%;
   --rpg-legendary: 45 90% 55%;
+}
+
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 35 85% 60%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --primary-glow: 35 95% 70%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 35 85% 60%;
+
+  --gradient-hero: radial-gradient(1200px circle at 15% 10%, hsl(35 95% 60% / 0.18) 0%, transparent 44%),
+    radial-gradient(900px circle at 85% 45%, hsl(220 85% 70% / 0.12) 0%, transparent 48%),
+    linear-gradient(180deg, hsl(222.2 84% 4.9%) 0%, hsl(223 60% 6%) 100%);
+
+  --shadow-warm: 0 14px 40px rgba(0, 0, 0, 0.55);
+  --shadow-cool: 0 14px 40px rgba(0, 0, 0, 0.55);
+  --shadow-glow: 0 0 0 0 hsl(35 95% 60% / 0.2);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
 /* ===== RPG Panel (Window Frame) ===== */

@@ -1,49 +1,45 @@
-import { Globe, Users, Zap, Trophy, Hammer, Mountain } from "lucide-react";
 import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Globe, Hammer, Mountain, Trophy, Users, Zap } from "lucide-react";
 
 export const Features = () => {
   const features = [
-    { icon: <Globe className="w-8 h-8" />, title: "Mundo Aberto", desc: "Explore biomas únicos do Nordeste: caatinga, agreste, litoral e Santa Cruz do Capibaribe." },
-    { icon: <Users className="w-8 h-8" />, title: "PvP & PvE", desc: "Arena PvP, combate contra criaturas, bosses de evento e sistema de party cooperativa." },
-    { icon: <Zap className="w-8 h-8" />, title: "Progressão", desc: "Sistema de níveis com builds únicas, subclasses e distribuição livre de atributos." },
-    { icon: <Trophy className="w-8 h-8" />, title: "Títulos & Conquistas", desc: "35+ títulos de prestígio através de quests, dungeons, PvP e eventos especiais." },
-    { icon: <Hammer className="w-8 h-8" />, title: "Crafting", desc: "15+ profissões com receitas, materiais de bioma e economia dinâmica." },
-    { icon: <Mountain className="w-8 h-8" />, title: "Montarias", desc: "Dome animais nativos: onça-pintada, capivara, jaguatirica e muitos outros." },
+    { icon: <Globe className="h-5 w-5" />, title: "Mundo aberto", desc: "Explore biomas únicos do Nordeste: caatinga, agreste, litoral e Santa Cruz do Capibaribe." },
+    { icon: <Users className="h-5 w-5" />, title: "PvP & PvE", desc: "Arena PvP, criaturas, bosses de evento e party cooperativa." },
+    { icon: <Zap className="h-5 w-5" />, title: "Progressão", desc: "Níveis, builds únicas, subclasses e distribuição de atributos." },
+    { icon: <Trophy className="h-5 w-5" />, title: "Títulos & conquistas", desc: "Títulos de prestígio via quests, dungeons, PvP e eventos especiais." },
+    { icon: <Hammer className="h-5 w-5" />, title: "Crafting", desc: "Profissões, receitas, materiais de bioma e economia dinâmica." },
+    { icon: <Mountain className="h-5 w-5" />, title: "Montarias", desc: "Dome animais nativos: onça-pintada, capivara, jaguatirica e mais." },
   ];
 
   return (
-    <section className="py-20 rpg-game-bg" style={{ borderTop: '3px solid hsl(var(--rpg-frame-dark))' }}>
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-12">
-          <h2 className="rpg-panel-title text-2xl mb-3" style={{ color: 'hsl(var(--rpg-gold))' }}>
-            Características Únicas
-          </h2>
-          <p className="text-sm max-w-xl mx-auto" style={{ color: 'hsl(var(--rpg-text-dim))', fontFamily: "'Courier New', monospace" }}>
-            Cultura brasileira + mecânicas MMORPG profundas = experiência única
+    <section id="features" className="border-t bg-background py-14 sm:py-16">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">Recursos do jogo</h2>
+          <p className="mt-2 text-pretty text-sm text-muted-foreground sm:text-base">
+            Cultura brasileira + mecânicas MMORPG profundas = uma experiência diferente (e viciante).
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f, i) => (
             <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
+              key={f.title}
+              initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="rpg-item-detail group hover:border-[hsl(var(--rpg-gold)/0.4)] transition-colors"
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.2, delay: i * 0.04 }}
             >
-              <div className="flex items-start gap-3">
-                <span style={{ color: 'hsl(var(--rpg-gold))' }}>{f.icon}</span>
-                <div>
-                  <h3 className="font-bold text-sm pixel-text mb-1" style={{ color: 'hsl(var(--rpg-text))' }}>
-                    {f.title}
-                  </h3>
-                  <p className="text-[11px] leading-relaxed" style={{ color: 'hsl(var(--rpg-text-dim))', fontFamily: "'Courier New', monospace" }}>
-                    {f.desc}
-                  </p>
-                </div>
-              </div>
+              <Card className="h-full transition-shadow hover:shadow-[var(--shadow-cool)]">
+                <CardHeader className="space-y-2">
+                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    {f.icon}
+                  </div>
+                  <CardTitle className="text-base">{f.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">{f.desc}</CardContent>
+              </Card>
             </motion.div>
           ))}
         </div>
