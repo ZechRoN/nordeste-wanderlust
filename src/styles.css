@@ -686,6 +686,128 @@
     background: hsl(var(--rpg-slot-hover)) !important;
   }
 
+  /* ===== Equipment Panel ===== */
+  .equip-layout {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 8px;
+    background: hsl(var(--rpg-slot-bg));
+    border: 1px solid hsl(var(--rpg-slot-border));
+    border-radius: 2px;
+  }
+
+  .equip-col-left, .equip-col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .equip-slot-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+  }
+
+  .equip-slot {
+    width: 42px;
+    height: 42px;
+    background: hsl(var(--rpg-slot-bg));
+    border: 2px solid hsl(var(--rpg-slot-border));
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.3), inset -1px -1px 0 rgba(0, 0, 0, 0.15);
+  }
+
+  .equip-slot:hover {
+    border-color: hsl(var(--rpg-gold));
+    background: hsl(var(--rpg-slot-hover));
+  }
+
+  .equip-slot-selected {
+    border-color: hsl(var(--rpg-gold)) !important;
+    box-shadow: 0 0 8px hsl(var(--rpg-gold) / 0.4);
+  }
+
+  .equip-slot-filled {
+    background: hsl(var(--rpg-panel-inner));
+  }
+
+  .equip-slot-label {
+    font-size: 8px;
+    font-weight: 600;
+    color: hsl(var(--rpg-text-dim));
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .equip-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 140px;
+  }
+
+  .equip-char-preview {
+    position: relative;
+    width: 80px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, hsl(var(--rpg-slot-hover)) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .equip-char-body {
+    z-index: 1;
+  }
+
+  .equip-char-overlays {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .equip-overlay-helm {
+    position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
+    font-size: 14px;
+  }
+  .equip-overlay-weapon {
+    position: absolute; right: 0; top: 30%; font-size: 16px;
+  }
+  .equip-overlay-offhand {
+    position: absolute; left: 0; top: 30%; font-size: 14px;
+  }
+  .equip-overlay-chest {
+    position: absolute; top: 38%; left: 50%; transform: translateX(-50%);
+    font-size: 12px;
+  }
+  .equip-overlay-boots {
+    position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+    font-size: 12px;
+  }
+
+  .equip-char-count {
+    position: absolute;
+    bottom: -2px;
+    right: 0;
+    font-size: 9px;
+    font-weight: bold;
+    color: hsl(var(--rpg-text-dim));
+    background: hsl(var(--rpg-panel-bg));
+    border: 1px solid hsl(var(--rpg-slot-border));
+    border-radius: 2px;
+    padding: 0 4px;
+  }
+
   /* ===== Game BG ===== */
   .rpg-game-bg {
     background: hsl(220 15% 8%);

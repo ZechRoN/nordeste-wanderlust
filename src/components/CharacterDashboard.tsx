@@ -23,6 +23,7 @@ import { GameNotifications } from './GameNotifications';
 import { Party } from './Party';
 import { Pets } from './Pets';
 import { Enchantment } from './Enchantment';
+import { EquipmentPanel } from './equipment/EquipmentPanel';
 import { CharacterMenu } from './CharacterMenu';
 import { useRegeneration } from '@/hooks/useRegeneration';
 import { useBackgroundMusic, SFX } from '@/hooks/useGameAudio';
