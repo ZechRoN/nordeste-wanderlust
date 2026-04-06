@@ -789,6 +789,84 @@
     background: hsl(var(--rpg-panel-inner));
   }
 
+  /* ===== Draggable Panel ===== */
+  .draggable-panel {
+    border-radius: 4px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .draggable-handle {
+    background: linear-gradient(180deg, hsl(var(--rpg-frame-light)), hsl(var(--rpg-frame)), hsl(var(--rpg-frame-dark)));
+    border-bottom: 2px solid hsl(var(--rpg-frame-dark));
+    padding: 0;
+    position: relative;
+  }
+
+  .draggable-handle-inner {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    padding-right: 52px;
+  }
+
+  .draggable-handle-icon {
+    color: hsl(var(--rpg-gold));
+    display: flex;
+    align-items: center;
+  }
+
+  .draggable-handle-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: hsl(var(--rpg-text));
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .draggable-handle-buttons {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 3px;
+    pointer-events: auto;
+  }
+
+  .draggable-content {
+    background: hsl(var(--rpg-panel-bg));
+    border: 2px solid hsl(var(--rpg-frame-dark));
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    overflow-y: auto;
+    flex: 1;
+    max-height: inherit;
+  }
+
+  .rpg-panel-btn {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: hsl(var(--rpg-frame-dark));
+    border: 1px solid hsl(var(--rpg-frame));
+    border-radius: 2px;
+    color: hsl(var(--rpg-text));
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .rpg-panel-btn:hover {
+    background: hsl(var(--rpg-frame));
+  }
+
   /* ===== Game BG ===== */
   .rpg-game-bg {
     background: hsl(220 15% 8%);
