@@ -74,7 +74,7 @@ const TABS = [
   { key: 'misc', label: 'Misc' },
 ];
 
-export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
+export function Inventory({ character, onCharacterUpdate, bare }: InventoryProps) {
   const [characterItems, setCharacterItems] = useState<CharacterItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
