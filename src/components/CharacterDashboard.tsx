@@ -125,7 +125,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
   const renderPanelContent = (key: PanelKey) => {
     switch (key) {
       case 'character': return <CharacterMenu character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />;
-      case 'inventory': return <Inventory character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />;
+      case 'inventory': return <Inventory character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} bare />;
       case 'quests': return <Quests character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />;
       case 'npcs': return <NPCs character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />;
       case 'crafting': return <Crafting character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />;
