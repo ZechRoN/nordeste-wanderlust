@@ -355,6 +355,16 @@ export function Inventory({ character, onCharacterUpdate, bare }: InventoryProps
           </Div>
         </>
       )}
+    </>
+  );
+
+  if (bare) {
+    return <Div className="flex flex-col h-full">{content}{footerContent && <Div className="p-2 border-t border-[hsl(var(--rpg-slot-border))]">{footerContent}</Div>}</Div>;
+  }
+
+  return (
+    <GamePanel title="Inventário" icon={<Package className="h-5 w-5" />} footer={footerContent}>
+      {content}
     </GamePanel>
   );
 }
