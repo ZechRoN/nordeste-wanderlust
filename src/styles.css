@@ -686,24 +686,74 @@
     background: hsl(var(--rpg-slot-hover)) !important;
   }
 
-  /* ===== Equipment Panel ===== */
-  .equip-layout {
+  /* ===== Character Sheet Layout ===== */
+  .char-sheet {
     display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 8px;
-    align-items: center;
-    padding: 8px;
-    background: hsl(var(--rpg-slot-bg));
-    border: 1px solid hsl(var(--rpg-slot-border));
-    border-radius: 2px;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 4px;
+    height: 100%;
   }
 
-  .equip-col-left, .equip-col-right {
+  @media (max-width: 480px) {
+    .char-sheet {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .char-sheet-left {
     display: flex;
     flex-direction: column;
     gap: 4px;
   }
 
+  .char-sheet-right {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .char-sheet-header {
+    padding: 4px 6px;
+    background: hsl(var(--rpg-panel-inner));
+    border: 1px solid hsl(var(--rpg-slot-border));
+    border-radius: 2px;
+  }
+
+  .char-equip-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px;
+    background: hsl(var(--rpg-slot-bg));
+    border: 1px solid hsl(var(--rpg-slot-border));
+    border-radius: 2px;
+  }
+
+  .char-equip-top, .char-equip-bot {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+  }
+
+  .char-equip-mid {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .char-sprite-box {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, hsl(var(--rpg-slot-hover)) 0%, transparent 70%);
+    border-radius: 4px;
+  }
+
+  /* ===== Equipment Slots ===== */
   .equip-slot-wrapper {
     display: flex;
     flex-direction: column;
@@ -713,8 +763,8 @@
   }
 
   .equip-slot {
-    width: 42px;
-    height: 42px;
+    width: 38px;
+    height: 38px;
     background: hsl(var(--rpg-slot-bg));
     border: 2px solid hsl(var(--rpg-slot-border));
     border-radius: 2px;
@@ -737,75 +787,6 @@
 
   .equip-slot-filled {
     background: hsl(var(--rpg-panel-inner));
-  }
-
-  .equip-slot-label {
-    font-size: 8px;
-    font-weight: 600;
-    color: hsl(var(--rpg-text-dim));
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
-
-  .equip-preview {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 140px;
-  }
-
-  .equip-char-preview {
-    position: relative;
-    width: 80px;
-    height: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(circle, hsl(var(--rpg-slot-hover)) 0%, transparent 70%);
-    border-radius: 50%;
-  }
-
-  .equip-char-body {
-    z-index: 1;
-  }
-
-  .equip-char-overlays {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-
-  .equip-overlay-helm {
-    position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
-    font-size: 14px;
-  }
-  .equip-overlay-weapon {
-    position: absolute; right: 0; top: 30%; font-size: 16px;
-  }
-  .equip-overlay-offhand {
-    position: absolute; left: 0; top: 30%; font-size: 14px;
-  }
-  .equip-overlay-chest {
-    position: absolute; top: 38%; left: 50%; transform: translateX(-50%);
-    font-size: 12px;
-  }
-  .equip-overlay-boots {
-    position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
-    font-size: 12px;
-  }
-
-  .equip-char-count {
-    position: absolute;
-    bottom: -2px;
-    right: 0;
-    font-size: 9px;
-    font-weight: bold;
-    color: hsl(var(--rpg-text-dim));
-    background: hsl(var(--rpg-panel-bg));
-    border: 1px solid hsl(var(--rpg-slot-border));
-    border-radius: 2px;
-    padding: 0 4px;
   }
 
   /* ===== Game BG ===== */

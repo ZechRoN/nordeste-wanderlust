@@ -128,10 +128,6 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
         <Div className="absolute top-0 right-0 z-30 w-full md:w-[480px] h-full flex flex-col p-2 md:p-3 bg-black/40">
           {activePanel === 'inventory' ? (
             <Inventory character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />
-          ) : activePanel === 'equipment' ? (
-            <GamePanel title="Equipamentos" icon={<Shield className="h-5 w-5" />} onClose={() => setActivePanel(null)}>
-              <EquipmentPanel character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />
-            </GamePanel>
           ) : (
             <GamePanel
               title={menuItems.find(m => m.key === activePanel)?.label || ''}
