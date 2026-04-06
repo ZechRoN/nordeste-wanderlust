@@ -267,34 +267,32 @@ export function Inventory({ character, onCharacterUpdate, bare }: InventoryProps
 
   const totalItems = characterItems.reduce((sum, ci) => sum + ci.quantity, 0);
 
-  return (
-    <GamePanel
-      title="Inventário"
-      icon={<Package className="h-5 w-5" />}
-      footer={
-        <Div className="flex items-center justify-between w-full">
-          <Div className="flex gap-1">
-            <GameButton size="sm" onClick={() => {}}>Ordenar</GameButton>
-            {selectedItem && selectedItem.item.type === 'consumable' && (
-              <GameButton size="sm" variant="primary" onClick={() => consumeItem(selectedItem)}>Usar</GameButton>
-            )}
-            {selectedItem && !selectedItem.is_equipped && (selectedItem.item.type === 'weapon' || selectedItem.item.type === 'armor') && (
-              <GameButton size="sm" variant="primary" onClick={() => equipItem(selectedItem)}>Equipar</GameButton>
-            )}
-            {selectedItem && selectedItem.is_equipped && (
-              <GameButton size="sm" onClick={() => unequipItem(selectedItem)}>Desequipar</GameButton>
-            )}
-            {selectedItem && (
-              <GameButton size="sm" variant="danger" onClick={() => sellItem(selectedItem)}>Vender</GameButton>
-            )}
-          </Div>
-          <Div className="flex items-center gap-3">
-            <span className="rpg-gold-display">🪙 {(character.gold || 0).toLocaleString()}</span>
-            <span className="rpg-capacity">Capacidade: {totalItems}/{MAX_SLOTS}</span>
-          </Div>
-        </Div>
-      }
-    >
+  const footerContent = (
+    <Div className="flex items-center justify-between w-full">
+      <Div className="flex gap-1">
+        <GameButton size="sm" onClick={() => {}}>Ordenar</GameButton>
+        {selectedItem && selectedItem.item.type === 'consumable' && (
+          <GameButton size="sm" variant="primary" onClick={() => consumeItem(selectedItem)}>Usar</GameButton>
+        )}
+        {selectedItem && !selectedItem.is_equipped && (selectedItem.item.type === 'weapon' || selectedItem.item.type === 'armor') && (
+          <GameButton size="sm" variant="primary" onClick={() => equipItem(selectedItem)}>Equipar</GameButton>
+        )}
+        {selectedItem && selectedItem.is_equipped && (
+          <GameButton size="sm" onClick={() => unequipItem(selectedItem)}>Desequipar</GameButton>
+        )}
+        {selectedItem && (
+          <GameButton size="sm" variant="danger" onClick={() => sellItem(selectedItem)}>Vender</GameButton>
+        )}
+      </Div>
+      <Div className="flex items-center gap-3">
+        <span className="rpg-gold-display">🪙 {(character.gold || 0).toLocaleString()}</span>
+        <span className="rpg-capacity">Capacidade: {totalItems}/{MAX_SLOTS}</span>
+      </Div>
+    </Div>
+  );
+
+  const content = (
+    <>
       {loading ? (
         <Div className="flex items-center justify-center h-40">
           <span className="rpg-loading">Carregando...</span>
