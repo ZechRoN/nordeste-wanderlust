@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { X, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Div } from '@/components/ui/Div';
@@ -14,15 +14,14 @@ interface DraggablePanelProps {
   zIndex: number;
   defaultPosition?: { x: number; y: number };
   defaultSize?: { width: number; height: number };
-  className?: string;
-  footer?: React.ReactNode;
+  /** If true, children already include their own GamePanel frame — skip wrapping */
+  raw?: boolean;
 }
 
 export function DraggablePanel({
   id, title, icon, children, onClose, onFocus, zIndex,
-  defaultPosition, defaultSize, className, footer,
+  defaultPosition, defaultSize, raw,
 }: DraggablePanelProps) {
-  const panelRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState(defaultPosition || { x: 100, y: 60 });
   const [minimized, setMinimized] = useState(false);
   const dragState = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
@@ -33,8 +32,7 @@ export function DraggablePanel({
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     onFocus();
     const target = e.target as HTMLElement;
-    // Only drag from title bar area
-    if (!target.closest('.draggable-title-bar')) return;
+    if (!target.closest('.draggable-handle')) return;
     e.preventDefault();
     dragState.current = { startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
@@ -56,8 +54,7 @@ export function DraggablePanel({
 
   return (
     <div
-      ref={panelRef}
-      className={cn("draggable-panel", className)}
+      className="draggable-panel"
       style={{
         position: 'absolute',
         left: pos.x,
@@ -66,47 +63,36 @@ export function DraggablePanel({
         zIndex,
         maxHeight: minimized ? 'auto' : height,
       }}
-      onPointerDown={(e) => { onFocus(); }}
+      onPointerDown={() => onFocus()}
     >
-      <Div skin="panel" className="flex flex-col h-full">
-        {/* Draggable title bar */}
-        <div
-          className="draggable-title-bar rpg-panel-header"
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          style={{ cursor: 'grab', userSelect: 'none', touchAction: 'none' }}
-        >
-          <Div skin="panel-title-bar" className="pointer-events-none">
-            {icon && <span className="rpg-panel-icon">{icon}</span>}
-            <h2 className="rpg-panel-title">{title}</h2>
-          </Div>
-          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-0.5 pointer-events-auto z-10">
-            <button
-              onClick={(e) => { e.stopPropagation(); setMinimized(!minimized); }}
-              className="rpg-panel-btn"
-            >
+      {/* Drag handle bar */}
+      <div
+        className="draggable-handle"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        style={{ cursor: 'grab', userSelect: 'none', touchAction: 'none' }}
+      >
+        <div className="draggable-handle-inner">
+          {icon && <span className="draggable-handle-icon">{icon}</span>}
+          <span className="draggable-handle-title">{title}</span>
+          <div className="draggable-handle-buttons">
+            <button onClick={(e) => { e.stopPropagation(); setMinimized(!minimized); }} className="rpg-panel-btn">
               <Minus className="h-3 w-3" />
             </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); onClose(); }}
-              className="rpg-panel-btn"
-            >
+            <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="rpg-panel-btn">
               <X className="h-3 w-3" />
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Content */}
-        {!minimized && (
-          <>
-            <Div skin="panel-content" className="flex-1 overflow-y-auto">
-              {children}
-            </Div>
-            {footer && <Div skin="panel-footer">{footer}</Div>}
-          </>
-        )}
-      </Div>
+      {/* Content */}
+      {!minimized && (
+        <div className="draggable-content">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
