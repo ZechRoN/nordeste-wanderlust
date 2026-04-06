@@ -24,7 +24,7 @@ import { GameNotifications } from './GameNotifications';
 import { Party } from './Party';
 import { Pets } from './Pets';
 import { Enchantment } from './Enchantment';
-import { EquipmentPanel } from './equipment/EquipmentPanel';
+
 import { CharacterMenu } from './CharacterMenu';
 import { useRegeneration } from '@/hooks/useRegeneration';
 import { useBackgroundMusic, SFX } from '@/hooks/useGameAudio';
@@ -50,7 +50,7 @@ const getClassDisplayName = (className: string): string => {
   return classNames[className] || className;
 };
 
-type OverlayPanel = 'character' | 'inventory' | 'equipment' | 'quests' | 'npcs' | 'crafting' | 'guilds' | 'mounts' | 'achievements' | 'titles' | 'arena' | 'rankings' | 'events' | 'party' | 'trade' | 'dungeon' | 'pets' | 'enchant' | 'menu' | null;
+type OverlayPanel = 'character' | 'inventory' | 'quests' | 'npcs' | 'crafting' | 'guilds' | 'mounts' | 'achievements' | 'titles' | 'arena' | 'rankings' | 'events' | 'party' | 'trade' | 'dungeon' | 'pets' | 'enchant' | 'menu' | null;
 
 export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDashboardProps) {
   const [currentCharacter, setCurrentCharacter] = useState(character);
@@ -70,7 +70,6 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
   const menuItems: { key: OverlayPanel; label: string; icon: React.ReactNode }[] = [
     { key: 'character', label: 'Personagem', icon: <Heart className="h-4 w-4" /> },
     { key: 'inventory', label: 'Inventário', icon: <Backpack className="h-4 w-4" /> },
-    { key: 'equipment', label: 'Equipar', icon: <Shield className="h-4 w-4" /> },
     { key: 'quests', label: 'Missões', icon: <Scroll className="h-4 w-4" /> },
     { key: 'npcs', label: 'NPCs', icon: <Users className="h-4 w-4" /> },
     { key: 'crafting', label: 'Crafting', icon: <Hammer className="h-4 w-4" /> },
@@ -129,10 +128,6 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
         <Div className="absolute top-0 right-0 z-30 w-full md:w-[480px] h-full flex flex-col p-2 md:p-3 bg-black/40">
           {activePanel === 'inventory' ? (
             <Inventory character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />
-          ) : activePanel === 'equipment' ? (
-            <GamePanel title="Equipamentos" icon={<Shield className="h-5 w-5" />} onClose={() => setActivePanel(null)}>
-              <EquipmentPanel character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />
-            </GamePanel>
           ) : (
             <GamePanel
               title={menuItems.find(m => m.key === activePanel)?.label || ''}
