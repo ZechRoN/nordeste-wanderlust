@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { GameButton, GamePanelTabs, InventorySlot } from "@/components/ui/game-panel";
 import { CLASS_COLORS } from "@/engine/constants";
+import { Div } from "@/components/ui/Div";
 
 type Character = {
   id: string;
@@ -296,9 +297,9 @@ export function CharacterMenu({
     onPlus: () => void;
     onMinus: () => void;
   }) => (
-    <div className="flex items-center justify-between gap-2 text-[11px]">
+    <Div className="flex items-center justify-between gap-2 text-[11px]">
       <span className="opacity-80">{label}</span>
-      <div className="flex items-center gap-2">
+      <Div className="flex items-center gap-2">
         <span className="font-bold">
           {value}
           {pendingValue > 0 ? ` +${pendingValue}` : ""}
@@ -309,47 +310,47 @@ export function CharacterMenu({
         <GameButton size="sm" variant="primary" disabled={availablePoints <= 0} onClick={onPlus}>
           +
         </GameButton>
-      </div>
-    </div>
+      </Div>
+    </Div>
   );
 
   return (
-    <div>
+    <Div>
       <GamePanelTabs tabs={MENU_TABS} activeTab={activeTab} onTabChange={(key) => setActiveTab(key as any)} />
 
       {activeTab === "visual" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
-            <div className="font-bold text-[12px] mb-2">Sprite (Idle)</div>
-            <div className="flex justify-center">
+        <Div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <Div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+            <Div className="font-bold text-[12px] mb-2">Sprite (Idle)</Div>
+            <Div className="flex justify-center">
               <canvas ref={canvasRef} width={160} height={160} style={{ imageRendering: "pixelated" }} />
-            </div>
-          </div>
-          <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
-            <div className="font-bold text-[12px] mb-2">Info rápida</div>
-            <div className="space-y-1 text-[11px]">
-              <div className="flex justify-between"><span>Nome</span><span className="font-bold">{character.name}</span></div>
-              <div className="flex justify-between"><span>Classe</span><span>{classLabel}</span></div>
-              <div className="flex justify-between"><span>Nível</span><span>{character.level}</span></div>
-              <div className="flex justify-between"><span>EXP</span><span>{character.experience}</span></div>
-              <div className="flex justify-between"><span>Bioma</span><span>{character.current_biome}</span></div>
-            </div>
-          </div>
-        </div>
+            </Div>
+          </Div>
+          <Div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+            <Div className="font-bold text-[12px] mb-2">Info rápida</Div>
+            <Div className="space-y-1 text-[11px]">
+              <Div className="flex justify-between"><span>Nome</span><span className="font-bold">{character.name}</span></Div>
+              <Div className="flex justify-between"><span>Classe</span><span>{classLabel}</span></Div>
+              <Div className="flex justify-between"><span>Nível</span><span>{character.level}</span></Div>
+              <Div className="flex justify-between"><span>EXP</span><span>{character.experience}</span></Div>
+              <Div className="flex justify-between"><span>Bioma</span><span>{character.current_biome}</span></Div>
+            </Div>
+          </Div>
+        </Div>
       )}
 
       {activeTab === "equip" && (
-        <div className="space-y-2">
-          <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
-            <div className="font-bold text-[12px] mb-2">Equipamentos</div>
+        <Div className="space-y-2">
+          <Div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+            <Div className="font-bold text-[12px] mb-2">Equipamentos</Div>
             {loadingEquip ? (
               <span className="rpg-loading">Carregando...</span>
             ) : (
-              <div className="flex items-start gap-6">
-                <div className="space-y-3">
-                  <div>
-                    <div className="text-[10px] opacity-70 mb-1">Weapon</div>
-                    <div className="flex items-center gap-2">
+              <Div className="flex items-start gap-6">
+                <Div className="space-y-3">
+                  <Div>
+                    <Div className="text-[10px] opacity-70 mb-1">Weapon</Div>
+                    <Div className="flex items-center gap-2">
                       <InventorySlot
                         icon={equippedByType.weapon ? "⚔️" : undefined}
                         rarity={equippedByType.weapon?.item.rarity ?? "common"}
@@ -358,11 +359,11 @@ export function CharacterMenu({
                         onClick={() => equippedByType.weapon ? unequipItem(equippedByType.weapon) : setEquipPickerType("weapon")}
                       />
                       <span className="text-[11px] opacity-80">{equippedByType.weapon?.item.name ?? "Vazio"}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[10px] opacity-70 mb-1">Armor</div>
-                    <div className="flex items-center gap-2">
+                    </Div>
+                  </Div>
+                  <Div>
+                    <Div className="text-[10px] opacity-70 mb-1">Armor</Div>
+                    <Div className="flex items-center gap-2">
                       <InventorySlot
                         icon={equippedByType.armor ? "🛡️" : undefined}
                         rarity={equippedByType.armor?.item.rarity ?? "common"}
@@ -371,120 +372,119 @@ export function CharacterMenu({
                         onClick={() => equippedByType.armor ? unequipItem(equippedByType.armor) : setEquipPickerType("armor")}
                       />
                       <span className="text-[11px] opacity-80">{equippedByType.armor?.item.name ?? "Vazio"}</span>
-                    </div>
-                  </div>
-                </div>
+                    </Div>
+                  </Div>
+                </Div>
 
-                <div className="flex-1">
-                  <div className="text-[10px] opacity-70 mb-1">Selecionar item</div>
-                  <div className="space-y-1 max-h-[320px] overflow-y-auto pr-1">
+                <Div className="flex-1">
+                  <Div className="text-[10px] opacity-70 mb-1">Selecionar item</Div>
+                  <Div className="space-y-1 max-h-[320px] overflow-y-auto pr-1">
                     {equipPickerType === null ? (
-                      <div className="text-[11px] opacity-70">Clique em um slot vazio para escolher.</div>
+                      <Div className="text-[11px] opacity-70">Clique em um slot vazio para escolher.</Div>
                     ) : (
                       equippableByType.filter((ci) => ci.item.type === equipPickerType).map((ci) => (
                         <button key={ci.id} type="button" className="rpg-class-card w-full text-left" onClick={() => equipItem(ci)}>
-                          <div className="flex items-center justify-between gap-2">
+                          <Div className="flex items-center justify-between gap-2">
                             <span className="font-bold text-[12px]">{ci.item.name}</span>
                             <span className="text-[10px] opacity-70">{ci.item.rarity}</span>
-                          </div>
-                          <div className="text-[10px] opacity-70">
+                          </Div>
+                          <Div className="text-[10px] opacity-70">
                             +STR {ci.item.strength_bonus} +AGI {ci.item.agility_bonus} +INT {ci.item.intelligence_bonus} +VIT {ci.item.vitality_bonus} +LUK {ci.item.luck_bonus}
-                          </div>
+                          </Div>
                         </button>
                       ))
                     )}
-                  </div>
-                </div>
-              </div>
+                  </Div>
+                </Div>
+              </Div>
             )}
-          </div>
-        </div>
+          </Div>
+        </Div>
       )}
 
       {activeTab === "stats" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
-            <div className="font-bold text-[12px] mb-2">Recursos</div>
-            <div className="space-y-2">
-              <div>
-                <div className="flex justify-between text-[11px]"><span>HP</span><span>{character.health}/{character.max_health}</span></div>
-                <div className="rpg-bar" style={{ height: "8px" }}>
-                  <div className="rpg-bar-fill rpg-bar-fill-hp" style={{ width: `${Math.max(0, Math.min(100, (character.health / character.max_health) * 100))}%` }} />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-[11px]"><span>MP</span><span>{character.mana}/{character.max_mana}</span></div>
-                <div className="rpg-bar" style={{ height: "8px" }}>
-                  <div className="rpg-bar-fill rpg-bar-fill-mp" style={{ width: `${Math.max(0, Math.min(100, (character.mana / character.max_mana) * 100))}%` }} />
-                </div>
-              </div>
-              <div className="flex justify-between text-[11px]"><span>Gold</span><span>🪙 {character.gold}</span></div>
-            </div>
-          </div>
+        <Div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <Div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+            <Div className="font-bold text-[12px] mb-2">Recursos</Div>
+            <Div className="space-y-2">
+              <Div>
+                <Div className="flex justify-between text-[11px]"><span>HP</span><span>{character.health}/{character.max_health}</span></Div>
+                <Div className="rpg-bar" style={{ height: "8px" }}>
+                  <Div className="rpg-bar-fill rpg-bar-fill-hp" style={{ width: `${Math.max(0, Math.min(100, (character.health / character.max_health) * 100))}%` }} />
+                </Div>
+              </Div>
+              <Div>
+                <Div className="flex justify-between text-[11px]"><span>MP</span><span>{character.mana}/{character.max_mana}</span></Div>
+                <Div className="rpg-bar" style={{ height: "8px" }}>
+                  <Div className="rpg-bar-fill rpg-bar-fill-mp" style={{ width: `${Math.max(0, Math.min(100, (character.mana / character.max_mana) * 100))}%` }} />
+                </Div>
+              </Div>
+              <Div className="flex justify-between text-[11px]"><span>Gold</span><span>🪙 {character.gold}</span></Div>
+            </Div>
+          </Div>
 
-          <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
-            <div className="font-bold text-[12px] mb-2">Atributos</div>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
-              <div className="flex justify-between"><span>STR</span><span className="font-bold">{character.strength}</span></div>
-              <div className="flex justify-between"><span>AGI</span><span className="font-bold">{character.agility}</span></div>
-              <div className="flex justify-between"><span>INT</span><span className="font-bold">{character.intelligence}</span></div>
-              <div className="flex justify-between"><span>VIT</span><span className="font-bold">{character.vitality}</span></div>
-              <div className="flex justify-between"><span>LUK</span><span className="font-bold">{character.luck}</span></div>
-            </div>
-            <div className="mt-2 text-[10px] opacity-70">
+          <Div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+            <Div className="font-bold text-[12px] mb-2">Atributos</Div>
+            <Div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+              <Div className="flex justify-between"><span>STR</span><span className="font-bold">{character.strength}</span></Div>
+              <Div className="flex justify-between"><span>AGI</span><span className="font-bold">{character.agility}</span></Div>
+              <Div className="flex justify-between"><span>INT</span><span className="font-bold">{character.intelligence}</span></Div>
+              <Div className="flex justify-between"><span>VIT</span><span className="font-bold">{character.vitality}</span></Div>
+              <Div className="flex justify-between"><span>LUK</span><span className="font-bold">{character.luck}</span></Div>
+            </Div>
+            <Div className="mt-2 text-[10px] opacity-70">
               Base ({classLabel}): STR {base.strength} AGI {base.agility} INT {base.intelligence} VIT {base.vitality} LUK {base.luck}
-            </div>
-          </div>
-        </div>
+            </Div>
+          </Div>
+        </Div>
       )}
 
       {activeTab === "points" && (
-        <div className="rpg-item-detail">
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <div className="font-bold text-[12px]">Distribuição de pontos</div>
-            <div className="text-[11px] opacity-80">Disponíveis: <span className="font-bold">{availablePoints}</span></div>
-          </div>
-          <div className="space-y-2">
+        <Div className="rpg-item-detail">
+          <Div className="flex items-center justify-between gap-2 mb-2">
+            <Div className="font-bold text-[12px]">Distribuição de pontos</Div>
+            <Div className="text-[11px] opacity-80">Disponíveis: <span className="font-bold">{availablePoints}</span></Div>
+          </Div>
+          <Div className="space-y-2">
             <StatRow label="STR" value={character.strength} pendingValue={pending.strength} onMinus={() => applyStatDelta({ strength: -1 })} onPlus={() => applyStatDelta({ strength: 1 })} />
             <StatRow label="AGI" value={character.agility} pendingValue={pending.agility} onMinus={() => applyStatDelta({ agility: -1 })} onPlus={() => applyStatDelta({ agility: 1 })} />
             <StatRow label="INT" value={character.intelligence} pendingValue={pending.intelligence} onMinus={() => applyStatDelta({ intelligence: -1 })} onPlus={() => applyStatDelta({ intelligence: 1 })} />
             <StatRow label="VIT" value={character.vitality} pendingValue={pending.vitality} onMinus={() => applyStatDelta({ vitality: -1 })} onPlus={() => applyStatDelta({ vitality: 1 })} />
             <StatRow label="LUK" value={character.luck} pendingValue={pending.luck} onMinus={() => applyStatDelta({ luck: -1 })} onPlus={() => applyStatDelta({ luck: 1 })} />
-          </div>
-          <div className="flex items-center justify-end gap-2 mt-3">
+          </Div>
+          <Div className="flex items-center justify-end gap-2 mt-3">
             <GameButton variant="secondary" onClick={resetPoints} disabled={pendingTotal <= 0}>Reset</GameButton>
             <GameButton variant="gold" onClick={confirmPoints} disabled={pendingTotal <= 0}>Confirmar</GameButton>
-          </div>
-          <div className="text-[10px] opacity-70 mt-2">
+          </Div>
+          <Div className="text-[10px] opacity-70 mt-2">
             Orçamento: {pointsBudget} • Gastos: {spent} • Pendentes: {pendingTotal}
-          </div>
-        </div>
+          </Div>
+        </Div>
       )}
 
       {activeTab === "info" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
-            <div className="font-bold text-[12px] mb-2">Informações</div>
-            <div className="space-y-1 text-[11px]">
-              <div className="flex justify-between"><span>Nome</span><span className="font-bold">{character.name}</span></div>
-              <div className="flex justify-between"><span>Classe</span><span>{classLabel}</span></div>
-              <div className="flex justify-between"><span>Nível</span><span>{character.level}</span></div>
-              <div className="flex justify-between"><span>EXP</span><span>{character.experience}</span></div>
-              <div className="flex justify-between"><span>Bioma</span><span>{character.current_biome}</span></div>
-            </div>
-          </div>
-          <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
-            <div className="font-bold text-[12px] mb-2">Derivados</div>
-            <div className="space-y-1 text-[11px]">
-              <div className="flex justify-between"><span>ATK</span><span className="font-bold">{derived.atk}</span></div>
-              <div className="flex justify-between"><span>DEF</span><span className="font-bold">{derived.def}</span></div>
-              <div className="flex justify-between"><span>CRIT</span><span className="font-bold">{derived.crit}%</span></div>
-              <div className="flex justify-between"><span>HASTE</span><span className="font-bold">{derived.haste}%</span></div>
-            </div>
-          </div>
-        </div>
+        <Div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <Div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+            <Div className="font-bold text-[12px] mb-2">Informações</Div>
+            <Div className="space-y-1 text-[11px]">
+              <Div className="flex justify-between"><span>Nome</span><span className="font-bold">{character.name}</span></Div>
+              <Div className="flex justify-between"><span>Classe</span><span>{classLabel}</span></Div>
+              <Div className="flex justify-between"><span>Nível</span><span>{character.level}</span></Div>
+              <Div className="flex justify-between"><span>EXP</span><span>{character.experience}</span></Div>
+              <Div className="flex justify-between"><span>Bioma</span><span>{character.current_biome}</span></Div>
+            </Div>
+          </Div>
+          <Div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+            <Div className="font-bold text-[12px] mb-2">Derivados</Div>
+            <Div className="space-y-1 text-[11px]">
+              <Div className="flex justify-between"><span>ATK</span><span className="font-bold">{derived.atk}</span></Div>
+              <Div className="flex justify-between"><span>DEF</span><span className="font-bold">{derived.def}</span></Div>
+              <Div className="flex justify-between"><span>CRIT</span><span className="font-bold">{derived.crit}%</span></Div>
+              <Div className="flex justify-between"><span>HASTE</span><span className="font-bold">{derived.haste}%</span></Div>
+            </Div>
+          </Div>
+        </Div>
       )}
-    </div>
+    </Div>
   );
 }
-

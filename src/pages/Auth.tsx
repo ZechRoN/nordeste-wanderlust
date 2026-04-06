@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { setAuthPersistence } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import heroBanner from "@/assets/hero-banner.jpg";
+import { Div } from "@/components/ui/Div";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -116,10 +117,10 @@ const Auth = () => {
   });
 
   return (
-    <div className="fixed inset-0 overflow-y-auto bg-[image:var(--gradient-hero)]">
-      <div className="min-h-full px-4 py-8 sm:py-12">
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 lg:flex-row lg:items-stretch">
-          <div className="relative overflow-hidden rounded-2xl border bg-card shadow-[var(--shadow-warm)] lg:flex-1">
+    <Div className="fixed inset-0 overflow-y-auto bg-[image:var(--gradient-hero)]">
+      <Div className="min-h-full px-4 py-8 sm:py-12">
+        <Div className="mx-auto flex w-full max-w-5xl flex-col gap-6 lg:flex-row lg:items-stretch">
+          <Div className="relative overflow-hidden rounded-2xl border bg-card shadow-[var(--shadow-warm)] lg:flex-1">
             <img
               src={heroBanner}
               alt="Paisagem do sertão ao pôr do sol"
@@ -127,32 +128,32 @@ const Auth = () => {
               loading="eager"
               decoding="async"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/35 to-transparent lg:bg-gradient-to-r lg:from-background/90 lg:via-background/40 lg:to-transparent" />
-            <div className="absolute inset-0 flex flex-col justify-end p-6 lg:justify-center lg:p-10">
-              <div className="max-w-md">
+            <Div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/35 to-transparent lg:bg-gradient-to-r lg:from-background/90 lg:via-background/40 lg:to-transparent" />
+            <Div className="absolute inset-0 flex flex-col justify-end p-6 lg:justify-center lg:p-10">
+              <Div className="max-w-md">
                 <h1 className="mt-4 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
                   ZIV DUEL
                 </h1>
                 <p className="mt-2 text-pretty text-sm text-muted-foreground sm:text-base">
                   Entre, escolha teu personagem e bora pro mundo. Mobile-first, rápido, acessível e com modo escuro/claro.
                 </p>
-                <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-xl border bg-background/70 p-3 backdrop-blur">
-                    <div className="font-medium">Personagens</div>
-                    <div className="text-xs text-muted-foreground">Cards e filtros</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                <Div className="mt-5 grid grid-cols-2 gap-3 text-sm">
+                  <Div className="rounded-xl border bg-background/70 p-3 backdrop-blur">
+                    <Div className="font-medium">Personagens</Div>
+                    <Div className="text-xs text-muted-foreground">Cards e filtros</Div>
+                  </Div>
+                </Div>
+              </Div>
+            </Div>
+          </Div>
 
           <Card className="w-full shadow-[var(--shadow-cool)] lg:w-[420px]">
             <CardHeader className="space-y-2">
-              <div className="flex items-start justify-between gap-3">
-                <div>
+              <Div className="flex items-start justify-between gap-3">
+                <Div>
                   <CardTitle className="text-xl">Acessar</CardTitle>
                   <CardDescription>Faz teu login e vem pro jogo.</CardDescription>
-                </div>
+                </Div>
                 <Button
                   type="button"
                   variant="ghost"
@@ -162,7 +163,7 @@ const Auth = () => {
                 >
                   {resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                 </Button>
-              </div>
+              </Div>
             </CardHeader>
 
             <CardContent className="space-y-4">
@@ -174,7 +175,7 @@ const Auth = () => {
 
                 <TabsContent value="login" className="mt-4">
                   <form onSubmit={handleLogin} className="space-y-4" aria-label="Formulário de login">
-                    <div className="space-y-2">
+                    <Div className="space-y-2">
                       <Label htmlFor="login-username">Nome de usuário</Label>
                       <Input
                         id="login-username"
@@ -188,11 +189,11 @@ const Auth = () => {
                           {loginForm.formState.errors.username.message}
                         </p>
                       )}
-                    </div>
+                    </Div>
 
-                    <div className="space-y-2">
+                    <Div className="space-y-2">
                       <Label htmlFor="login-password">Senha</Label>
-                      <div className="relative">
+                      <Div className="relative">
                         <Input
                           id="login-password"
                           type={showPassword ? "text" : "password"}
@@ -211,15 +212,15 @@ const Auth = () => {
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </Button>
-                      </div>
+                      </Div>
                       {loginForm.formState.errors.password && (
                         <p className="text-sm text-destructive" role="alert">
                           {loginForm.formState.errors.password.message}
                         </p>
                       )}
-                    </div>
+                    </Div>
 
-                    <div className="flex items-center justify-between gap-3">
+                    <Div className="flex items-center justify-between gap-3">
                       <Label className="flex items-center gap-2 text-sm font-normal">
                         <Checkbox
                           checked={loginForm.watch("rememberMe")}
@@ -240,7 +241,7 @@ const Auth = () => {
                             <DialogDescription>Enviamos um link pra você redefinir sua senha.</DialogDescription>
                           </DialogHeader>
                           <form onSubmit={handleResetPassword} className="space-y-4">
-                            <div className="space-y-2">
+                            <Div className="space-y-2">
                               <Label htmlFor="reset-email">Email</Label>
                               <Input id="reset-email" placeholder="seu@email.com" {...resetForm.register("email")} />
                               {resetForm.formState.errors.email && (
@@ -248,14 +249,14 @@ const Auth = () => {
                                   {resetForm.formState.errors.email.message}
                                 </p>
                               )}
-                            </div>
+                            </Div>
                             <Button type="submit" className="w-full" disabled={!resetForm.formState.isValid || resetForm.formState.isSubmitting}>
                               {resetForm.formState.isSubmitting ? "Enviando..." : "Enviar link"}
                             </Button>
                           </form>
                         </DialogContent>
                       </Dialog>
-                    </div>
+                    </Div>
 
                     <Button
                       type="submit"
@@ -269,7 +270,7 @@ const Auth = () => {
 
                 <TabsContent value="signup" className="mt-4">
                   <form onSubmit={handleSignup} className="space-y-4" aria-label="Formulário de cadastro">
-                    <div className="space-y-2">
+                    <Div className="space-y-2">
                       <Label htmlFor="signup-username">Nome de usuário</Label>
                       <Input
                         id="signup-username"
@@ -283,9 +284,9 @@ const Auth = () => {
                           {signupForm.formState.errors.username.message}
                         </p>
                       )}
-                    </div>
+                    </Div>
 
-                    <div className="space-y-2">
+                    <Div className="space-y-2">
                       <Label htmlFor="signup-email">Email</Label>
                       <Input
                         id="signup-email"
@@ -300,9 +301,9 @@ const Auth = () => {
                           {signupForm.formState.errors.email.message}
                         </p>
                       )}
-                    </div>
+                    </Div>
 
-                    <div className="space-y-2">
+                    <Div className="space-y-2">
                       <Label htmlFor="signup-password">Senha</Label>
                       <Input
                         id="signup-password"
@@ -317,7 +318,7 @@ const Auth = () => {
                           {signupForm.formState.errors.password.message}
                         </p>
                       )}
-                    </div>
+                    </Div>
 
                     <Button
                       type="submit"
@@ -331,9 +332,9 @@ const Auth = () => {
               </Tabs>
             </CardContent>
           </Card>
-        </div>
-      </div>
-    </div>
+        </Div>
+      </Div>
+    </Div>
   );
 };
 

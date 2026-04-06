@@ -8,6 +8,7 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Moon, Sun, Swords } from "lucide-react";
+import { Div } from "@/components/ui/Div";
 
 const Index = () => {
   const { resolvedTheme, setTheme } = useTheme();
@@ -28,8 +29,8 @@ const Index = () => {
         Pular para o conteúdo
       </a>
       <header id="top" className="sticky top-0 z-50 border-b bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/50">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-          <div className="flex items-center gap-3">
+        <Div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+          <Div className="flex items-center gap-3">
             <Link to="/" className="inline-flex items-center gap-2 font-semibold tracking-tight">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <Swords className="h-4 w-4" />
@@ -44,9 +45,9 @@ const Index = () => {
                 </Button>
               ))}
             </nav>
-          </div>
+          </Div>
 
-          <div className="flex items-center gap-2">
+          <Div className="flex items-center gap-2">
             <Button
               type="button"
               variant="outline"
@@ -68,9 +69,9 @@ const Index = () => {
                 </Button>
               </SheetTrigger>
               <SheetContent className="w-[320px]">
-                <div className="flex flex-col gap-2">
-                  <div className="text-sm font-semibold">Explorar</div>
-                  <div className="flex flex-col gap-1">
+                <Div className="flex flex-col gap-2">
+                  <Div className="text-sm font-semibold">Explorar</Div>
+                  <Div className="flex flex-col gap-1">
                     {navItems.map((item) => (
                       <SheetClose asChild key={item.href}>
                         <Button asChild variant="ghost" className="justify-start">
@@ -78,19 +79,19 @@ const Index = () => {
                         </Button>
                       </SheetClose>
                     ))}
-                  </div>
-                  <div className="mt-2">
+                  </Div>
+                  <Div className="mt-2">
                     <SheetClose asChild>
                       <Button asChild className="w-full">
                         <Link to="/auth">Jogar agora</Link>
                       </Button>
                     </SheetClose>
-                  </div>
-                </div>
+                  </Div>
+                </Div>
               </SheetContent>
             </Sheet>
-          </div>
-        </div>
+          </Div>
+        </Div>
       </header>
 
       <main id="main" className="min-h-screen">

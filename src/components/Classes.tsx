@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Div } from "@/components/ui/Div";
 
 export const Classes = () => {
   const classes = [
@@ -13,15 +14,15 @@ export const Classes = () => {
 
   return (
     <section id="classes" className="border-t bg-muted/20 py-14 sm:py-16">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="mx-auto max-w-2xl text-center">
+      <Div className="mx-auto max-w-6xl px-4">
+        <Div className="mx-auto max-w-2xl text-center">
           <h2 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">Escolha tua classe</h2>
           <p className="mt-2 text-pretty text-sm text-muted-foreground sm:text-base">
             Cinco classes com estilos bem marcados e espaço pra builds híbridas.
           </p>
-        </div>
+        </Div>
 
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <Div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {classes.map((cls, i) => (
             <motion.div
               key={cls.key}
@@ -32,31 +33,31 @@ export const Classes = () => {
             >
               <Card className="h-full transition-shadow hover:shadow-[var(--shadow-warm)]">
                 <CardHeader className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <Div className="flex items-center justify-between">
                     <span className="text-3xl">{cls.icon}</span>
                     <Badge style={{ background: `hsl(var(--${cls.key}))`, color: "white" }}>{cls.name}</Badge>
-                  </div>
+                  </Div>
                   <CardTitle className="text-sm">{cls.spec}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="text-xs text-muted-foreground">Atributo base: <span className="text-foreground">{cls.attr}</span></div>
+                  <Div className="text-xs text-muted-foreground">Atributo base: <span className="text-foreground">{cls.attr}</span></Div>
                   <p className="text-sm text-muted-foreground">{cls.desc}</p>
                 </CardContent>
               </Card>
             </motion.div>
           ))}
-        </div>
+        </Div>
 
-        <div className="mx-auto mt-10 max-w-3xl rounded-2xl border bg-background p-5 text-center shadow-[var(--shadow-cool)]">
-          <div className="text-sm font-semibold">Builds híbridas</div>
+        <Div className="mx-auto mt-10 max-w-3xl rounded-2xl border bg-background p-5 text-center shadow-[var(--shadow-cool)]">
+          <Div className="text-sm font-semibold">Builds híbridas</Div>
           <p className="mt-2 text-sm text-muted-foreground">
             Misture estilos e cria tua assinatura:{" "}
             <span className="font-medium text-foreground">Guerreiro/Arqueiro</span>,{" "}
             <span className="font-medium text-foreground">Mago/Curandeiro</span>,{" "}
             <span className="font-medium text-foreground">Assassino/Arqueiro</span>.
           </p>
-        </div>
-      </div>
+        </Div>
+      </Div>
     </section>
   );
 };

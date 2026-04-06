@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, LogOut, Heart, Zap, Coins, MapPin, X, Backpack, Scroll, Swords, Users, Trophy, Crown, Shield, Hammer, Map, Calendar, ArrowLeftRight, Skull, PawPrint, Sparkles } from 'lucide-react';
 import { GameCanvas } from '@/engine/GameCanvas';
 import { GamePanel, GameButton } from '@/components/ui/game-panel';
+import { Div } from '@/components/ui/Div';
 import { WorldMap } from './WorldMap';
 import { Inventory } from './Inventory';
 import { Combat } from './Combat';
@@ -92,7 +93,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
   }
 
   return (
-    <div className="fixed inset-0 bg-background overflow-hidden">
+    <Div className="fixed inset-0 bg-background overflow-hidden">
       <GameCanvas
         character={currentCharacter}
         onCharacterUpdate={handleCharacterUpdate}
@@ -102,14 +103,14 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
       />
 
       {/* Top bar */}
-      <div className="absolute top-2 right-2 z-20 flex gap-1">
+      <Div className="absolute top-2 right-2 z-20 flex gap-1">
         <GameButton size="sm" onClick={() => setActivePanel('menu')}>☰</GameButton>
         <GameButton size="sm" onClick={onBack}><ArrowLeft className="h-3 w-3" /></GameButton>
         <GameButton size="sm" variant="danger" onClick={onSignOut}><LogOut className="h-3 w-3" /></GameButton>
-      </div>
+      </Div>
 
       {/* Bottom action bar */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex gap-1 rpg-panel !p-1">
+      <Div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex gap-1 rpg-panel !p-1">
         {menuItems.slice(0, 6).map(item => (
           <GameButton
             key={item.key}
@@ -121,11 +122,11 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
             <span className="hidden md:inline ml-1 text-[10px]">{item.label}</span>
           </GameButton>
         ))}
-      </div>
+      </Div>
 
       {/* Side panel overlay */}
       {activePanel && activePanel !== 'menu' && (
-        <div className="absolute top-0 right-0 z-30 w-full md:w-[480px] h-full flex flex-col p-2 md:p-3 bg-black/40">
+        <Div className="absolute top-0 right-0 z-30 w-full md:w-[480px] h-full flex flex-col p-2 md:p-3 bg-black/40">
           {activePanel === 'inventory' ? (
             <Inventory character={currentCharacter} onCharacterUpdate={handleCharacterUpdate} />
           ) : activePanel === 'equipment' ? (
@@ -156,7 +157,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
               {activePanel === 'rankings' && <Rankings character={currentCharacter} />}
             </GamePanel>
           )}
-        </div>
+        </Div>
       )}
 
       {/* Global Chat - bottom left */}
@@ -166,31 +167,31 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
       <GameNotifications characterId={currentCharacter.id} />
       {/* Menu overlay */}
       {activePanel === 'menu' && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-sm">
+        <Div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 p-4">
+          <Div className="w-full max-w-sm">
             <GamePanel
               title="Menu"
               icon={<Map className="h-5 w-5" />}
               onClose={() => setActivePanel(null)}
               footer={
-                <div className="flex gap-2 justify-between w-full">
+                <Div className="flex gap-2 justify-between w-full">
                   <GameButton variant="secondary" onClick={onBack}><ArrowLeft className="h-3 w-3 mr-1" /> Voltar</GameButton>
                   <GameButton variant="danger" onClick={onSignOut}><LogOut className="h-3 w-3 mr-1" /> Sair</GameButton>
-                </div>
+                </Div>
               }
             >
               {/* Character summary */}
-              <div className="rpg-item-detail mb-3">
-                <div className="font-bold pixel-text">{currentCharacter.name}</div>
+              <Div className="rpg-item-detail mb-3">
+                <Div className="font-bold pixel-text">{currentCharacter.name}</Div>
                 <span className="text-[10px] opacity-50">{getClassDisplayName(currentCharacter.class)} • Nível {currentCharacter.level}</span>
-                <div className="flex gap-3 mt-2 text-[10px]">
+                <Div className="flex gap-3 mt-2 text-[10px]">
                   <span>❤ {currentCharacter.health}/{currentCharacter.max_health}</span>
                   <span>💧 {currentCharacter.mana}/{currentCharacter.max_mana}</span>
                   <span>🪙 {currentCharacter.gold}</span>
-                </div>
-              </div>
+                </Div>
+              </Div>
 
-              <div className="grid grid-cols-2 gap-1">
+              <Div className="grid grid-cols-2 gap-1">
                 {menuItems.map(item => (
                   <GameButton
                     key={item.key}
@@ -203,11 +204,11 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
                     <span className="text-[10px]">{item.label}</span>
                   </GameButton>
                 ))}
-              </div>
+              </Div>
             </GamePanel>
-          </div>
-        </div>
+          </Div>
+        </Div>
       )}
-    </div>
+    </Div>
   );
 }

@@ -10,6 +10,7 @@ import { SFX } from '@/hooks/useGameAudio';
 import { GamePanel, GameButton } from '@/components/ui/game-panel';
 import { SkillBar, SkillEffect, CLASS_SKILLS } from './Skills';
 import type { Skill } from './Skills';
+import { Div } from '@/components/ui/Div';
 
 interface Character {
   id: string; name: string; class: string; level: number;
@@ -343,15 +344,15 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
     : { filter: 'none', transition: 'filter 0.3s' };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-      <div className="w-full max-w-2xl">
+    <Div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+      <Div className="w-full max-w-2xl">
         <GamePanel
           title="⚔ Combate"
           icon={<Swords className="h-5 w-5" />}
           footer={
             isCombatActive ? (
-              <div className="flex flex-col items-center gap-2 w-full">
-                <div className="flex gap-2 justify-center">
+              <Div className="flex flex-col items-center gap-2 w-full">
+                <Div className="flex gap-2 justify-center">
                   <GameButton size="md" variant="primary" onClick={() => playerAttack('attack')} disabled={!isPlayerTurn}>
                     <Swords className="h-4 w-4 mr-1" /> Atacar
                   </GameButton>
@@ -361,7 +362,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
                   <GameButton size="md" variant="gold" onClick={() => playerAttack('special')} disabled={!isPlayerTurn || playerMana < 20}>
                     <Zap className="h-4 w-4 mr-1" /> Especial
                   </GameButton>
-                </div>
+                </Div>
                 <SkillBar
                   characterClass={character.class}
                   mana={playerMana}
@@ -370,13 +371,13 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
                   cooldowns={skillCooldowns}
                 />
                 <span className="text-[10px] opacity-50">Habilidades de classe acima • Pet ativo dá bônus passivo</span>
-              </div>
+              </Div>
             ) : (
-              <div className="flex justify-center w-full">
+              <Div className="flex justify-center w-full">
                 <GameButton size="md" variant="primary" onClick={() => onCombatEnd(playerHealth > 0)}>
                   Continuar
                 </GameButton>
-              </div>
+              </Div>
             )
           }
         >
@@ -391,7 +392,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
           />
 
           {/* Combatants */}
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <Div className="grid grid-cols-2 gap-4 mb-4">
             {/* Player */}
             <motion.div
               className="rpg-combatant"
@@ -406,30 +407,30 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
                     animate={{ opacity: 0, y: 20, scale: 0.8 }}
                     transition={{ duration: 0.8 }}
                   >
-                    <div className="rpg-combatant-name">{character.name}</div>
+                    <Div className="rpg-combatant-name">{character.name}</Div>
                     <span className="rpg-combatant-level">Nível {character.level}</span>
                     <p className="text-xs text-center mt-2" style={{ color: 'hsl(0 60% 55%)' }}>💀 Derrotado</p>
                   </motion.div>
                 ) : (
-                  <div>
-                    <div className="rpg-combatant-name">{character.name}</div>
+                  <Div>
+                    <Div className="rpg-combatant-name">{character.name}</Div>
                     <span className="rpg-combatant-level">Nível {character.level}</span>
-                    <div className="rpg-bar-group">
-                      <div className="rpg-bar-label"><Heart className="h-3 w-3" /> {playerHealth}/{character.max_health}</div>
-                      <div className="rpg-bar rpg-bar-hp">
+                    <Div className="rpg-bar-group">
+                      <Div className="rpg-bar-label"><Heart className="h-3 w-3" /> {playerHealth}/{character.max_health}</Div>
+                      <Div className="rpg-bar rpg-bar-hp">
                         <motion.div className="rpg-bar-fill rpg-bar-fill-hp"
                           animate={{ width: `${playerHealthPercent}%` }}
                           transition={{ duration: 0.4, ease: 'easeOut' }}
                         />
-                      </div>
-                      <div className="rpg-bar-label"><Zap className="h-3 w-3" /> {playerMana}/{character.max_mana}</div>
-                      <div className="rpg-bar rpg-bar-mp">
+                      </Div>
+                      <Div className="rpg-bar-label"><Zap className="h-3 w-3" /> {playerMana}/{character.max_mana}</Div>
+                      <Div className="rpg-bar rpg-bar-mp">
                         <motion.div className="rpg-bar-fill rpg-bar-fill-mp"
                           animate={{ width: `${playerManaPercent}%` }}
                           transition={{ duration: 0.4, ease: 'easeOut' }}
                         />
-                      </div>
-                    </div>
+                      </Div>
+                    </Div>
                     {isDefending && (
                       <motion.div
                         initial={{ scale: 0 }}
@@ -439,7 +440,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
                         <Shield className="h-3 w-3" /> Defendendo
                       </motion.div>
                     )}
-                  </div>
+                  </Div>
                 )}
               </AnimatePresence>
             </motion.div>
@@ -458,35 +459,35 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
                     animate={{ opacity: 0, y: 20, rotateZ: 15, scale: 0.7 }}
                     transition={{ duration: 0.8 }}
                   >
-                    <div className="rpg-combatant-name">{creature.name}</div>
+                    <Div className="rpg-combatant-name">{creature.name}</Div>
                     <p className="text-xs text-center mt-2" style={{ color: 'hsl(var(--rpg-gold))' }}>🏆 Derrotado!</p>
                   </motion.div>
                 ) : (
-                  <div>
-                    <div className="rpg-combatant-name">{creature.name}</div>
+                  <Div>
+                    <Div className="rpg-combatant-name">{creature.name}</Div>
                     <span className={`rpg-combatant-level rpg-rarity-label-${creature.rarity}`}>Nível {creature.level} • {creature.rarity}</span>
-                    <div className="rpg-bar-group">
-                      <div className="rpg-bar-label"><Heart className="h-3 w-3" /> {creatureHealth}/{creature.max_health}</div>
-                      <div className="rpg-bar rpg-bar-hp">
+                    <Div className="rpg-bar-group">
+                      <Div className="rpg-bar-label"><Heart className="h-3 w-3" /> {creatureHealth}/{creature.max_health}</Div>
+                      <Div className="rpg-bar rpg-bar-hp">
                         <motion.div className="rpg-bar-fill rpg-bar-fill-hp"
                           animate={{ width: `${creatureHealthPercent}%` }}
                           transition={{ duration: 0.4, ease: 'easeOut' }}
                         />
-                      </div>
-                    </div>
+                      </Div>
+                    </Div>
                     <p className="text-[10px] opacity-60 mt-1">{creature.description}</p>
                     {creature.special_ability && (
                       <p className="text-[10px] mt-0.5" style={{ color: 'hsl(var(--rpg-gold))' }}>✦ {creature.special_ability}</p>
                     )}
-                  </div>
+                  </Div>
                 )}
               </AnimatePresence>
             </motion.div>
-          </div>
+          </Div>
 
           {/* Turn indicator */}
           {isCombatActive && (
-            <div className="text-center mb-3">
+            <Div className="text-center mb-3">
               <motion.span
                 key={isPlayerTurn ? 'player' : 'enemy'}
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -495,13 +496,13 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
               >
                 {isPlayerTurn ? '🎯 Seu Turno!' : '⏳ Turno do Inimigo'}
               </motion.span>
-            </div>
+            </Div>
           )}
 
           {/* Combat Log */}
-          <div className="rpg-combat-log">
-            <div className="rpg-combat-log-title">Log de Combate</div>
-            <div className="rpg-combat-log-entries" ref={(el) => { if (el) el.scrollTop = el.scrollHeight; }}>
+          <Div className="rpg-combat-log">
+            <Div className="rpg-combat-log-title">Log de Combate</Div>
+            <Div className="rpg-combat-log-entries" ref={(el) => { if (el) el.scrollTop = el.scrollHeight; }}>
               {combatLog.map((message, index) => (
                 <motion.p
                   key={index}
@@ -515,10 +516,10 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
               {combatLog.length === 0 && (
                 <p className="rpg-combat-log-entry opacity-40">O combate começou...</p>
               )}
-            </div>
-          </div>
+            </Div>
+          </Div>
         </GamePanel>
-      </div>
-    </div>
+      </Div>
+    </Div>
   );
 }

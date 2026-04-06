@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Div } from '@/components/ui/Div';
 
 interface Item {
   name: string; rarity: string;
@@ -21,9 +22,9 @@ const STATS = [
 
 export function StatComparison({ currentItem, newItem }: StatComparisonProps) {
   return (
-    <div className="rpg-item-detail !p-2" style={{ background: 'hsl(var(--rpg-panel-bg))' }}>
-      <div className="text-[9px] font-bold mb-1 opacity-60 uppercase">Comparação</div>
-      <div className="flex flex-col gap-0.5">
+    <Div className="rpg-item-detail !p-2" style={{ background: 'hsl(var(--rpg-panel-bg))' }}>
+      <Div className="text-[9px] font-bold mb-1 opacity-60 uppercase">Comparação</Div>
+      <Div className="flex flex-col gap-0.5">
         {STATS.map(stat => {
           const oldVal = currentItem ? (currentItem as any)[stat.key] || 0 : 0;
           const newVal = (newItem as any)[stat.key] || 0;
@@ -31,9 +32,9 @@ export function StatComparison({ currentItem, newItem }: StatComparisonProps) {
           if (oldVal === 0 && newVal === 0) return null;
 
           return (
-            <div key={stat.key} className="flex items-center justify-between text-[10px]">
+            <Div key={stat.key} className="flex items-center justify-between text-[10px]">
               <span className={stat.cls}>{stat.label}</span>
-              <div className="flex items-center gap-2">
+              <Div className="flex items-center gap-2">
                 {currentItem && <span className="opacity-50">{oldVal}</span>}
                 {currentItem && <span className="opacity-30">→</span>}
                 <span className="font-bold">{newVal}</span>
@@ -46,11 +47,11 @@ export function StatComparison({ currentItem, newItem }: StatComparisonProps) {
                     {diff > 0 ? `▲${diff}` : `▼${Math.abs(diff)}`}
                   </motion.span>
                 )}
-              </div>
-            </div>
+              </Div>
+            </Div>
           );
         })}
-      </div>
-    </div>
+      </Div>
+    </Div>
   );
 }

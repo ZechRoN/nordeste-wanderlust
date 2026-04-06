@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Div } from '@/components/ui/Div';
 
 interface GamePanelProps {
   title: string;
@@ -13,10 +14,10 @@ interface GamePanelProps {
 
 export function GamePanel({ title, onClose, children, className, footer, icon }: GamePanelProps) {
   return (
-    <div className={cn('rpg-panel flex flex-col', className)}>
+    <Div skin="panel" className={cn(className)}>
       {/* Title bar */}
-      <div className="rpg-panel-header">
-        <div className="rpg-panel-title-bar">
+      <Div skin="panel-header">
+        <Div skin="panel-title-bar">
           {icon && <span className="rpg-panel-icon">{icon}</span>}
           <h2 className="rpg-panel-title">{title}</h2>
           {onClose && (
@@ -24,21 +25,21 @@ export function GamePanel({ title, onClose, children, className, footer, icon }:
               <X className="h-4 w-4" />
             </button>
           )}
-        </div>
-      </div>
+        </Div>
+      </Div>
 
       {/* Content */}
-      <div className="rpg-panel-content flex-1 overflow-y-auto">
+      <Div skin="panel-content" className="flex-1 overflow-y-auto">
         {children}
-      </div>
+      </Div>
 
       {/* Footer */}
       {footer && (
-        <div className="rpg-panel-footer">
+        <Div skin="panel-footer">
           {footer}
-        </div>
+        </Div>
       )}
-    </div>
+    </Div>
   );
 }
 
@@ -50,7 +51,7 @@ interface GamePanelTabsProps {
 
 export function GamePanelTabs({ tabs, activeTab, onTabChange }: GamePanelTabsProps) {
   return (
-    <div className="rpg-tabs">
+    <Div skin="tabs">
       {tabs.map(tab => (
         <button
           key={tab.key}
@@ -60,7 +61,7 @@ export function GamePanelTabs({ tabs, activeTab, onTabChange }: GamePanelTabsPro
           {tab.label}
         </button>
       ))}
-    </div>
+    </Div>
   );
 }
 
@@ -88,9 +89,8 @@ export function InventorySlot({
   className,
 }: InventorySlotProps) {
   return (
-    <div
+    <Div skin="slot"
       className={cn(
-        'rpg-slot',
         !isEmpty && 'rpg-slot-filled',
         isEquipped && 'rpg-slot-equipped',
         `rpg-rarity-${rarity}`,
@@ -109,7 +109,7 @@ export function InventorySlot({
           {isEquipped && <span className="rpg-slot-equipped-badge">E</span>}
         </>
       )}
-    </div>
+    </Div>
   );
 }
 

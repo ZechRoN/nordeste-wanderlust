@@ -4,6 +4,7 @@ import { generateTileMap, isWalkable, getBiomeAt, getBiomeSpawnPoint, getMapPOIs
 import { renderMap, renderPlayer, renderPOI, renderMinimap, renderHUD, renderControls, renderCreature } from './Renderer';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Div } from '@/components/ui/Div';
 
 interface Character {
   id: string;
@@ -415,16 +416,16 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
   }, []);
 
   return (
-    <div className="relative w-full h-full min-h-[500px]" style={{ imageRendering: 'pixelated' }}>
+    <Div className="relative w-full h-full min-h-[500px]" style={{ imageRendering: 'pixelated' }}>
       <canvas
         ref={canvasRef}
         className="w-full h-full block bg-background cursor-crosshair"
         tabIndex={0}
         onFocus={() => canvasRef.current?.focus()}
       />
-      <div className="absolute top-2 right-2 z-20 hidden md:block">
-        <div className="rpg-panel !p-2 !bg-[hsl(var(--rpg-panel-bg))]">
-          <div className="flex items-center gap-2">
+      <Div className="absolute top-2 right-2 z-20 hidden md:block">
+        <Div className="rpg-panel !p-2 !bg-[hsl(var(--rpg-panel-bg))]">
+          <Div className="flex items-center gap-2">
             <span className="text-[11px] opacity-70">Zoom</span>
             <input
               type="range"
@@ -455,17 +456,17 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
             />
             <span className="text-[11px] opacity-70">Q</span>
             <span className="text-[11px] font-bold">{activeQuestCount}</span>
-          </div>
-        </div>
-      </div>
+          </Div>
+        </Div>
+      </Div>
       {/* Mobile controls */}
-      <div className="absolute bottom-12 left-4 md:hidden flex flex-col items-center gap-1 opacity-70">
+      <Div className="absolute bottom-12 left-4 md:hidden flex flex-col items-center gap-1 opacity-70">
         <button
           className="w-12 h-12 bg-foreground/20 rounded flex items-center justify-center text-xl"
           onTouchStart={() => keysRef.current.add('w')}
           onTouchEnd={() => keysRef.current.delete('w')}
         >↑</button>
-        <div className="flex gap-1">
+        <Div className="flex gap-1">
           <button
             className="w-12 h-12 bg-foreground/20 rounded flex items-center justify-center text-xl"
             onTouchStart={() => keysRef.current.add('a')}
@@ -481,14 +482,14 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
             onTouchStart={() => keysRef.current.add('d')}
             onTouchEnd={() => keysRef.current.delete('d')}
           >→</button>
-        </div>
-      </div>
-      <div className="absolute bottom-12 right-4 md:hidden flex gap-2 opacity-70">
+        </Div>
+      </Div>
+      <Div className="absolute bottom-12 right-4 md:hidden flex gap-2 opacity-70">
         <button
           className="w-14 h-14 bg-primary/30 rounded-full flex items-center justify-center text-sm font-bold"
           onClick={handleInteract}
         >E</button>
-      </div>
-    </div>
+      </Div>
+    </Div>
   );
 }

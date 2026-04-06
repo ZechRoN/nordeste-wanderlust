@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { GamePanelTabs, GameButton } from '@/components/ui/game-panel';
+import { Div } from '@/components/ui/Div';
 
 interface Quest {
   id: string; title: string; description: string; quest_type: string;
@@ -137,11 +138,11 @@ export function Quests({ character, onCharacterUpdate }: QuestsProps) {
     if (!selected && combinedList[0]) setSelectedId(combinedList[0].questId);
   }, [combinedList, selected]);
 
-  if (loading) return <div className="flex items-center justify-center h-40"><span className="rpg-loading">Carregando...</span></div>;
+  if (loading) return <Div className="flex items-center justify-center h-40"><span className="rpg-loading">Carregando...</span></Div>;
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between gap-2">
+    <Div className="space-y-2">
+      <Div className="flex items-center justify-between gap-2">
         <GamePanelTabs
           tabs={[
             { key: 'active', label: `Ativas (${activeQuests.length})` },
@@ -151,7 +152,7 @@ export function Quests({ character, onCharacterUpdate }: QuestsProps) {
           onTabChange={(key) => setActiveTab(key as any)}
         />
 
-        <div className="flex items-center gap-2">
+        <Div className="flex items-center gap-2">
           <select className="rpg-input !w-[120px]" value={sortKey} onChange={(e) => setSortKey(e.target.value as any)}>
             <option value="title">Nome</option>
             <option value="level">Nível</option>
@@ -162,22 +163,22 @@ export function Quests({ character, onCharacterUpdate }: QuestsProps) {
             <option value="asc">↑</option>
             <option value="desc">↓</option>
           </select>
-          <div className="relative w-[180px]">
+          <Div className="relative w-[180px]">
             <SearchInput value={query} onChange={setQuery} />
-          </div>
-        </div>
-      </div>
+          </Div>
+        </Div>
+      </Div>
 
       <GamePanelTabs tabs={QUEST_TYPE_TABS} activeTab={typeTab} onTabChange={setTypeTab} />
 
-      <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-2">
-        <div className="space-y-1 max-h-[520px] overflow-y-auto pr-1">
+      <Div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-2">
+        <Div className="space-y-1 max-h-[520px] overflow-y-auto pr-1">
           {combinedList.length === 0 ? (
-            <div className="rpg-item-detail">
+            <Div className="rpg-item-detail">
               <span className="text-[11px] opacity-70">
                 {activeTab === 'active' ? 'Nenhuma missão ativa.' : 'Nenhuma missão disponível neste bioma.'}
               </span>
-            </div>
+            </Div>
           ) : (
             combinedList.map((entry) => {
               const quest = entry.quest;
@@ -193,45 +194,45 @@ export function Quests({ character, onCharacterUpdate }: QuestsProps) {
                   onClick={() => setSelectedId(entry.questId)}
                   className={`rpg-class-card w-full text-left ${isSelected ? 'rpg-class-selected' : ''}`}
                 >
-                  <div className="flex items-center justify-between gap-2">
+                  <Div className="flex items-center justify-between gap-2">
                     <span className="text-[10px] opacity-70">{QUEST_TYPE_LABELS[quest.quest_type] || quest.quest_type}</span>
-                    <div className="flex items-center gap-2">
+                    <Div className="flex items-center gap-2">
                       {isTracked && <span className="text-[10px]">★</span>}
                       <span className="rpg-combatant-level text-[9px]">Nv.{quest.required_level}+</span>
-                    </div>
-                  </div>
-                  <div className="font-bold text-[12px]">{quest.title}</div>
-                  <div className="text-[10px] opacity-60 line-clamp-2">{quest.description}</div>
+                    </Div>
+                  </Div>
+                  <Div className="font-bold text-[12px]">{quest.title}</Div>
+                  <Div className="text-[10px] opacity-60 line-clamp-2">{quest.description}</Div>
 
                   {entry.kind === 'active' && (
-                    <div className="mt-2">
-                      <div className="rpg-bar" style={{ height: '6px' }}>
-                        <div
+                    <Div className="mt-2">
+                      <Div className="rpg-bar" style={{ height: '6px' }}>
+                        <Div
                           className="rpg-bar-fill"
                           style={{ width: `${pct}%`, background: isComplete ? 'hsl(120 60% 45%)' : 'hsl(var(--rpg-gold))' }}
                         />
-                      </div>
-                      <div className="flex items-center justify-between text-[9px] opacity-70">
+                      </Div>
+                      <Div className="flex items-center justify-between text-[9px] opacity-70">
                         <span>{entry.progress}/{quest.objective_count}</span>
                         <span className="rpg-gold-display">🪙{quest.reward_gold} ⭐{quest.reward_experience}</span>
-                      </div>
-                    </div>
+                      </Div>
+                    </Div>
                   )}
                 </button>
               );
             })
           )}
-        </div>
+        </Div>
 
-        <div className="space-y-2">
+        <Div className="space-y-2">
           {!selected ? (
-            <div className="rpg-item-detail">Selecione uma missão.</div>
+            <Div className="rpg-item-detail">Selecione uma missão.</Div>
           ) : (
             <>
-              <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
-                <div className="flex items-center justify-between gap-2">
-                  <div className="font-bold text-[13px]">{selected.quest.title}</div>
-                  <div className="flex items-center gap-2">
+              <Div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+                <Div className="flex items-center justify-between gap-2">
+                  <Div className="font-bold text-[13px]">{selected.quest.title}</Div>
+                  <Div className="flex items-center gap-2">
                     <GameButton size="sm" variant={trackedIds.has(selected.questId) ? 'gold' : 'secondary'} onClick={() => toggleTracked(selected.questId)}>
                       ★
                     </GameButton>
@@ -240,60 +241,60 @@ export function Quests({ character, onCharacterUpdate }: QuestsProps) {
                         Aceitar
                       </GameButton>
                     )}
-                  </div>
-                </div>
-                <div className="text-[10px] opacity-70 mt-1">
+                  </Div>
+                </Div>
+                <Div className="text-[10px] opacity-70 mt-1">
                   {QUEST_TYPE_LABELS[selected.quest.quest_type] || selected.quest.quest_type} • Nv.{selected.quest.required_level}+ • {selected.quest.biome}
-                </div>
-              </div>
+                </Div>
+              </Div>
 
-              <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
-                <div className="text-[11px] font-bold mb-1">Objetivo</div>
-                <div className="text-[11px] opacity-80">
+              <Div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+                <Div className="text-[11px] font-bold mb-1">Objetivo</Div>
+                <Div className="text-[11px] opacity-80">
                   {selected.quest.objective_type}: {selected.quest.objective_target} ({selected.quest.objective_count})
-                </div>
+                </Div>
 
                 {selected.kind === 'active' && (
-                  <div className="mt-2">
-                    <div className="flex items-center justify-between text-[11px]">
+                  <Div className="mt-2">
+                    <Div className="flex items-center justify-between text-[11px]">
                       <span>Progresso</span>
                       <span>{selected.progress}/{selected.quest.objective_count}</span>
-                    </div>
-                    <div className="rpg-bar" style={{ height: '8px' }}>
-                      <div
+                    </Div>
+                    <Div className="rpg-bar" style={{ height: '8px' }}>
+                      <Div
                         className="rpg-bar-fill"
                         style={{
                           width: `${selected.quest.objective_count ? Math.min(100, Math.floor((selected.progress / selected.quest.objective_count) * 100)) : 0}%`,
                           background: selected.progress >= selected.quest.objective_count ? 'hsl(120 60% 45%)' : 'hsl(var(--rpg-gold))',
                         }}
                       />
-                    </div>
+                    </Div>
                     {selected.progress >= selected.quest.objective_count && (
                       <GameButton size="sm" variant="gold" className="w-full mt-2" onClick={() => completeQuest(selected.cq)}>
                         Coletar Recompensas
                       </GameButton>
                     )}
-                  </div>
+                  </Div>
                 )}
-              </div>
+              </Div>
 
-              <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
-                <div className="text-[11px] font-bold mb-1">Recompensas</div>
-                <div className="flex items-center gap-4 text-[11px]">
+              <Div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+                <Div className="text-[11px] font-bold mb-1">Recompensas</Div>
+                <Div className="flex items-center gap-4 text-[11px]">
                   <span className="rpg-gold-display">🪙 {selected.quest.reward_gold}</span>
                   <span className="rpg-gold-display">⭐ {selected.quest.reward_experience}</span>
-                </div>
-              </div>
+                </Div>
+              </Div>
 
-              <div className="rpg-item-detail">
-                <div className="text-[11px] font-bold mb-1">Descrição</div>
-                <div className="text-[11px] opacity-80">{selected.quest.description}</div>
-              </div>
+              <Div className="rpg-item-detail">
+                <Div className="text-[11px] font-bold mb-1">Descrição</Div>
+                <Div className="text-[11px] opacity-80">{selected.quest.description}</Div>
+              </Div>
             </>
           )}
-        </div>
-      </div>
-    </div>
+        </Div>
+      </Div>
+    </Div>
   );
 }
 

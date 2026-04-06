@@ -6,6 +6,7 @@ import { CharacterCreation } from "@/components/CharacterCreation";
 import { CharacterDashboard } from "@/components/CharacterDashboard";
 import { useToast } from "@/hooks/use-toast";
 import { GameButton, GamePanel, GamePanelTabs } from "@/components/ui/game-panel";
+import { Div } from "@/components/ui/Div";
 import { LogOut, Plus, Search } from "lucide-react";
 
 type CharacterRow = {
@@ -124,9 +125,9 @@ const Game = () => {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 rpg-game-bg flex items-center justify-center">
+      <Div className="fixed inset-0 rpg-game-bg flex items-center justify-center">
         <span className="rpg-loading text-lg">Carregando personagens...</span>
-      </div>
+      </Div>
     );
   }
 
@@ -135,23 +136,23 @@ const Game = () => {
   }
 
   return (
-    <div className="fixed inset-0 rpg-game-bg flex items-center justify-center p-4">
+    <Div className="fixed inset-0 rpg-game-bg flex items-center justify-center p-4">
       {selectedCharacter === "create" ? (
         <CharacterCreation onCharacterCreated={handleCharacterCreated} onCancel={() => setSelectedCharacter(null)} />
       ) : characters.length === 0 ? (
         <CharacterCreation onCharacterCreated={handleCharacterCreated} />
       ) : (
-        <div className="w-full max-w-5xl">
+        <Div className="w-full max-w-5xl">
           <GamePanel
             title="Character"
             onClose={undefined}
             footer={
-              <div className="flex items-center justify-between gap-2 w-full">
+              <Div className="flex items-center justify-between gap-2 w-full">
                 <GameButton variant="danger" onClick={handleSignOut}>
                   <LogOut className="h-3 w-3 mr-1" />
                   Sair
                 </GameButton>
-                <div className="flex items-center gap-2">
+                <Div className="flex items-center gap-2">
                   <span className="rpg-capacity">Characters: {characters.length}/5</span>
                   <GameButton variant="secondary" onClick={() => setSelectedCharacter("create")} disabled={characters.length >= 5}>
                     <Plus className="h-3 w-3 mr-1" />
@@ -164,17 +165,17 @@ const Game = () => {
                   >
                     Entrar
                   </GameButton>
-                </div>
-              </div>
+                </Div>
+              </Div>
             }
           >
-            <div className="flex items-center justify-between gap-2 mb-2">
+            <Div className="flex items-center justify-between gap-2 mb-2">
               <GamePanelTabs
                 tabs={CLASS_TABS}
                 activeTab={classFilter}
                 onTabChange={(key) => setClassFilter(key)}
               />
-              <div className="relative w-[220px] shrink-0">
+              <Div className="relative w-[220px] shrink-0">
                 <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 opacity-60" />
                 <input
                   className="rpg-input pl-8"
@@ -182,23 +183,23 @@ const Game = () => {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                 />
-              </div>
-            </div>
+              </Div>
+            </Div>
 
             {errorMessage && (
-              <div className="rpg-item-detail" style={{ borderColor: "hsl(0 65% 50%)" }}>
+              <Div className="rpg-item-detail" style={{ borderColor: "hsl(0 65% 50%)" }}>
                 {errorMessage}
-              </div>
+              </Div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-2">
-              <div className="space-y-2">
-                <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
-                  <div className="text-[11px]">
+            <Div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-2">
+              <Div className="space-y-2">
+                <Div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+                  <Div className="text-[11px]">
                     Guild: Main Street
-                  </div>
-                </div>
-                <div className="space-y-1 max-h-[420px] overflow-y-auto pr-1">
+                  </Div>
+                </Div>
+                <Div className="space-y-1 max-h-[420px] overflow-y-auto pr-1">
                   {filteredCharacters.map((char) => {
                     const meta = CLASS_META[char.class] ?? { label: char.class, accent: "primary", emoji: "👤" };
                     const isActive = focusedCharacter?.id === char.id;
@@ -209,80 +210,80 @@ const Game = () => {
                         onClick={() => setFocusedCharacterId(char.id)}
                         className={`rpg-class-card w-full text-left ${isActive ? "rpg-class-selected" : ""}`}
                       >
-                        <div className="flex items-center gap-2">
-                          <div className="rpg-slot rpg-slot-filled" style={{ width: 32, height: 32, maxWidth: 32, minWidth: 32 }}>
+                        <Div className="flex items-center gap-2">
+                          <Div skin="slot" className="rpg-slot-filled" style={{ width: 32, height: 32, maxWidth: 32, minWidth: 32 }}>
                             <span className="rpg-slot-icon">{meta.emoji}</span>
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between gap-2">
+                          </Div>
+                          <Div className="min-w-0 flex-1">
+                            <Div className="flex items-center justify-between gap-2">
                               <span className="font-bold text-[12px] truncate">{char.name}</span>
                               <span className="rpg-combatant-level">Lv. {char.level}</span>
-                            </div>
-                            <div className="text-[10px] opacity-70 truncate">{meta.label}</div>
-                          </div>
-                        </div>
+                            </Div>
+                            <Div className="text-[10px] opacity-70 truncate">{meta.label}</Div>
+                          </Div>
+                        </Div>
                       </button>
                     );
                   })}
-                </div>
-              </div>
+                </Div>
+              </Div>
 
-              <div className="space-y-2">
+              <Div className="space-y-2">
                 {focusedCharacter ? (
                   <>
-                    <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="font-bold text-[13px]">{focusedCharacter.name}</div>
-                        <div className="text-[11px] opacity-70">
+                    <Div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+                      <Div className="flex items-center justify-between gap-2">
+                        <Div className="font-bold text-[13px]">{focusedCharacter.name}</Div>
+                        <Div className="text-[11px] opacity-70">
                           {CLASS_META[focusedCharacter.class]?.label ?? focusedCharacter.class} • Lv. {focusedCharacter.level}
-                        </div>
-                      </div>
-                    </div>
+                        </Div>
+                      </Div>
+                    </Div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
-                        <div className="flex justify-between text-[11px]">
+                    <Div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <Div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+                        <Div className="flex justify-between text-[11px]">
                           <span>HP</span>
                           <span>{focusedCharacter.health ?? "-"} / {focusedCharacter.max_health ?? "-"}</span>
-                        </div>
-                        <div className="flex justify-between text-[11px]">
+                        </Div>
+                        <Div className="flex justify-between text-[11px]">
                           <span>MP</span>
                           <span>{focusedCharacter.mana ?? "-"} / {focusedCharacter.max_mana ?? "-"}</span>
-                        </div>
-                        <div className="flex justify-between text-[11px]">
+                        </Div>
+                        <Div className="flex justify-between text-[11px]">
                           <span>EXP</span>
                           <span>{focusedCharacter.experience}</span>
-                        </div>
-                        <div className="flex justify-between text-[11px]">
+                        </Div>
+                        <Div className="flex justify-between text-[11px]">
                           <span>Gold</span>
                           <span>{focusedCharacter.gold}</span>
-                        </div>
-                        <div className="flex justify-between text-[11px]">
+                        </Div>
+                        <Div className="flex justify-between text-[11px]">
                           <span>Biome</span>
                           <span>{focusedCharacter.current_biome}</span>
-                        </div>
-                      </div>
+                        </Div>
+                      </Div>
 
-                      <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
-                        <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
-                          <div className="flex justify-between"><span>STR</span><span>{focusedCharacter.strength ?? "-"}</span></div>
-                          <div className="flex justify-between"><span>AGI</span><span>{focusedCharacter.agility ?? "-"}</span></div>
-                          <div className="flex justify-between"><span>INT</span><span>{focusedCharacter.intelligence ?? "-"}</span></div>
-                          <div className="flex justify-between"><span>VIT</span><span>{focusedCharacter.vitality ?? "-"}</span></div>
-                          <div className="flex justify-between"><span>LUK</span><span>{focusedCharacter.luck ?? "-"}</span></div>
-                        </div>
-                      </div>
-                    </div>
+                      <Div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+                        <Div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+                          <Div className="flex justify-between"><span>STR</span><span>{focusedCharacter.strength ?? "-"}</span></Div>
+                          <Div className="flex justify-between"><span>AGI</span><span>{focusedCharacter.agility ?? "-"}</span></Div>
+                          <Div className="flex justify-between"><span>INT</span><span>{focusedCharacter.intelligence ?? "-"}</span></Div>
+                          <Div className="flex justify-between"><span>VIT</span><span>{focusedCharacter.vitality ?? "-"}</span></Div>
+                          <Div className="flex justify-between"><span>LUK</span><span>{focusedCharacter.luck ?? "-"}</span></Div>
+                        </Div>
+                      </Div>
+                    </Div>
                   </>
                 ) : (
-                  <div className="rpg-item-detail">Nenhum personagem encontrado.</div>
+                  <Div className="rpg-item-detail">Nenhum personagem encontrado.</Div>
                 )}
-              </div>
-            </div>
+              </Div>
+            </Div>
           </GamePanel>
-        </div>
+        </Div>
       )}
-    </div>
+    </Div>
   );
 };
 

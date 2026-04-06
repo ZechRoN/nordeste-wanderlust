@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Globe, Hammer, Mountain, Trophy, Users, Zap } from "lucide-react";
+import { Div } from "@/components/ui/Div";
 
 export const Features = () => {
   const features = [
@@ -14,15 +15,15 @@ export const Features = () => {
 
   return (
     <section id="features" className="border-t bg-background py-14 sm:py-16">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="mx-auto max-w-2xl text-center">
+      <Div className="mx-auto max-w-6xl px-4">
+        <Div className="mx-auto max-w-2xl text-center">
           <h2 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">Recursos do jogo</h2>
           <p className="mt-2 text-pretty text-sm text-muted-foreground sm:text-base">
             Cultura brasileira + mecânicas MMORPG profundas = uma experiência diferente (e viciante).
           </p>
-        </div>
+        </Div>
 
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f, i) => (
             <motion.div
               key={f.title}
@@ -33,17 +34,17 @@ export const Features = () => {
             >
               <Card className="h-full transition-shadow hover:shadow-[var(--shadow-cool)]">
                 <CardHeader className="space-y-2">
-                  <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     {f.icon}
-                  </div>
+                  </Div>
                   <CardTitle className="text-base">{f.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground">{f.desc}</CardContent>
               </Card>
             </motion.div>
           ))}
-        </div>
-      </div>
+        </Div>
+      </Div>
     </section>
   );
 };

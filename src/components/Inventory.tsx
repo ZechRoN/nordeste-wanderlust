@@ -6,6 +6,7 @@ import { RARITY_COLORS } from '@/assets/sprites';
 import { useQuestProgress } from '@/hooks/useQuestProgress';
 import { GamePanel, GamePanelTabs, InventorySlot, GameButton } from '@/components/ui/game-panel';
 import { ItemTooltip } from '@/components/inventory/ItemTooltip';
+import { Div } from '@/components/ui/Div';
 
 interface Character {
   id: string;
@@ -270,8 +271,8 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
       title="Inventário"
       icon={<Package className="h-5 w-5" />}
       footer={
-        <div className="flex items-center justify-between w-full">
-          <div className="flex gap-1">
+        <Div className="flex items-center justify-between w-full">
+          <Div className="flex gap-1">
             <GameButton size="sm" onClick={() => {}}>Ordenar</GameButton>
             {selectedItem && selectedItem.item.type === 'consumable' && (
               <GameButton size="sm" variant="primary" onClick={() => consumeItem(selectedItem)}>Usar</GameButton>
@@ -285,47 +286,47 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
             {selectedItem && (
               <GameButton size="sm" variant="danger" onClick={() => sellItem(selectedItem)}>Vender</GameButton>
             )}
-          </div>
-          <div className="flex items-center gap-3">
+          </Div>
+          <Div className="flex items-center gap-3">
             <span className="rpg-gold-display">🪙 {(character.gold || 0).toLocaleString()}</span>
             <span className="rpg-capacity">Capacidade: {totalItems}/{MAX_SLOTS}</span>
-          </div>
-        </div>
+          </Div>
+        </Div>
       }
     >
       {loading ? (
-        <div className="flex items-center justify-center h-40">
+        <Div className="flex items-center justify-center h-40">
           <span className="rpg-loading">Carregando...</span>
-        </div>
+        </Div>
       ) : (
         <>
           <GamePanelTabs tabs={TABS} activeTab={activeTab} onTabChange={(t) => { setActiveTab(t); setSelectedSlot(null); }} />
 
           {selectedItem && (
-            <div className="rpg-item-detail">
-              <div className="flex items-center gap-2 mb-1">
+            <Div className="rpg-item-detail">
+              <Div className="flex items-center gap-2 mb-1">
                 <span className="text-xl">{ITEM_ICONS[selectedItem.item.type] || '📦'}</span>
                 <span className="font-bold pixel-text" style={{ color: RARITY_COLORS[selectedItem.item.rarity as keyof typeof RARITY_COLORS] || '#9CA3AF' }}>
                   {selectedItem.item.name}
                 </span>
                 {selectedItem.is_equipped && <span className="rpg-equipped-tag">Equipado</span>}
-              </div>
+              </Div>
               <p className="text-xs opacity-70 mb-1">{selectedItem.item.description}</p>
-              <div className="flex flex-wrap gap-2 text-xs">
+              <Div className="flex flex-wrap gap-2 text-xs">
                 {selectedItem.item.strength_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-str">+{selectedItem.item.strength_bonus} FOR</span>}
                 {selectedItem.item.agility_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-agi">+{selectedItem.item.agility_bonus} AGI</span>}
                 {selectedItem.item.intelligence_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-int">+{selectedItem.item.intelligence_bonus} INT</span>}
                 {selectedItem.item.vitality_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-vit">+{selectedItem.item.vitality_bonus} VIT</span>}
                 {selectedItem.item.luck_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-luk">+{selectedItem.item.luck_bonus} SOR</span>}
                 <span className="rpg-stat-bonus">🪙 {selectedItem.item.value}</span>
-              </div>
-            </div>
+              </Div>
+            </Div>
           )}
 
-          <div className="rpg-grid">
+          <Div className="rpg-grid">
             {filteredItems.map((ci, idx) => (
               <ItemTooltip key={ci.id} item={ci.item} isEquipped={ci.is_equipped} quantity={ci.quantity}>
-                <div
+                <Div
                   draggable
                   onDragStart={() => handleDragStart(idx)}
                   onDragOver={(e) => handleDragOver(e, idx)}
@@ -340,19 +341,19 @@ export function Inventory({ character, onCharacterUpdate }: InventoryProps) {
                     onClick={() => setSelectedSlot(selectedSlot === idx ? null : idx)}
                     className={`${selectedSlot === idx ? 'rpg-slot-selected' : ''} ${dragIndex === idx ? 'rpg-slot-dragging' : ''} ${dragOverIndex === idx ? 'rpg-slot-dragover' : ''}`}
                   />
-                </div>
+                </Div>
               </ItemTooltip>
             ))}
             {Array.from({ length: Math.max(0, Math.min(MAX_SLOTS, 30) - filteredItems.length) }).map((_, i) => (
-              <div
+              <Div
                 key={`empty-${i}`}
                 onDragOver={(e) => { e.preventDefault(); }}
                 onDrop={() => { if (dragIndex !== null) handleDrop(filteredItems.length + i); }}
               >
                 <InventorySlot isEmpty />
-              </div>
+              </Div>
             ))}
-          </div>
+          </Div>
         </>
       )}
     </GamePanel>

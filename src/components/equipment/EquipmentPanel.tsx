@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { RARITY_COLORS } from '@/assets/sprites';
 import { GamePanel, GameButton, InventorySlot } from '@/components/ui/game-panel';
 import { ItemTooltip } from '@/components/inventory/ItemTooltip';
+import { Div } from '@/components/ui/Div';
 import { CharacterPreview } from './CharacterPreview';
 import { StatComparison } from './StatComparison';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -190,18 +191,18 @@ export function EquipmentPanel({ character, onCharacterUpdate }: EquipmentPanelP
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-40">
+      <Div className="flex items-center justify-center h-40">
         <span className="rpg-loading">Carregando...</span>
-      </div>
+      </Div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-2 h-full overflow-y-auto">
+    <Div className="flex flex-col gap-2 h-full overflow-y-auto">
       {/* Equipment Grid + Character Preview */}
-      <div className="equip-layout">
+      <Div className="equip-layout">
         {/* Left column: helmet, gloves, boots */}
-        <div className="equip-col-left">
+        <Div className="equip-col-left">
           {(['helmet', 'gloves', 'boots'] as const).map(slot => (
             <EquipSlotButton
               key={slot}
@@ -212,22 +213,22 @@ export function EquipmentPanel({ character, onCharacterUpdate }: EquipmentPanelP
               onUnequip={() => unequipItem(slot)}
             />
           ))}
-        </div>
+        </Div>
 
         {/* Center: Character Preview */}
-        <div className="equip-preview">
+        <Div className="equip-preview">
           <CharacterPreview
             characterClass={character.class}
             equipped={equippedBySlot}
           />
-          <div className="text-center mt-1">
+          <Div className="text-center mt-1">
             <span className="text-xs font-bold" style={{ color: 'hsl(var(--rpg-text))' }}>{character.name}</span>
             <span className="text-[9px] block" style={{ color: 'hsl(var(--rpg-text-dim))' }}>Nv.{character.level}</span>
-          </div>
-        </div>
+          </Div>
+        </Div>
 
         {/* Right column: chest, main_hand, off_hand, legs */}
-        <div className="equip-col-right">
+        <Div className="equip-col-right">
           {(['chest', 'main_hand', 'off_hand', 'legs'] as const).map(slot => (
             <EquipSlotButton
               key={slot}
@@ -238,21 +239,21 @@ export function EquipmentPanel({ character, onCharacterUpdate }: EquipmentPanelP
               onUnequip={() => unequipItem(slot)}
             />
           ))}
-        </div>
-      </div>
+        </Div>
+      </Div>
 
       {/* Stats Summary */}
-      <div className="rpg-item-detail">
-        <div className="text-[10px] font-bold mb-1" style={{ color: 'hsl(var(--rpg-text-dim))' }}>BÔNUS DE EQUIPAMENTO</div>
-        <div className="flex flex-wrap gap-2 text-xs">
+      <Div className="rpg-item-detail">
+        <Div className="text-[10px] font-bold mb-1" style={{ color: 'hsl(var(--rpg-text-dim))' }}>BÔNUS DE EQUIPAMENTO</Div>
+        <Div className="flex flex-wrap gap-2 text-xs">
           {totalStats.strength > 0 && <span className="rpg-stat-bonus rpg-stat-str">+{totalStats.strength} FOR</span>}
           {totalStats.agility > 0 && <span className="rpg-stat-bonus rpg-stat-agi">+{totalStats.agility} AGI</span>}
           {totalStats.intelligence > 0 && <span className="rpg-stat-bonus rpg-stat-int">+{totalStats.intelligence} INT</span>}
           {totalStats.vitality > 0 && <span className="rpg-stat-bonus rpg-stat-vit">+{totalStats.vitality} VIT</span>}
           {totalStats.luck > 0 && <span className="rpg-stat-bonus rpg-stat-luk">+{totalStats.luck} SOR</span>}
           {Object.values(totalStats).every(v => v === 0) && <span className="text-[10px] opacity-50">Nenhum equipamento</span>}
-        </div>
-      </div>
+        </Div>
+      </Div>
 
       {/* Item Selection Panel */}
       <AnimatePresence>
@@ -263,36 +264,36 @@ export function EquipmentPanel({ character, onCharacterUpdate }: EquipmentPanelP
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="rpg-item-detail">
-              <div className="flex items-center justify-between mb-2">
+            <Div className="rpg-item-detail">
+              <Div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold">
                   {SLOT_ICONS[selectedSlot]} {EQUIPMENT_SLOTS.find(s => s.key === selectedSlot)?.label}
                 </span>
                 <button onClick={() => { setSelectedSlot(null); setPreviewItem(null); }} className="rpg-panel-close" style={{ position: 'static', transform: 'none', width: 16, height: 16 }}>
                   <X className="h-3 w-3" />
                 </button>
-              </div>
+              </Div>
 
               {equippedBySlot[selectedSlot] && (
-                <div className="mb-2 p-2 border border-dashed rounded-sm" style={{ borderColor: 'hsl(120 50% 40%)', background: 'hsl(120 20% 10% / 0.3)' }}>
-                  <div className="flex items-center justify-between">
+                <Div className="mb-2 p-2 border border-dashed rounded-sm" style={{ borderColor: 'hsl(120 50% 40%)', background: 'hsl(120 20% 10% / 0.3)' }}>
+                  <Div className="flex items-center justify-between">
                     <span className="text-[10px]" style={{ color: RARITY_COLORS[equippedBySlot[selectedSlot].item.rarity as keyof typeof RARITY_COLORS] }}>
                       ✓ {equippedBySlot[selectedSlot].item.name}
                     </span>
                     <GameButton size="sm" variant="danger" onClick={() => unequipItem(selectedSlot)}>
                       Remover
                     </GameButton>
-                  </div>
-                </div>
+                  </Div>
+                </Div>
               )}
 
               {availableForSlot.length === 0 ? (
                 <p className="text-[10px] opacity-50 text-center py-2">Nenhum item disponível para este slot</p>
               ) : (
-                <div className="grid grid-cols-6 gap-1">
+                <Div className="grid grid-cols-6 gap-1">
                   {availableForSlot.map(ci => (
                     <ItemTooltip key={ci.id} item={ci.item as any} isEquipped={false} quantity={ci.quantity}>
-                      <div
+                      <Div
                         className="cursor-pointer"
                         onClick={() => setPreviewItem(previewItem?.id === ci.id ? null : ci)}
                         onDoubleClick={() => equipItem(ci)}
@@ -303,10 +304,10 @@ export function EquipmentPanel({ character, onCharacterUpdate }: EquipmentPanelP
                           rarity={ci.item.rarity}
                           className={previewItem?.id === ci.id ? 'rpg-slot-selected' : ''}
                         />
-                      </div>
+                      </Div>
                     </ItemTooltip>
                   ))}
-                </div>
+                </Div>
               )}
 
               {/* Stat Comparison */}
@@ -316,17 +317,17 @@ export function EquipmentPanel({ character, onCharacterUpdate }: EquipmentPanelP
                     currentItem={equippedBySlot[selectedSlot]?.item || null}
                     newItem={previewItem.item}
                   />
-                  <div className="flex gap-1 mt-2">
+                  <Div className="flex gap-1 mt-2">
                     <GameButton size="sm" variant="primary" onClick={() => equipItem(previewItem)}>Equipar</GameButton>
                     <GameButton size="sm" onClick={() => setPreviewItem(null)}>Cancelar</GameButton>
-                  </div>
+                  </Div>
                 </motion.div>
               )}
-            </div>
+            </Div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </Div>
   );
 }
 
@@ -342,8 +343,8 @@ function EquipSlotButton({ slot, equipped, isSelected, onClick, onUnequip }: {
   const rarityColor = equipped ? RARITY_COLORS[equipped.item.rarity as keyof typeof RARITY_COLORS] : undefined;
 
   return (
-    <div className="equip-slot-wrapper" onClick={onClick}>
-      <div
+    <Div className="equip-slot-wrapper" onClick={onClick}>
+      <Div
         className={`equip-slot ${isSelected ? 'equip-slot-selected' : ''} ${equipped ? 'equip-slot-filled' : ''}`}
         style={equipped ? { borderColor: rarityColor } : undefined}
       >
@@ -352,8 +353,8 @@ function EquipSlotButton({ slot, equipped, isSelected, onClick, onUnequip }: {
         ) : (
           <span className="text-sm opacity-30">{SLOT_ICONS[slot]}</span>
         )}
-      </div>
+      </Div>
       <span className="equip-slot-label">{slotInfo.label}</span>
-    </div>
+    </Div>
   );
 }

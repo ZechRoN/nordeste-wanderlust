@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Div } from "@/components/ui/Div";
 
 export const World = () => {
   const biomes = [
@@ -12,15 +13,15 @@ export const World = () => {
 
   return (
     <section id="world" className="border-t bg-background py-14 sm:py-16">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="mx-auto max-w-2xl text-center">
+      <Div className="mx-auto max-w-6xl px-4">
+        <Div className="mx-auto max-w-2xl text-center">
           <h2 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">O mundo de Oxente</h2>
           <p className="mt-2 text-pretty text-sm text-muted-foreground sm:text-base">
             Biomas autênticos do Nordeste com fauna, recursos e identidade própria.
           </p>
-        </div>
+        </Div>
 
-        <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2">
           {biomes.map((b, i) => (
             <motion.div
               key={b.key}
@@ -30,18 +31,18 @@ export const World = () => {
               transition={{ duration: 0.2, delay: i * 0.04 }}
             >
               <Card className="overflow-hidden">
-                <div className="h-2 w-full" style={{ backgroundImage: b.gradient }} />
+                <Div className="h-2 w-full" style={{ backgroundImage: b.gradient }} />
                 <CardHeader className="space-y-1">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
+                  <Div className="flex items-center justify-between gap-3">
+                    <Div className="flex items-center gap-2">
                       <span className="text-2xl">{b.emoji}</span>
                       <CardTitle className="text-base">{b.name}</CardTitle>
-                    </div>
+                    </Div>
                     <Badge variant="secondary" className="capitalize">
                       {b.key.replace("_", " ")}
                     </Badge>
-                  </div>
-                  <div className="text-sm text-muted-foreground">{b.desc}</div>
+                  </Div>
+                  <Div className="text-sm text-muted-foreground">{b.desc}</Div>
                 </CardHeader>
                 <CardContent className="flex flex-wrap gap-2">
                   {b.animals.map((a) => (
@@ -53,17 +54,17 @@ export const World = () => {
               </Card>
             </motion.div>
           ))}
-        </div>
+        </Div>
 
-        <div className="mx-auto mt-10 max-w-3xl rounded-2xl border bg-muted/30 p-6 text-center">
-          <div className="text-sm font-semibold">🐴 Montarias nativas</div>
+        <Div className="mx-auto mt-10 max-w-3xl rounded-2xl border bg-muted/30 p-6 text-center">
+          <Div className="text-sm font-semibold">🐴 Montarias nativas</Div>
           <p className="mt-2 text-sm text-muted-foreground">
             Dome animais de cada bioma: <span className="font-medium text-foreground">onça-pintada</span>,{" "}
             <span className="font-medium text-foreground">capivara</span>,{" "}
             <span className="font-medium text-foreground">golfinho</span> e mais. Cada uma com habilidade própria.
           </p>
-        </div>
-      </div>
+        </Div>
+      </Div>
     </section>
   );
 };

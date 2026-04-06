@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { Div } from '@/components/ui/Div';
 
 interface CharacterItem {
   id: string;
@@ -31,7 +32,7 @@ export function CharacterPreview({ characterClass, equipped }: CharacterPreviewP
   const equippedSlots = Object.keys(equipped);
 
   return (
-    <div className="equip-char-preview">
+    <Div className="equip-char-preview">
       {/* Base body layer */}
       <motion.div
         className="equip-char-body"
@@ -42,7 +43,7 @@ export function CharacterPreview({ characterClass, equipped }: CharacterPreviewP
       </motion.div>
 
       {/* Equipment overlays */}
-      <div className="equip-char-overlays">
+      <Div className="equip-char-overlays">
         {equipped.helmet && (
           <motion.span
             key="helm"
@@ -86,12 +87,12 @@ export function CharacterPreview({ characterClass, equipped }: CharacterPreviewP
             animate={{ y: 0, opacity: 1 }}
           >👢</motion.span>
         )}
-      </div>
+      </Div>
 
       {/* Equipped count indicator */}
-      <div className="equip-char-count">
+      <Div className="equip-char-count">
         {equippedSlots.length}/7
-      </div>
-    </div>
+      </Div>
+    </Div>
   );
 }
