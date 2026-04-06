@@ -49,6 +49,7 @@ interface CharacterItem {
 interface InventoryProps {
   character: Character;
   onCharacterUpdate: (updatedCharacter: any) => void;
+  bare?: boolean;
 }
 
 const MAX_SLOTS = 60;
