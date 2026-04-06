@@ -70,7 +70,6 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
   const menuItems: { key: OverlayPanel; label: string; icon: React.ReactNode }[] = [
     { key: 'character', label: 'Personagem', icon: <Heart className="h-4 w-4" /> },
     { key: 'inventory', label: 'Inventário', icon: <Backpack className="h-4 w-4" /> },
-    { key: 'equipment', label: 'Equipar', icon: <Shield className="h-4 w-4" /> },
     { key: 'quests', label: 'Missões', icon: <Scroll className="h-4 w-4" /> },
     { key: 'npcs', label: 'NPCs', icon: <Users className="h-4 w-4" /> },
     { key: 'crafting', label: 'Crafting', icon: <Hammer className="h-4 w-4" /> },
