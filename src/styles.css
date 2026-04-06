@@ -789,6 +789,40 @@
     background: hsl(var(--rpg-panel-inner));
   }
 
+  /* ===== Draggable Panel ===== */
+  .draggable-panel {
+    border-radius: 4px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+  }
+
+  .draggable-panel .rpg-panel {
+    height: 100%;
+    max-height: inherit;
+  }
+
+  .draggable-title-bar {
+    position: relative;
+  }
+
+  .rpg-panel-btn {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: hsl(var(--rpg-frame-dark));
+    border: 1px solid hsl(var(--rpg-frame));
+    border-radius: 2px;
+    color: hsl(var(--rpg-text));
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .rpg-panel-btn:hover {
+    background: hsl(var(--rpg-frame));
+  }
+
   /* ===== Game BG ===== */
   .rpg-game-bg {
     background: hsl(220 15% 8%);
