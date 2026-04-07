@@ -17,6 +17,7 @@ interface Notification {
 
 interface GameNotificationsProps {
   characterId: string;
+  containerClassName?: string;
 }
 
 const TYPE_ICONS: Record<string, React.ReactNode> = {
@@ -33,7 +34,7 @@ const TYPE_COLORS: Record<string, string> = {
   info: 'hsl(var(--rpg-text-dim))',
 };
 
-export function GameNotifications({ characterId }: GameNotificationsProps) {
+export function GameNotifications({ characterId, containerClassName }: GameNotificationsProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -123,7 +124,7 @@ export function GameNotifications({ characterId }: GameNotificationsProps) {
       </AnimatePresence>
 
       {/* Bell button */}
-      <div className="absolute top-2 left-2 z-20">
+      <div className={containerClassName ?? "absolute top-2 left-2 z-20"}>
         <GameButton
           size="sm"
           variant={unreadCount > 0 ? 'gold' : 'secondary'}

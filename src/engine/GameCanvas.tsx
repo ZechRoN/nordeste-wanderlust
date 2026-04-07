@@ -1,10 +1,31 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState, useCallback, type ReactNode } from 'react';
 import { TILE_SIZE, Direction, WALK_SPEED, MAP_WIDTH, MAP_HEIGHT } from './constants';
 import { generateTileMap, isWalkable, getBiomeAt, getBiomeSpawnPoint, getMapPOIs, TileMapData, MapPOI } from './TileMap';
-import { renderMap, renderPlayer, renderPOI, renderMinimap, renderHUD, renderControls, renderCreature } from './Renderer';
+import { renderMap, renderPlayer, renderPOI, renderMinimap, renderControls, renderCreature } from './Renderer';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Div } from '@/components/ui/Div';
+import { GameButton } from '@/components/ui/game-panel';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+
+type MinimapFilters = {
+  showCreatures: boolean;
+  showPlayer: boolean;
+  showNpcs: boolean;
+};
+
+const MINIMAP_FILTERS_STORAGE_KEY = 'ziv_minimap_filters_v1';
+const DEFAULT_MINIMAP_FILTERS: MinimapFilters = { showCreatures: true, showPlayer: true, showNpcs: true };
+
+function parseMinimapFilters(raw: unknown): MinimapFilters {
+  if (!raw || typeof raw !== 'object') return DEFAULT_MINIMAP_FILTERS;
+  const record = raw as Record<string, unknown>;
+  const showCreatures = record.showCreatures === false ? false : true;
+  const showPlayer = record.showPlayer === false ? false : true;
+  const showNpcs = record.showNpcs === false ? false : true;
+  return { showCreatures, showPlayer, showNpcs };
+}
 
 interface Character {
   id: string;
@@ -48,10 +69,15 @@ interface GameCanvasProps {
   onStartCombat: (creature: Creature) => void;
   onOpenMenu: () => void;
   onOpenInventory: () => void;
+  onNpcInteracted?: (npcName: string) => void;
+  hudRightSlot?: ReactNode;
 }
 
-export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpenMenu, onOpenInventory }: GameCanvasProps) {
+export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpenMenu, onOpenInventory, onNpcInteracted, hudRightSlot }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const minimapCanvasRef = useRef<HTMLCanvasElement>(null);
+  const minimapCssSizeRef = useRef<number>(0);
+  const minimapDprRef = useRef<number>(1);
   const animFrameRef = useRef(0);
   const keysRef = useRef<Set<string>>(new Set());
   const playerPosRef = useRef({ x: 0, y: 0 });
@@ -71,6 +97,41 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
   const [minimapAlpha, setMinimapAlpha] = useState(0.92);
   const [activeQuestCount, setActiveQuestCount] = useState(0);
   const activeQuestCountRef = useRef(0);
+  const minimapFiltersRef = useRef<MinimapFilters>(DEFAULT_MINIMAP_FILTERS);
+  const [minimapFilters, setMinimapFilters] = useState<MinimapFilters>(DEFAULT_MINIMAP_FILTERS);
+  const [minimapFiltersOpen, setMinimapFiltersOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(MINIMAP_FILTERS_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = parseMinimapFilters(JSON.parse(raw));
+      minimapFiltersRef.current = parsed;
+      setMinimapFilters(parsed);
+    } catch {
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(MINIMAP_FILTERS_STORAGE_KEY, JSON.stringify(minimapFilters));
+    } catch {
+    }
+  }, [minimapFilters]);
+
+  const setMinimapFilter = useCallback(<K extends keyof MinimapFilters>(key: K, value: MinimapFilters[K]) => {
+    setMinimapFilters(prev => {
+      const next = { ...prev, [key]: value };
+      minimapFiltersRef.current = next;
+      return next;
+    });
+  }, []);
+
+  const setMinimapZoomClamped = useCallback((next: number) => {
+    const value = Math.max(1, Math.min(3, Math.round(next)));
+    setMinimapZoom(value);
+    minimapZoomRef.current = value;
+  }, []);
 
   // Initialize map and player position
   useEffect(() => {
@@ -121,6 +182,35 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
 
     // Load creatures from DB and spawn them
     loadCreatures();
+  }, []);
+
+  useEffect(() => {
+    const canvas = minimapCanvasRef.current;
+    if (!canvas) return;
+
+    const parent = canvas.parentElement;
+    if (!parent) return;
+
+    const resize = () => {
+      const rect = parent.getBoundingClientRect();
+      const cssSize = Math.max(120, Math.floor(Math.min(rect.width, rect.height)));
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      minimapCssSizeRef.current = cssSize;
+      minimapDprRef.current = dpr;
+      canvas.width = Math.floor(cssSize * dpr);
+      canvas.height = Math.floor(cssSize * dpr);
+    };
+
+    resize();
+
+    const ro = new ResizeObserver(() => resize());
+    ro.observe(parent);
+    window.addEventListener('resize', resize);
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      ro.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -219,6 +309,7 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
           toast.info(`Loja: ${poi.name}`);
         } else if (poi.type === 'npc') {
           toast.info(`NPC: ${poi.name}`);
+          onNpcInteracted?.(poi.name);
         }
         return;
       }
@@ -235,7 +326,7 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
 
     setInteractMessage('Nada para interagir aqui...');
     setTimeout(() => setInteractMessage(null), 1500);
-  }, [onStartCombat]);
+  }, [onStartCombat, onNpcInteracted]);
 
   // Game loop
   useEffect(() => {
@@ -365,15 +456,33 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
       const nameY = playerPosRef.current.y * TILE_SIZE - cameraRef.current.y - 4;
       ctx.fillText(character.name, nameX, nameY);
 
-      // HUD
-      renderHUD(ctx, canvas.width, character);
-      renderMinimap(ctx, map, playerPosRef.current.x, playerPosRef.current.y, canvas.width, canvas.height, 170, {
-        zoom: minimapZoomRef.current,
-        alpha: minimapAlphaRef.current,
-        explored: exploredRef.current ?? undefined,
-        pois: poisRef.current,
-        trackedPoiTypes: activeQuestCountRef.current > 0 ? ['quest'] : [],
-      });
+      const minimapCanvas = minimapCanvasRef.current;
+      const minimapCtx = minimapCanvas?.getContext('2d');
+      if (minimapCtx) {
+        const dpr = minimapDprRef.current;
+        const cssSize = minimapCssSizeRef.current || 0;
+        if (cssSize > 0) {
+          const filters = minimapFiltersRef.current;
+          const allowPoiTypes: MapPOI['type'][] = (['npc', 'creature', 'shop', 'quest', 'rest'] as const).filter((type) => {
+            if (type === 'npc') return filters.showNpcs;
+            if (type === 'creature') return filters.showCreatures;
+            return true;
+          });
+          minimapCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          minimapCtx.clearRect(0, 0, cssSize, cssSize);
+          renderMinimap(minimapCtx, map, playerPosRef.current.x, playerPosRef.current.y, cssSize, cssSize, cssSize, {
+            zoom: minimapZoomRef.current,
+            alpha: minimapAlphaRef.current,
+            explored: exploredRef.current ?? undefined,
+            pois: poisRef.current,
+            trackedPoiTypes: activeQuestCountRef.current > 0 ? ['quest'] : [],
+            position: { x: 0, y: 0 },
+            size: cssSize,
+            showPlayer: filters.showPlayer,
+            allowPoiTypes,
+          });
+        }
+      }
       renderControls(ctx, canvas.width, canvas.height);
 
       // Interaction message
@@ -423,39 +532,111 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
         tabIndex={0}
         onFocus={() => canvasRef.current?.focus()}
       />
-      <Div className="absolute top-2 right-2 z-20 hidden md:block">
-        <Div className="rpg-panel !p-2 !bg-[hsl(var(--rpg-panel-bg))]">
-          <Div className="flex items-center gap-2">
-            <span className="text-[11px] opacity-70">Zoom</span>
-            <input
-              type="range"
-              min={1}
-              max={3}
-              step={1}
-              value={minimapZoom}
-              onChange={(e) => {
-                const value = Number(e.target.value);
-                setMinimapZoom(value);
-                minimapZoomRef.current = value;
-              }}
-              className="w-24"
-            />
-            <span className="text-[11px] opacity-70">α</span>
-            <input
-              type="range"
-              min={0.5}
-              max={1}
-              step={0.05}
-              value={minimapAlpha}
-              onChange={(e) => {
-                const value = Number(e.target.value);
-                setMinimapAlpha(value);
-                minimapAlphaRef.current = value;
-              }}
-              className="w-24"
-            />
-            <span className="text-[11px] opacity-70">Q</span>
-            <span className="text-[11px] font-bold">{activeQuestCount}</span>
+      <Div className="minimap-hud hidden md:block">
+        <Div className="rpg-hud-bar minimap-hud__panel">
+          <Div className="minimap-hud__canvas-wrap">
+            <canvas ref={minimapCanvasRef} className="minimap-hud__canvas" />
+              <Div className="minimap-hud__zoom-buttons">
+                <GameButton
+                  size="sm"
+                  variant="secondary"
+                  className="minimap-hud__zoom-btn"
+                  disabled={minimapZoom <= 1}
+                  onClick={() => setMinimapZoomClamped(minimapZoomRef.current - 1)}
+                  aria-label="Diminuir zoom do minimapa"
+                >
+                  -
+                </GameButton>
+                <GameButton
+                  size="sm"
+                  variant="secondary"
+                  className="minimap-hud__zoom-btn"
+                  disabled={minimapZoom >= 3}
+                  onClick={() => setMinimapZoomClamped(minimapZoomRef.current + 1)}
+                  aria-label="Aumentar zoom do minimapa"
+                >
+                  +
+                </GameButton>
+              </Div>
+              {minimapFiltersOpen ? (
+                <Div className="minimap-hud__overlay" onClick={() => setMinimapFiltersOpen(false)}>
+                  <Div
+                    className="rpg-item-detail minimimap-hud__modal"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Filtros do minimapa"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Div className="minimap-hud__modal-header">
+                      <span className="minimap-hud__modal-title">Filtros</span>
+                      <GameButton size="sm" variant="secondary" onClick={() => setMinimapFiltersOpen(false)} aria-label="Fechar filtros">
+                        ×
+                      </GameButton>
+                    </Div>
+                    <Div className="minimap-hud__modal-body">
+                      <Div className="minimap-hud__checkbox-row">
+                        <Checkbox
+                          id="minimap-filter-creature"
+                          checked={minimapFilters.showCreatures}
+                          onCheckedChange={(v) => setMinimapFilter('showCreatures', v === true)}
+                        />
+                        <Label htmlFor="minimap-filter-creature">Monstro</Label>
+                      </Div>
+                      <Div className="minimap-hud__checkbox-row">
+                        <Checkbox
+                          id="minimap-filter-player"
+                          checked={minimapFilters.showPlayer}
+                          onCheckedChange={(v) => setMinimapFilter('showPlayer', v === true)}
+                        />
+                        <Label htmlFor="minimap-filter-player">Player</Label>
+                      </Div>
+                      <Div className="minimap-hud__checkbox-row">
+                        <Checkbox
+                          id="minimap-filter-npc"
+                          checked={minimapFilters.showNpcs}
+                          onCheckedChange={(v) => setMinimapFilter('showNpcs', v === true)}
+                        />
+                        <Label htmlFor="minimap-filter-npc">NPC</Label>
+                      </Div>
+                    </Div>
+                    <Div className="minimap-hud__modal-footer">
+                      <GameButton size="sm" variant="gold" onClick={() => setMinimapFiltersOpen(false)}>
+                        Salvar
+                      </GameButton>
+                    </Div>
+                  </Div>
+                </Div>
+              ) : null}
+          </Div>
+          <Div className="minimap-hud__side">
+            <Div className="minimap-hud__controls">
+              <Div className="minimap-hud__row">
+                <span className="minimap-hud__label">α</span>
+                <input
+                  type="range"
+                  min={0.5}
+                  max={1}
+                  step={0.05}
+                  value={minimapAlpha}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    setMinimapAlpha(value);
+                    minimapAlphaRef.current = value;
+                  }}
+                  className="minimap-hud__range"
+                />
+              </Div>
+              <Div className="minimap-hud__row minimap-hud__row--meta">
+                <span className="minimap-hud__label">Q</span>
+                <span className="minimap-hud__value">{activeQuestCount}</span>
+              </Div>
+            </Div>
+            <Div className="minimap-hud__buttons">
+              <GameButton size="sm" variant={minimapFiltersOpen ? 'gold' : 'secondary'} onClick={() => setMinimapFiltersOpen(v => !v)}>
+                Filtros
+              </GameButton>
+              {hudRightSlot}
+            </Div>
           </Div>
         </Div>
       </Div>

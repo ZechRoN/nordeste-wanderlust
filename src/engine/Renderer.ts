@@ -378,6 +378,10 @@ export function renderMinimap(
     pois?: MapPOI[];
     trackedPoiTypes?: string[];
     showLabels?: boolean;
+    position?: { x: number; y: number };
+    size?: number;
+    showPlayer?: boolean;
+    allowPoiTypes?: string[];
   }
 ) {
   const zoom = options?.zoom ?? 2;
@@ -386,10 +390,12 @@ export function renderMinimap(
   const pois = options?.pois ?? [];
   const trackedPoiTypes = options?.trackedPoiTypes ?? ['quest'];
   const showLabels = options?.showLabels ?? false;
+  const showPlayer = options?.showPlayer ?? true;
+  const allowPoiTypes = options?.allowPoiTypes;
 
-  const size = Math.max(120, Math.min(minimapSize, Math.floor(canvasWidth * 0.22)));
-  const mx = canvasWidth - size - 12;
-  const my = 12;
+  const size = options?.size ?? Math.max(120, Math.min(minimapSize, Math.floor(canvasWidth * 0.22)));
+  const mx = options?.position?.x ?? (canvasWidth - size - 12);
+  const my = options?.position?.y ?? 12;
 
   const tilePx = Math.max(2, Math.min(6, zoom * 2));
   const tilesVisibleX = Math.max(10, Math.floor(size / tilePx));
@@ -441,6 +447,7 @@ export function renderMinimap(
   };
 
   for (const poi of pois) {
+    if (allowPoiTypes && !allowPoiTypes.includes(poi.type)) continue;
     if (poi.x < startX || poi.x >= startX + tilesVisibleX || poi.y < startY || poi.y >= startY + tilesVisibleY) continue;
     const idx = poi.y * map.width + poi.x;
     if (explored && explored[idx] !== 1) continue;
@@ -458,12 +465,14 @@ export function renderMinimap(
     }
   }
 
-  const playerPx = mx + (playerX - startX) * tilePx;
-  const playerPy = my + (playerY - startY) * tilePx;
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(playerPx - 1, playerPy - 1, tilePx + 2, tilePx + 2);
-  ctx.fillStyle = '#e11d48';
-  ctx.fillRect(playerPx, playerPy, tilePx, tilePx);
+  if (showPlayer) {
+    const playerPx = mx + (playerX - startX) * tilePx;
+    const playerPy = my + (playerY - startY) * tilePx;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(playerPx - 1, playerPy - 1, tilePx + 2, tilePx + 2);
+    ctx.fillStyle = '#e11d48';
+    ctx.fillRect(playerPx, playerPy, tilePx, tilePx);
+  }
 
   ctx.strokeStyle = '#d49d2b';
   ctx.lineWidth = 2;

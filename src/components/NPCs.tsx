@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { ShoppingCart, User, Coins, Package } from 'lucide-react';
+import { User, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { GamePanelTabs, GameButton } from '@/components/ui/game-panel';
 import { ItemTooltip } from '@/components/inventory/ItemTooltip';
@@ -31,6 +31,8 @@ interface Item {
 interface NPCsProps {
   character: any;
   onCharacterUpdate: (character: any) => void;
+  shopContext?: { npcId: string; at: number } | null;
+  onCloseShopContext?: () => void;
 }
 
 const NPC_TYPE_LABELS: Record<string, string> = {
@@ -43,7 +45,7 @@ const RARITY_LABELS: Record<string, string> = {
   common: 'Comum', uncommon: 'Incomum', rare: 'Raro', epic: 'Épico', legendary: 'Lendário',
 };
 
-export function NPCs({ character, onCharacterUpdate }: NPCsProps) {
+export function NPCs({ character, onCharacterUpdate, shopContext, onCloseShopContext }: NPCsProps) {
   const [npcs, setNpcs] = useState<NPC[]>([]);
   const [shopItems, setShopItems] = useState<Item[]>([]);
   const [selectedNPC, setSelectedNPC] = useState<NPC | null>(null);
@@ -57,17 +59,31 @@ export function NPCs({ character, onCharacterUpdate }: NPCsProps) {
 
   const loadNPCs = async () => {
     const { data, error } = await supabase
-      .from('npcs' as any)
-      .select('*')
-      .eq('biome', character.current_biome);
+      .from('character_known_npcs' as any)
+      .select('npc_id, npcs(*)')
+      .eq('character_id', character.id);
 
-    if (error) console.error('Erro ao carregar NPCs:', error);
-    else {
-      const npcsData = (data as any) || [];
-      setNpcs(npcsData);
-      if (npcsData.length > 0) {
-        setSelectedNPC(npcsData.find((n: any) => n.npc_type === 'merchant') || npcsData[0]);
-      }
+    if (error) {
+      console.error('Erro ao carregar NPCs conhecidos:', error);
+      setNpcs([]);
+      setLoading(false);
+      return;
+    }
+
+    const npcsData = ((data as any) || [])
+      .map((row: any) => row.npcs)
+      .filter(Boolean)
+      .filter((npc: any) => npc.biome === character.current_biome) as NPC[];
+
+    setNpcs(npcsData);
+
+    if (shopContext?.npcId) {
+      const npc = npcsData.find((n) => n.id === shopContext.npcId) || null;
+      if (npc) setSelectedNPC(npc);
+    } else if (npcsData.length > 0) {
+      setSelectedNPC(npcsData.find((n: any) => n.npc_type === 'merchant') || npcsData[0]);
+    } else {
+      setSelectedNPC(null);
     }
     setLoading(false);
   };
@@ -84,43 +100,51 @@ export function NPCs({ character, onCharacterUpdate }: NPCsProps) {
     else setShopItems(data || []);
   };
 
+  const canTransactWithSelectedNPC = (() => {
+    if (!shopContext?.npcId) return false;
+    if (!selectedNPC || selectedNPC.id !== shopContext.npcId) return false;
+    return Date.now() - shopContext.at <= 30_000;
+  })();
+
   const buyItem = async (item: Item) => {
-    if (character.gold < item.value) {
-      toast.error('Ouro insuficiente!');
+    if (!selectedNPC) return;
+    if (!canTransactWithSelectedNPC) {
+      toast.info('Interaja com o NPC no mapa para comprar.');
       return;
     }
-    const { error: itemError } = await supabase
-      .from('character_items')
-      .insert({ character_id: character.id, item_id: item.id, quantity: 1 });
+    const { data, error } = await supabase.rpc('npc_purchase', {
+      p_character_id: character.id,
+      p_npc_id: selectedNPC.id,
+      p_item_id: item.id,
+      p_quantity: 1,
+    } as any);
 
-    if (itemError) { toast.error('Erro ao comprar item'); return; }
-
-    const newGold = character.gold - item.value;
-    const { error: charError } = await supabase
-      .from('characters')
-      .update({ gold: newGold })
-      .eq('id', character.id);
-
-    if (charError) { toast.error('Erro ao atualizar ouro'); return; }
-
-    toast.success(`${item.name} comprado por ${item.value} ouro!`);
+    if (error) {
+      toast.error('Não foi possível comprar agora.');
+      return;
+    }
+    const newGold = Number((data as any)?.gold ?? character.gold);
+    toast.success(`${item.name} comprado!`);
     onCharacterUpdate({ ...character, gold: newGold });
   };
 
   const healCharacter = async () => {
+    if (!selectedNPC) return;
+    if (!canTransactWithSelectedNPC) {
+      toast.error('Aproxime-se do Curandeiro e interaja para curar.');
+      return;
+    }
     if (character.health >= character.max_health && character.mana >= character.max_mana) {
       toast.error('Você já está com a vida cheia!');
       return;
     }
-    const cost = Math.floor(character.level * 5);
-    if (character.gold < cost) { toast.error('Ouro insuficiente!'); return; }
-
-    const newGold = character.gold - cost;
-    const { error } = await supabase.from('characters').update({
-      health: character.max_health, mana: character.max_mana, gold: newGold,
-    }).eq('id', character.id);
+    const { data, error } = await supabase.rpc('npc_heal', {
+      p_character_id: character.id,
+      p_npc_id: selectedNPC.id,
+    } as any);
 
     if (error) { toast.error('Erro ao curar'); return; }
+    const newGold = Number((data as any)?.gold ?? character.gold);
     toast.success('Totalmente curado!');
     onCharacterUpdate({ ...character, health: character.max_health, mana: character.max_mana, gold: newGold });
   };
@@ -140,11 +164,16 @@ export function NPCs({ character, onCharacterUpdate }: NPCsProps) {
             key={npc.id}
             variant={selectedNPC?.id === npc.id ? 'gold' : 'secondary'}
             size="sm"
-            onClick={() => setSelectedNPC(npc)}
+            onClick={() => { onCloseShopContext?.(); setSelectedNPC(npc); }}
           >
             {npc.npc_type === 'merchant' ? '🛒' : npc.npc_type === 'healer' ? '💚' : '📜'} {npc.name}
           </GameButton>
         ))}
+        {npcs.length === 0 && (
+          <span className="text-xs opacity-60 px-1">
+            Nenhum NPC conhecido neste bioma. Interaja com NPCs no mapa para registrá-los.
+          </span>
+        )}
       </div>
 
       {/* Selected NPC */}
@@ -179,7 +208,7 @@ export function NPCs({ character, onCharacterUpdate }: NPCsProps) {
       {selectedNPC?.npc_type === 'merchant' && (
         <div>
           <GamePanelTabs
-            tabs={[{ key: 'buy', label: 'Comprar' }, { key: 'sell', label: 'Vender' }]}
+            tabs={[{ key: 'buy', label: 'Ofertas' }]}
             activeTab={activeShopTab}
             onTabChange={setActiveShopTab}
           />
@@ -213,8 +242,9 @@ export function NPCs({ character, onCharacterUpdate }: NPCsProps) {
                       <span className="rpg-gold-display text-[11px]">🪙 {item.value}</span>
                       <GameButton size="sm" variant="gold"
                         onClick={() => buyItem(item)}
-                        disabled={character.gold < item.value || character.level < item.required_level}>
-                        Comprar
+                        disabled={canTransactWithSelectedNPC ? (character.gold < item.value || character.level < item.required_level) : false}
+                      >
+                        {canTransactWithSelectedNPC ? 'Comprar' : 'Ver'}
                       </GameButton>
                     </div>
                   </div>
@@ -223,12 +253,6 @@ export function NPCs({ character, onCharacterUpdate }: NPCsProps) {
               {shopItems.length === 0 && (
                 <p className="text-center text-xs opacity-40 py-4">Nenhum item à venda neste bioma.</p>
               )}
-            </div>
-          )}
-
-          {activeShopTab === 'sell' && (
-            <div className="text-center text-xs opacity-40 py-8">
-              Venda itens pelo inventário por 60% do valor.
             </div>
           )}
         </div>

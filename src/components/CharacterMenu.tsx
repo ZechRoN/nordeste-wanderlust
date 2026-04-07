@@ -6,6 +6,7 @@ import { CLASS_COLORS } from "@/engine/constants";
 import { RARITY_COLORS } from "@/assets/sprites";
 import { ItemTooltip } from "@/components/inventory/ItemTooltip";
 import { Div } from "@/components/ui/Div";
+import { applyQuality } from "@/lib/itemQuality";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -159,16 +160,18 @@ export function CharacterMenu({
       }
       await supabase.from('character_items').update({ is_equipped: true }).eq('id', ci.id);
       const oldBonus = current ? {
-        strength: current.item.strength_bonus, agility: current.item.agility_bonus,
-        intelligence: current.item.intelligence_bonus, vitality: current.item.vitality_bonus,
-        luck: current.item.luck_bonus,
+        strength: applyQuality(current.item.strength_bonus, (current as any).quality_rank),
+        agility: applyQuality(current.item.agility_bonus, (current as any).quality_rank),
+        intelligence: applyQuality(current.item.intelligence_bonus, (current as any).quality_rank),
+        vitality: applyQuality(current.item.vitality_bonus, (current as any).quality_rank),
+        luck: applyQuality(current.item.luck_bonus, (current as any).quality_rank),
       } : { strength: 0, agility: 0, intelligence: 0, vitality: 0, luck: 0 };
       const newStats = {
-        strength: character.strength - oldBonus.strength + ci.item.strength_bonus,
-        agility: character.agility - oldBonus.agility + ci.item.agility_bonus,
-        intelligence: character.intelligence - oldBonus.intelligence + ci.item.intelligence_bonus,
-        vitality: character.vitality - oldBonus.vitality + ci.item.vitality_bonus,
-        luck: character.luck - oldBonus.luck + ci.item.luck_bonus,
+        strength: character.strength - oldBonus.strength + applyQuality(ci.item.strength_bonus, (ci as any).quality_rank),
+        agility: character.agility - oldBonus.agility + applyQuality(ci.item.agility_bonus, (ci as any).quality_rank),
+        intelligence: character.intelligence - oldBonus.intelligence + applyQuality(ci.item.intelligence_bonus, (ci as any).quality_rank),
+        vitality: character.vitality - oldBonus.vitality + applyQuality(ci.item.vitality_bonus, (ci as any).quality_rank),
+        luck: character.luck - oldBonus.luck + applyQuality(ci.item.luck_bonus, (ci as any).quality_rank),
       };
       await supabase.from('characters').update(newStats).eq('id', character.id);
       onCharacterUpdate({ ...character, ...newStats });
@@ -184,11 +187,11 @@ export function CharacterMenu({
     try {
       await supabase.from('character_items').update({ is_equipped: false }).eq('id', ci.id);
       const newStats = {
-        strength: character.strength - ci.item.strength_bonus,
-        agility: character.agility - ci.item.agility_bonus,
-        intelligence: character.intelligence - ci.item.intelligence_bonus,
-        vitality: character.vitality - ci.item.vitality_bonus,
-        luck: character.luck - ci.item.luck_bonus,
+        strength: character.strength - applyQuality(ci.item.strength_bonus, (ci as any).quality_rank),
+        agility: character.agility - applyQuality(ci.item.agility_bonus, (ci as any).quality_rank),
+        intelligence: character.intelligence - applyQuality(ci.item.intelligence_bonus, (ci as any).quality_rank),
+        vitality: character.vitality - applyQuality(ci.item.vitality_bonus, (ci as any).quality_rank),
+        luck: character.luck - applyQuality(ci.item.luck_bonus, (ci as any).quality_rank),
       };
       await supabase.from('characters').update(newStats).eq('id', character.id);
       onCharacterUpdate({ ...character, ...newStats });
@@ -294,9 +297,11 @@ export function CharacterMenu({
   const totalEquipBonus = useMemo(() => {
     let str = 0, agi = 0, int_ = 0, vit = 0, luk = 0;
     Object.values(equippedBySlot).forEach(ci => {
-      str += ci.item.strength_bonus; agi += ci.item.agility_bonus;
-      int_ += ci.item.intelligence_bonus; vit += ci.item.vitality_bonus;
-      luk += ci.item.luck_bonus;
+      str += applyQuality(ci.item.strength_bonus, (ci as any).quality_rank);
+      agi += applyQuality(ci.item.agility_bonus, (ci as any).quality_rank);
+      int_ += applyQuality(ci.item.intelligence_bonus, (ci as any).quality_rank);
+      vit += applyQuality(ci.item.vitality_bonus, (ci as any).quality_rank);
+      luk += applyQuality(ci.item.luck_bonus, (ci as any).quality_rank);
     });
     return { strength: str, agility: agi, intelligence: int_, vitality: vit, luck: luk };
   }, [equippedBySlot]);

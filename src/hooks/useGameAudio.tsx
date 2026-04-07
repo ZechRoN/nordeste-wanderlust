@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 
 // Procedural audio using Web Audio API — no external files needed
 const audioCtxRef = { current: null as AudioContext | null };
@@ -7,6 +7,19 @@ function getCtx(): AudioContext {
   if (!audioCtxRef.current) audioCtxRef.current = new AudioContext();
   if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
   return audioCtxRef.current;
+}
+
+type AudioSettings = {
+  musicVolume: number;
+  sfxVolume: number;
+  musicMuted: boolean;
+  sfxMuted: boolean;
+};
+
+const audioSettingsRef = { current: { musicVolume: 0.2, sfxVolume: 0.8, musicMuted: false, sfxMuted: false } as AudioSettings };
+
+export function applyAudioSettings(next: Partial<AudioSettings>) {
+  audioSettingsRef.current = { ...audioSettingsRef.current, ...next };
 }
 
 function playTone(freq: number, duration: number, type: OscillatorType = 'square', volume = 0.12) {
@@ -37,62 +50,80 @@ function playNoise(duration: number, volume = 0.08) {
   source.start();
 }
 
+function playSfxTone(freq: number, duration: number, type: OscillatorType = 'square', volume = 0.12) {
+  const s = audioSettingsRef.current;
+  if (s.sfxMuted || s.sfxVolume <= 0) return;
+  playTone(freq, duration, type, volume * s.sfxVolume);
+}
+
+function playSfxNoise(duration: number, volume = 0.08) {
+  const s = audioSettingsRef.current;
+  if (s.sfxMuted || s.sfxVolume <= 0) return;
+  playNoise(duration, volume * s.sfxVolume);
+}
+
+function playMusicTone(freq: number, duration: number, type: OscillatorType = 'square', volume = 0.02) {
+  const s = audioSettingsRef.current;
+  if (s.musicMuted || s.musicVolume <= 0) return;
+  playTone(freq, duration, type, volume * s.musicVolume);
+}
+
 // Sound effect library
 export const SFX = {
-  menuClick: () => playTone(800, 0.08, 'square', 0.06),
-  menuHover: () => playTone(600, 0.05, 'sine', 0.03),
+  menuClick: () => playSfxTone(800, 0.08, 'square', 0.06),
+  menuHover: () => playSfxTone(600, 0.05, 'sine', 0.03),
   attack: () => {
-    playNoise(0.15, 0.1);
-    playTone(200, 0.12, 'sawtooth', 0.08);
+    playSfxNoise(0.15, 0.1);
+    playSfxTone(200, 0.12, 'sawtooth', 0.08);
   },
   hit: () => {
-    playNoise(0.1, 0.12);
-    playTone(150, 0.15, 'square', 0.06);
+    playSfxNoise(0.1, 0.12);
+    playSfxTone(150, 0.15, 'square', 0.06);
   },
   critical: () => {
-    playTone(400, 0.08, 'square', 0.1);
-    setTimeout(() => playTone(600, 0.1, 'square', 0.1), 80);
-    setTimeout(() => playTone(800, 0.15, 'sawtooth', 0.08), 160);
+    playSfxTone(400, 0.08, 'square', 0.1);
+    setTimeout(() => playSfxTone(600, 0.1, 'square', 0.1), 80);
+    setTimeout(() => playSfxTone(800, 0.15, 'sawtooth', 0.08), 160);
   },
-  miss: () => playTone(200, 0.2, 'sine', 0.04),
+  miss: () => playSfxTone(200, 0.2, 'sine', 0.04),
   victory: () => {
     [523, 659, 784, 1047].forEach((f, i) =>
-      setTimeout(() => playTone(f, 0.3, 'square', 0.08), i * 120)
+      setTimeout(() => playSfxTone(f, 0.3, 'square', 0.08), i * 120)
     );
   },
   defeat: () => {
     [400, 350, 300, 200].forEach((f, i) =>
-      setTimeout(() => playTone(f, 0.4, 'sawtooth', 0.06), i * 200)
+      setTimeout(() => playSfxTone(f, 0.4, 'sawtooth', 0.06), i * 200)
     );
   },
   levelUp: () => {
     [523, 659, 784, 1047, 1319].forEach((f, i) =>
-      setTimeout(() => playTone(f, 0.25, 'square', 0.07), i * 100)
+      setTimeout(() => playSfxTone(f, 0.25, 'square', 0.07), i * 100)
     );
   },
   itemPickup: () => {
-    playTone(1200, 0.06, 'square', 0.05);
-    setTimeout(() => playTone(1600, 0.08, 'square', 0.05), 60);
+    playSfxTone(1200, 0.06, 'square', 0.05);
+    setTimeout(() => playSfxTone(1600, 0.08, 'square', 0.05), 60);
   },
   gold: () => {
-    playTone(1400, 0.05, 'sine', 0.06);
-    setTimeout(() => playTone(1800, 0.08, 'sine', 0.06), 50);
+    playSfxTone(1400, 0.05, 'sine', 0.06);
+    setTimeout(() => playSfxTone(1800, 0.08, 'sine', 0.06), 50);
   },
-  error: () => playTone(150, 0.3, 'sawtooth', 0.06),
+  error: () => playSfxTone(150, 0.3, 'sawtooth', 0.06),
   heal: () => {
     [400, 500, 600, 800].forEach((f, i) =>
-      setTimeout(() => playTone(f, 0.15, 'sine', 0.05), i * 80)
+      setTimeout(() => playSfxTone(f, 0.15, 'sine', 0.05), i * 80)
     );
   },
   openPanel: () => {
-    playTone(300, 0.05, 'square', 0.04);
-    setTimeout(() => playTone(500, 0.08, 'square', 0.04), 40);
+    playSfxTone(300, 0.05, 'square', 0.04);
+    setTimeout(() => playSfxTone(500, 0.08, 'square', 0.04), 40);
   },
   closePanel: () => {
-    playTone(500, 0.05, 'square', 0.04);
-    setTimeout(() => playTone(300, 0.08, 'square', 0.04), 40);
+    playSfxTone(500, 0.05, 'square', 0.04);
+    setTimeout(() => playSfxTone(300, 0.08, 'square', 0.04), 40);
   },
-  chatMessage: () => playTone(1000, 0.06, 'sine', 0.04),
+  chatMessage: () => playSfxTone(1000, 0.06, 'sine', 0.04),
 };
 
 // Biome ambient music
@@ -118,7 +149,7 @@ export function useBackgroundMusic(biome: string, enabled = true) {
 
     intervalRef.current = setInterval(() => {
       const note = music.notes[noteIdxRef.current % music.notes.length];
-      playTone(note, 0.4, music.type, 0.02);
+      playMusicTone(note, 0.4, music.type, 0.02);
       noteIdxRef.current++;
     }, music.tempo);
 

@@ -7,6 +7,7 @@ import { useQuestProgress } from '@/hooks/useQuestProgress';
 import { GamePanel, GamePanelTabs, InventorySlot, GameButton } from '@/components/ui/game-panel';
 import { ItemTooltip } from '@/components/inventory/ItemTooltip';
 import { Div } from '@/components/ui/Div';
+import { applyQuality } from '@/lib/itemQuality';
 
 interface Character {
   id: string;
@@ -181,11 +182,11 @@ export function Inventory({ character, onCharacterUpdate, bare }: InventoryProps
       if (error) throw error;
 
       const newStats = {
-        strength: character.strength + item.strength_bonus,
-        agility: character.agility + item.agility_bonus,
-        intelligence: character.intelligence + item.intelligence_bonus,
-        vitality: character.vitality + item.vitality_bonus,
-        luck: character.luck + item.luck_bonus,
+        strength: character.strength + applyQuality(item.strength_bonus, (characterItem as any).quality_rank),
+        agility: character.agility + applyQuality(item.agility_bonus, (characterItem as any).quality_rank),
+        intelligence: character.intelligence + applyQuality(item.intelligence_bonus, (characterItem as any).quality_rank),
+        vitality: character.vitality + applyQuality(item.vitality_bonus, (characterItem as any).quality_rank),
+        luck: character.luck + applyQuality(item.luck_bonus, (characterItem as any).quality_rank),
       };
       await supabase.from('characters').update(newStats).eq('id', character.id);
       onCharacterUpdate({ ...character, ...newStats });
@@ -201,11 +202,11 @@ export function Inventory({ character, onCharacterUpdate, bare }: InventoryProps
       const item = characterItem.item;
       await supabase.from('character_items').update({ is_equipped: false }).eq('id', characterItem.id);
       const newStats = {
-        strength: character.strength - item.strength_bonus,
-        agility: character.agility - item.agility_bonus,
-        intelligence: character.intelligence - item.intelligence_bonus,
-        vitality: character.vitality - item.vitality_bonus,
-        luck: character.luck - item.luck_bonus,
+        strength: character.strength - applyQuality(item.strength_bonus, (characterItem as any).quality_rank),
+        agility: character.agility - applyQuality(item.agility_bonus, (characterItem as any).quality_rank),
+        intelligence: character.intelligence - applyQuality(item.intelligence_bonus, (characterItem as any).quality_rank),
+        vitality: character.vitality - applyQuality(item.vitality_bonus, (characterItem as any).quality_rank),
+        luck: character.luck - applyQuality(item.luck_bonus, (characterItem as any).quality_rank),
       };
       await supabase.from('characters').update(newStats).eq('id', character.id);
       onCharacterUpdate({ ...character, ...newStats });
@@ -312,11 +313,14 @@ export function Inventory({ character, onCharacterUpdate, bare }: InventoryProps
               </Div>
               <p className="text-xs opacity-70 mb-1">{selectedItem.item.description}</p>
               <Div className="flex flex-wrap gap-2 text-xs">
-                {selectedItem.item.strength_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-str">+{selectedItem.item.strength_bonus} FOR</span>}
-                {selectedItem.item.agility_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-agi">+{selectedItem.item.agility_bonus} AGI</span>}
-                {selectedItem.item.intelligence_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-int">+{selectedItem.item.intelligence_bonus} INT</span>}
-                {selectedItem.item.vitality_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-vit">+{selectedItem.item.vitality_bonus} VIT</span>}
-                {selectedItem.item.luck_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-luk">+{selectedItem.item.luck_bonus} SOR</span>}
+                {((selectedItem as any).quality_rank ?? null) ? (
+                  <span className="rpg-stat-bonus">Rank {(selectedItem as any).quality_rank}</span>
+                ) : null}
+                {selectedItem.item.strength_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-str">+{applyQuality(selectedItem.item.strength_bonus, (selectedItem as any).quality_rank)} FOR</span>}
+                {selectedItem.item.agility_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-agi">+{applyQuality(selectedItem.item.agility_bonus, (selectedItem as any).quality_rank)} AGI</span>}
+                {selectedItem.item.intelligence_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-int">+{applyQuality(selectedItem.item.intelligence_bonus, (selectedItem as any).quality_rank)} INT</span>}
+                {selectedItem.item.vitality_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-vit">+{applyQuality(selectedItem.item.vitality_bonus, (selectedItem as any).quality_rank)} VIT</span>}
+                {selectedItem.item.luck_bonus > 0 && <span className="rpg-stat-bonus rpg-stat-luk">+{applyQuality(selectedItem.item.luck_bonus, (selectedItem as any).quality_rank)} SOR</span>}
                 <span className="rpg-stat-bonus">🪙 {selectedItem.item.value}</span>
               </Div>
             </Div>
