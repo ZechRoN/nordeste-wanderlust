@@ -57,7 +57,7 @@ export function Guilds({ character, onCharacterUpdate }: GuildsProps) {
 
   const loadGuilds = async () => {
     const { data } = await supabase.from('guilds').select('*').order('created_at', { ascending: false }).limit(20);
-    setGuilds(data || []);
+    setGuilds((data as any) || []);
     setLoading(false);
   };
 
@@ -79,7 +79,7 @@ export function Guilds({ character, onCharacterUpdate }: GuildsProps) {
     if (userIds.length === 0) return;
 
     const loadProfiles = async () => {
-      const { data } = await supabase.from('profiles').select('id, is_online, last_seen_at').in('id', userIds as any);
+      const { data } = await (supabase as any).from('profiles').select('id, is_online, last_seen_at').in('id', userIds);
       const map: Record<string, { is_online: boolean; last_seen_at: string | null }> = {};
       (data as any[] | null)?.forEach((p) => {
         map[p.id] = { is_online: !!p.is_online, last_seen_at: p.last_seen_at ?? null };
@@ -210,7 +210,7 @@ export function Guilds({ character, onCharacterUpdate }: GuildsProps) {
     if (!pmOpen) return;
     const text = pmText.trim().slice(0, 200);
     if (!text) { toast.error('Digite uma mensagem'); return; }
-    const { error } = await supabase.from('private_messages').insert({
+    const { error } = await (supabase as any).from('private_messages').insert({
       sender_character_id: character.id,
       recipient_character_id: pmOpen.characterId,
       message: text,
