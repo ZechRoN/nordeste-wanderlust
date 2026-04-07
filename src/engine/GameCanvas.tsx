@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useCallback, type ReactNode } from 'react'
 import { TILE_SIZE, Direction, WALK_SPEED, MAP_WIDTH, MAP_HEIGHT } from './constants';
 import { generateTileMap, isWalkable, getBiomeAt, getBiomeSpawnPoint, getMapPOIs, TileMapData, MapPOI } from './TileMap';
 import { renderMap, renderPlayer, renderPOI, renderMinimap, renderControls, renderCreature } from './Renderer';
+import { preloadAllSprites } from './SpriteLoader';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Div } from '@/components/ui/Div';
@@ -135,6 +136,11 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
 
   // Initialize map and player position
   useEffect(() => {
+    // Preload sprites then initialize map
+    preloadAllSprites().then(() => {
+      console.log('Sprites loaded');
+    });
+
     const map = generateTileMap(42);
     mapRef.current = map;
     exploredRef.current = new Uint8Array(map.width * map.height);
