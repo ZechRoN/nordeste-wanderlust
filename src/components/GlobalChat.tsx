@@ -165,7 +165,7 @@ export function GlobalChat({ character }: GlobalChatProps) {
         setMessages([]);
         return;
       }
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from('private_messages')
         .select('*')
         .or(
@@ -190,7 +190,7 @@ export function GlobalChat({ character }: GlobalChatProps) {
       return;
     }
 
-    let q = supabase.from('chat_messages').select('*').eq('channel_type' as any, type).order('created_at', { ascending: true }).limit(50);
+    let q = (supabase as any).from('chat_messages').select('*').eq('channel_type', type).order('created_at', { ascending: true }).limit(50);
     q = channelId ? q.eq('channel_id' as any, channelId) : q.is('channel_id' as any, null);
     const { data } = await q;
     setMessages((data as any) || []);
@@ -226,7 +226,7 @@ export function GlobalChat({ character }: GlobalChatProps) {
           toast.error('Informe um player válido.');
           return;
         }
-        const { error } = await supabase.rpc('pm_send_by_name' as any, {
+        const { error } = await (supabase as any).rpc('pm_send_by_name', {
           p_character_id: character.id,
           p_target_character_name: pmTargetName,
           p_message: text,
@@ -236,7 +236,7 @@ export function GlobalChat({ character }: GlobalChatProps) {
       }
 
       const channelType = mode === 'group' ? 'party' : mode;
-      const { error } = await supabase.rpc('chat_send_message' as any, {
+      const { error } = await (supabase as any).rpc('chat_send_message', {
         p_character_id: character.id,
         p_channel_type: channelType,
         p_message: text,
