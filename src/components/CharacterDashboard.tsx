@@ -100,7 +100,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
     let cancelled = false;
     const heartbeat = async () => {
       try {
-        await supabase.rpc('profile_heartbeat', { p_character_id: currentCharacter.id } as any);
+        await (supabase as any).rpc('profile_heartbeat', { p_character_id: currentCharacter.id });
       } catch {
       }
     };
@@ -264,7 +264,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
         }
         onNpcInteracted={async (npcName) => {
           try {
-            const { data } = await supabase.rpc('npc_register_interaction_by_name', { p_character_id: currentCharacter.id, p_npc_name: npcName } as any);
+            const { data } = await (supabase as any).rpc('npc_register_interaction_by_name', { p_character_id: currentCharacter.id, p_npc_name: npcName });
             if (data) {
               setNpcShopContext({ npcId: String(data), at: Date.now() });
               togglePanel('npcs');

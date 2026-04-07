@@ -167,7 +167,7 @@ export function Guilds({ character, onCharacterUpdate }: GuildsProps) {
     const amount = Number(depositAmount);
     if (!Number.isFinite(amount) || amount <= 0) { toast.error('Valor inválido'); return; }
     if (amount > character.gold) { toast.error('Ouro insuficiente'); return; }
-    const { error } = await supabase.rpc('guild_deposit_gold', { p_character_id: character.id, p_amount: amount } as any);
+    const { error } = await (supabase as any).rpc('guild_deposit_gold', { p_character_id: character.id, p_amount: amount });
     if (error) { toast.error('Erro ao doar'); return; }
     toast.success('Doação registrada!');
     setDepositAmount('');
@@ -177,7 +177,7 @@ export function Guilds({ character, onCharacterUpdate }: GuildsProps) {
 
   const upgradeGuild = async () => {
     if (!currentGuild) return;
-    const { error } = await supabase.rpc('guild_upgrade', { p_character_id: character.id } as any);
+    const { error } = await (supabase as any).rpc('guild_upgrade', { p_character_id: character.id });
     if (error) { toast.error('Não foi possível evoluir a guilda'); return; }
     toast.success('Guilda evoluída!');
     await loadCurrentGuild();
@@ -186,21 +186,21 @@ export function Guilds({ character, onCharacterUpdate }: GuildsProps) {
   const saveAnnouncement = async () => {
     if (!currentGuild) return;
     const text = announcementDraft.slice(0, 200);
-    const { error } = await supabase.rpc('guild_set_announcement', { p_character_id: character.id, p_text: text } as any);
+    const { error } = await (supabase as any).rpc('guild_set_announcement', { p_character_id: character.id, p_text: text });
     if (error) { toast.error('Sem permissão para editar'); return; }
     toast.success('Anúncio atualizado!');
     await loadCurrentGuild();
   };
 
   const setMemberRole = async (memberId: string, newRole: 'vice_leader' | 'officer' | 'member') => {
-    const { error } = await supabase.rpc('guild_set_member_role', { p_actor_character_id: character.id, p_target_member_id: memberId, p_new_role: newRole } as any);
+    const { error } = await (supabase as any).rpc('guild_set_member_role', { p_actor_character_id: character.id, p_target_member_id: memberId, p_new_role: newRole });
     if (error) { toast.error('Sem permissão'); return; }
     toast.success('Cargo atualizado!');
     await loadCurrentGuild();
   };
 
   const kickMember = async (memberId: string) => {
-    const { error } = await supabase.rpc('guild_kick_member', { p_actor_character_id: character.id, p_target_member_id: memberId } as any);
+    const { error } = await (supabase as any).rpc('guild_kick_member', { p_actor_character_id: character.id, p_target_member_id: memberId });
     if (error) { toast.error('Não foi possível expulsar'); return; }
     toast.success('Membro expulso');
     await loadCurrentGuild();

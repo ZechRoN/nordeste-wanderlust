@@ -199,7 +199,7 @@ export function Crafting({ character, onCharacterUpdate }: CraftingProps) {
     if (!selectedItem) return;
     setUpgradeBusy(true);
     try {
-      const { data, error } = await supabase.rpc('item_quality_upgrade' as any, { p_character_item_id: selectedItem.id });
+      const { data, error } = await (supabase as any).rpc('item_quality_upgrade', { p_character_item_id: selectedItem.id });
       if (error) throw error;
       const success = Boolean((data as any)?.success);
       if (success) toast.success(`Upgrade concluído: ${currentRank} → ${nextRank}`);

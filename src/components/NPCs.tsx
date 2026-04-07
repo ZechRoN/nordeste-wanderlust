@@ -112,12 +112,12 @@ export function NPCs({ character, onCharacterUpdate, shopContext, onCloseShopCon
       toast.info('Interaja com o NPC no mapa para comprar.');
       return;
     }
-    const { data, error } = await supabase.rpc('npc_purchase', {
+    const { data, error } = await (supabase as any).rpc('npc_purchase', {
       p_character_id: character.id,
       p_npc_id: selectedNPC.id,
       p_item_id: item.id,
       p_quantity: 1,
-    } as any);
+    });
 
     if (error) {
       toast.error('Não foi possível comprar agora.');
@@ -138,10 +138,10 @@ export function NPCs({ character, onCharacterUpdate, shopContext, onCloseShopCon
       toast.error('Você já está com a vida cheia!');
       return;
     }
-    const { data, error } = await supabase.rpc('npc_heal', {
+    const { data, error } = await (supabase as any).rpc('npc_heal', {
       p_character_id: character.id,
       p_npc_id: selectedNPC.id,
-    } as any);
+    });
 
     if (error) { toast.error('Erro ao curar'); return; }
     const newGold = Number((data as any)?.gold ?? character.gold);
