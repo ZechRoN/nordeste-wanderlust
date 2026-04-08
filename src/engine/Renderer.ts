@@ -171,20 +171,77 @@ export function renderDayNightOverlay(
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 
+  // Dusk/dawn warmth
   const dusk = Math.max(0, 1 - Math.abs(((timeOfDay01 % 1) + 1) % 1 - 0.5) * 6);
-  const baseAlpha = 0.62 * night;
+
+  // Main night overlay with blue tint
+  const baseAlpha = 0.55 * night;
   if (baseAlpha > 0.01) {
-    ctx.fillStyle = `rgba(10, 18, 34, ${baseAlpha})`;
+    ctx.fillStyle = `rgba(8, 14, 30, ${baseAlpha})`;
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    // Moonlight radial glow (top-right during night)
+    if (night > 0.3) {
+      const moonAlpha = Math.min(0.15, night * 0.15);
+      const moonGrad = ctx.createRadialGradient(
+        canvasWidth * 0.8, canvasHeight * 0.1, 0,
+        canvasWidth * 0.8, canvasHeight * 0.1, canvasHeight * 0.7
+      );
+      moonGrad.addColorStop(0, `rgba(180, 200, 255, ${moonAlpha})`);
+      moonGrad.addColorStop(0.4, `rgba(100, 130, 200, ${moonAlpha * 0.4})`);
+      moonGrad.addColorStop(1, 'rgba(100, 130, 200, 0)');
+      ctx.fillStyle = moonGrad;
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      // Moon disc
+      ctx.globalAlpha = night * 0.6;
+      ctx.fillStyle = '#d0d8f0';
+      ctx.beginPath();
+      ctx.arc(canvasWidth * 0.82, canvasHeight * 0.08, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#e8eeff';
+      ctx.beginPath();
+      ctx.arc(canvasWidth * 0.82, canvasHeight * 0.08, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // Sunrise / sunset warm glow
+  if (dusk > 0.01) {
+    ctx.globalAlpha = 0.22 * dusk * (0.6 + 0.4 * day);
+    const g = ctx.createRadialGradient(canvasWidth * 0.35, canvasHeight * 0.15, 0, canvasWidth * 0.35, canvasHeight * 0.15, canvasHeight * 0.8);
+    g.addColorStop(0, 'rgba(255, 140, 60, 0.9)');
+    g.addColorStop(0.3, 'rgba(255, 100, 40, 0.5)');
+    g.addColorStop(1, 'rgba(255, 80, 30, 0)');
+    ctx.fillStyle = g;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
   }
 
-  if (dusk > 0.01) {
-    ctx.globalAlpha = 0.18 * dusk * (0.6 + 0.4 * day);
-    const g = ctx.createRadialGradient(canvasWidth * 0.35, canvasHeight * 0.1, 0, canvasWidth * 0.35, canvasHeight * 0.1, canvasHeight);
-    g.addColorStop(0, 'rgba(255, 160, 80, 0.9)');
-    g.addColorStop(1, 'rgba(255, 160, 80, 0)');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  // Ambient particles (fireflies at night, pollen during day)
+  const particleCount = night > 0.3 ? 8 : day > 0.5 ? 4 : 0;
+  if (particleCount > 0) {
+    const time = Date.now() * 0.001;
+    for (let i = 0; i < particleCount; i++) {
+      const px = ((Math.sin(time * 0.3 + i * 2.7) * 0.5 + 0.5) * canvasWidth);
+      const py = ((Math.cos(time * 0.2 + i * 3.1) * 0.5 + 0.5) * canvasHeight);
+      const flicker = Math.sin(time * 3 + i * 5) * 0.3 + 0.7;
+      if (night > 0.3) {
+        ctx.fillStyle = `rgba(200, 255, 100, ${0.3 * flicker * night})`;
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = `rgba(200, 255, 100, ${0.08 * flicker * night})`;
+        ctx.beginPath();
+        ctx.arc(px, py, 6, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = `rgba(255, 255, 200, ${0.15 * flicker * day})`;
+        ctx.beginPath();
+        ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
   }
 
   ctx.restore();
