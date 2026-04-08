@@ -117,25 +117,31 @@ export function renderParallax(
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-  const skyTop = `rgba(${Math.round(12 + 50 * dayFactor)}, ${Math.round(18 + 70 * dayFactor)}, ${Math.round(30 + 100 * dayFactor)}, 1)`;
-  const skyBottom = `rgba(${Math.round(6 + 28 * dayFactor)}, ${Math.round(10 + 40 * dayFactor)}, ${Math.round(18 + 70 * dayFactor)}, 1)`;
+  // Dynamic sky gradient based on time of day
+  const r1 = Math.round(8 + 40 * dayFactor);
+  const g1 = Math.round(12 + 55 * dayFactor);
+  const b1 = Math.round(25 + 85 * dayFactor);
+  const r2 = Math.round(4 + 20 * dayFactor);
+  const g2 = Math.round(8 + 30 * dayFactor);
+  const b2 = Math.round(14 + 50 * dayFactor);
   const g = ctx.createLinearGradient(0, 0, 0, canvasHeight);
-  g.addColorStop(0, skyTop);
-  g.addColorStop(1, skyBottom);
+  g.addColorStop(0, `rgba(${r1}, ${g1}, ${b1}, 1)`);
+  g.addColorStop(0.6, `rgba(${r2}, ${g2}, ${b2}, 1)`);
+  g.addColorStop(1, `rgba(${Math.round(r2 * 0.7)}, ${Math.round(g2 * 0.8)}, ${Math.round(b2 * 0.6)}, 1)`);
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
   const layers: Array<{ key: ParallaxLayerKey; factor: number; alpha: number; driftX: number; driftY: number }> = [
-    { key: 'far', factor: 0.12, alpha: 0.55, driftX: 0.08, driftY: 0.02 },
-    { key: 'mid', factor: 0.22, alpha: 0.75, driftX: 0.12, driftY: 0.04 },
-    { key: 'near', factor: 0.35, alpha: 0.55, driftX: 0.18, driftY: 0.06 },
+    { key: 'far', factor: 0.08, alpha: 0.6 + dayFactor * 0.15, driftX: 0.04, driftY: 0.01 },
+    { key: 'mid', factor: 0.18, alpha: 0.7 + dayFactor * 0.1, driftX: 0.08, driftY: 0.02 },
+    { key: 'near', factor: 0.32, alpha: 0.5 + dayFactor * 0.15, driftX: 0.12, driftY: 0.03 },
   ];
 
   const t = animFrame;
   for (const layer of layers) {
     const img = getParallaxCanvas(layer.key);
-    const ox = -(cameraX * layer.factor) + Math.sin(t * 0.01) * (img.width * layer.driftX);
-    const oy = -(cameraY * layer.factor) + Math.cos(t * 0.008) * (img.height * layer.driftY);
+    const ox = -(cameraX * layer.factor) + Math.sin(t * 0.006 + (layer.factor * 10)) * (img.width * layer.driftX);
+    const oy = -(cameraY * layer.factor) + Math.cos(t * 0.004 + (layer.factor * 7)) * (img.height * layer.driftY);
     ctx.globalAlpha = layer.alpha;
     for (let x = -img.width; x < canvasWidth + img.width; x += img.width) {
       for (let y = -img.height; y < canvasHeight + img.height; y += img.height) {
