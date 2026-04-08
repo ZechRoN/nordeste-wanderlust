@@ -18,32 +18,87 @@ function getParallaxCanvas(key: ParallaxLayerKey): HTMLCanvasElement {
   if (cached) return cached;
 
   const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 512;
+  canvas.width = 640;
+  canvas.height = 480;
   const ctx = canvas.getContext('2d')!;
+  const W = canvas.width;
+  const H = canvas.height;
 
-  const bg =
-    key === 'far' ? 'rgba(35, 55, 95, 0.35)'
-    : key === 'mid' ? 'rgba(20, 40, 70, 0.55)'
-    : 'rgba(10, 20, 40, 0.60)';
-
-  const fg =
-    key === 'far' ? 'rgba(255, 255, 255, 0.07)'
-    : key === 'mid' ? 'rgba(255, 255, 255, 0.09)'
-    : 'rgba(255, 255, 255, 0.06)';
-
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Transparent base
+  ctx.clearRect(0, 0, W, H);
 
   const seed = key === 'far' ? 13 : key === 'mid' ? 37 : 71;
-  for (let i = 0; i < 90; i++) {
-    const x = (Math.sin(i * seed) * 0.5 + 0.5) * canvas.width;
-    const y = (Math.sin(i * (seed + 3.1)) * 0.5 + 0.5) * canvas.height;
-    const r = key === 'far' ? 28 : key === 'mid' ? 44 : 18;
-    ctx.fillStyle = fg;
+
+  if (key === 'far') {
+    // Distant mountains / rolling hills silhouette
+    ctx.fillStyle = 'rgba(20, 35, 60, 0.5)';
     ctx.beginPath();
-    ctx.ellipse(x, y, r + (i % 7), (r * 0.6) + (i % 5), (i % 9) * 0.2, 0, Math.PI * 2);
+    ctx.moveTo(0, H);
+    for (let x = 0; x <= W; x += 4) {
+      const h1 = Math.sin(x * 0.008 + seed) * 60 + 80;
+      const h2 = Math.sin(x * 0.015 + seed * 2) * 30;
+      ctx.lineTo(x, H - h1 - h2);
+    }
+    ctx.lineTo(W, H);
+    ctx.closePath();
     ctx.fill();
+
+    // Stars / distant lights
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+    for (let i = 0; i < 50; i++) {
+      const sx = (Math.sin(i * 73.17 + seed) * 0.5 + 0.5) * W;
+      const sy = (Math.sin(i * 41.31 + seed * 3) * 0.5 + 0.5) * (H * 0.5);
+      const r = (i % 3 === 0) ? 1.5 : 1;
+      ctx.beginPath();
+      ctx.arc(sx, sy, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (key === 'mid') {
+    // Mid-ground: tree line / forest silhouette
+    ctx.fillStyle = 'rgba(15, 30, 20, 0.55)';
+    ctx.beginPath();
+    ctx.moveTo(0, H);
+    for (let x = 0; x <= W; x += 2) {
+      const base = H * 0.5;
+      const treeHeight = Math.sin(x * 0.02 + seed) * 40 + Math.sin(x * 0.05 + seed * 1.5) * 20 + 50;
+      // Jagged tree-top effect
+      const jagged = (Math.sin(x * 0.3 + seed) * 8 + Math.sin(x * 0.7 + seed * 2) * 4);
+      ctx.lineTo(x, base - treeHeight - jagged);
+    }
+    ctx.lineTo(W, H);
+    ctx.closePath();
+    ctx.fill();
+
+    // Occasional glowing spots (fireflies / windows)
+    for (let i = 0; i < 15; i++) {
+      const fx = (Math.sin(i * 47.3 + seed) * 0.5 + 0.5) * W;
+      const fy = H * 0.35 + (Math.sin(i * 31.7 + seed * 2) * 0.5 + 0.5) * (H * 0.3);
+      ctx.fillStyle = `rgba(200, 180, 100, 0.15)`;
+      ctx.beginPath();
+      ctx.arc(fx, fy, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else {
+    // Near layer: grass tufts / foliage hints at bottom
+    ctx.fillStyle = 'rgba(10, 20, 10, 0.45)';
+    ctx.beginPath();
+    ctx.moveTo(0, H);
+    for (let x = 0; x <= W; x += 3) {
+      const grassH = Math.sin(x * 0.04 + seed) * 15 + Math.sin(x * 0.12 + seed * 3) * 8 + 25;
+      const spikes = Math.sin(x * 0.5 + seed) * 6;
+      ctx.lineTo(x, H - grassH - spikes);
+    }
+    ctx.lineTo(W, H);
+    ctx.closePath();
+    ctx.fill();
+
+    // Particle dust
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+    for (let i = 0; i < 30; i++) {
+      const px = (Math.sin(i * 61.7 + seed) * 0.5 + 0.5) * W;
+      const py = (Math.sin(i * 37.3 + seed * 2) * 0.5 + 0.5) * H;
+      ctx.fillRect(px, py, 2, 1);
+    }
   }
 
   parallaxCanvasCache.set(key, canvas);
@@ -62,25 +117,31 @@ export function renderParallax(
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-  const skyTop = `rgba(${Math.round(12 + 50 * dayFactor)}, ${Math.round(18 + 70 * dayFactor)}, ${Math.round(30 + 100 * dayFactor)}, 1)`;
-  const skyBottom = `rgba(${Math.round(6 + 28 * dayFactor)}, ${Math.round(10 + 40 * dayFactor)}, ${Math.round(18 + 70 * dayFactor)}, 1)`;
+  // Dynamic sky gradient based on time of day
+  const r1 = Math.round(8 + 40 * dayFactor);
+  const g1 = Math.round(12 + 55 * dayFactor);
+  const b1 = Math.round(25 + 85 * dayFactor);
+  const r2 = Math.round(4 + 20 * dayFactor);
+  const g2 = Math.round(8 + 30 * dayFactor);
+  const b2 = Math.round(14 + 50 * dayFactor);
   const g = ctx.createLinearGradient(0, 0, 0, canvasHeight);
-  g.addColorStop(0, skyTop);
-  g.addColorStop(1, skyBottom);
+  g.addColorStop(0, `rgba(${r1}, ${g1}, ${b1}, 1)`);
+  g.addColorStop(0.6, `rgba(${r2}, ${g2}, ${b2}, 1)`);
+  g.addColorStop(1, `rgba(${Math.round(r2 * 0.7)}, ${Math.round(g2 * 0.8)}, ${Math.round(b2 * 0.6)}, 1)`);
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
   const layers: Array<{ key: ParallaxLayerKey; factor: number; alpha: number; driftX: number; driftY: number }> = [
-    { key: 'far', factor: 0.12, alpha: 0.55, driftX: 0.08, driftY: 0.02 },
-    { key: 'mid', factor: 0.22, alpha: 0.75, driftX: 0.12, driftY: 0.04 },
-    { key: 'near', factor: 0.35, alpha: 0.55, driftX: 0.18, driftY: 0.06 },
+    { key: 'far', factor: 0.08, alpha: 0.6 + dayFactor * 0.15, driftX: 0.04, driftY: 0.01 },
+    { key: 'mid', factor: 0.18, alpha: 0.7 + dayFactor * 0.1, driftX: 0.08, driftY: 0.02 },
+    { key: 'near', factor: 0.32, alpha: 0.5 + dayFactor * 0.15, driftX: 0.12, driftY: 0.03 },
   ];
 
   const t = animFrame;
   for (const layer of layers) {
     const img = getParallaxCanvas(layer.key);
-    const ox = -(cameraX * layer.factor) + Math.sin(t * 0.01) * (img.width * layer.driftX);
-    const oy = -(cameraY * layer.factor) + Math.cos(t * 0.008) * (img.height * layer.driftY);
+    const ox = -(cameraX * layer.factor) + Math.sin(t * 0.006 + (layer.factor * 10)) * (img.width * layer.driftX);
+    const oy = -(cameraY * layer.factor) + Math.cos(t * 0.004 + (layer.factor * 7)) * (img.height * layer.driftY);
     ctx.globalAlpha = layer.alpha;
     for (let x = -img.width; x < canvasWidth + img.width; x += img.width) {
       for (let y = -img.height; y < canvasHeight + img.height; y += img.height) {
@@ -110,20 +171,77 @@ export function renderDayNightOverlay(
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 
+  // Dusk/dawn warmth
   const dusk = Math.max(0, 1 - Math.abs(((timeOfDay01 % 1) + 1) % 1 - 0.5) * 6);
-  const baseAlpha = 0.62 * night;
+
+  // Main night overlay with blue tint
+  const baseAlpha = 0.55 * night;
   if (baseAlpha > 0.01) {
-    ctx.fillStyle = `rgba(10, 18, 34, ${baseAlpha})`;
+    ctx.fillStyle = `rgba(8, 14, 30, ${baseAlpha})`;
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    // Moonlight radial glow (top-right during night)
+    if (night > 0.3) {
+      const moonAlpha = Math.min(0.15, night * 0.15);
+      const moonGrad = ctx.createRadialGradient(
+        canvasWidth * 0.8, canvasHeight * 0.1, 0,
+        canvasWidth * 0.8, canvasHeight * 0.1, canvasHeight * 0.7
+      );
+      moonGrad.addColorStop(0, `rgba(180, 200, 255, ${moonAlpha})`);
+      moonGrad.addColorStop(0.4, `rgba(100, 130, 200, ${moonAlpha * 0.4})`);
+      moonGrad.addColorStop(1, 'rgba(100, 130, 200, 0)');
+      ctx.fillStyle = moonGrad;
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      // Moon disc
+      ctx.globalAlpha = night * 0.6;
+      ctx.fillStyle = '#d0d8f0';
+      ctx.beginPath();
+      ctx.arc(canvasWidth * 0.82, canvasHeight * 0.08, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#e8eeff';
+      ctx.beginPath();
+      ctx.arc(canvasWidth * 0.82, canvasHeight * 0.08, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // Sunrise / sunset warm glow
+  if (dusk > 0.01) {
+    ctx.globalAlpha = 0.22 * dusk * (0.6 + 0.4 * day);
+    const g = ctx.createRadialGradient(canvasWidth * 0.35, canvasHeight * 0.15, 0, canvasWidth * 0.35, canvasHeight * 0.15, canvasHeight * 0.8);
+    g.addColorStop(0, 'rgba(255, 140, 60, 0.9)');
+    g.addColorStop(0.3, 'rgba(255, 100, 40, 0.5)');
+    g.addColorStop(1, 'rgba(255, 80, 30, 0)');
+    ctx.fillStyle = g;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
   }
 
-  if (dusk > 0.01) {
-    ctx.globalAlpha = 0.18 * dusk * (0.6 + 0.4 * day);
-    const g = ctx.createRadialGradient(canvasWidth * 0.35, canvasHeight * 0.1, 0, canvasWidth * 0.35, canvasHeight * 0.1, canvasHeight);
-    g.addColorStop(0, 'rgba(255, 160, 80, 0.9)');
-    g.addColorStop(1, 'rgba(255, 160, 80, 0)');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  // Ambient particles (fireflies at night, pollen during day)
+  const particleCount = night > 0.3 ? 8 : day > 0.5 ? 4 : 0;
+  if (particleCount > 0) {
+    const time = Date.now() * 0.001;
+    for (let i = 0; i < particleCount; i++) {
+      const px = ((Math.sin(time * 0.3 + i * 2.7) * 0.5 + 0.5) * canvasWidth);
+      const py = ((Math.cos(time * 0.2 + i * 3.1) * 0.5 + 0.5) * canvasHeight);
+      const flicker = Math.sin(time * 3 + i * 5) * 0.3 + 0.7;
+      if (night > 0.3) {
+        ctx.fillStyle = `rgba(200, 255, 100, ${0.3 * flicker * night})`;
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = `rgba(200, 255, 100, ${0.08 * flicker * night})`;
+        ctx.beginPath();
+        ctx.arc(px, py, 6, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = `rgba(255, 255, 200, ${0.15 * flicker * day})`;
+        ctx.beginPath();
+        ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
   }
 
   ctx.restore();

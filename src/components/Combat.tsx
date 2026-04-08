@@ -11,6 +11,7 @@ import { GamePanel, GameButton } from '@/components/ui/game-panel';
 import { SkillBar, SkillEffect, CLASS_SKILLS } from './Skills';
 import type { Skill } from './Skills';
 import { Div } from '@/components/ui/Div';
+import { CombatCanvas } from './CombatCanvas';
 
 interface Character {
   id: string; name: string; class: string; level: number;
@@ -104,7 +105,6 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
   };
 
   const calculateDamage = (attacker: any, defender: any, isSpecial = false, multiplier = 1): DamageResult => {
-    // Add pet bonuses for player
     const atkStr = attacker === character ? attacker.strength + petBonuses.strength : attacker.strength;
     const atkInt = attacker === character ? attacker.intelligence + petBonuses.intelligence : attacker.intelligence;
     const atkLuck = attacker === character ? attacker.luck + petBonuses.luck : attacker.luck;
@@ -181,7 +181,6 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
 
     setActiveSkillEffect(skill.id);
 
-    // Handle heal skills
     if (skill.effect === 'heal' && skill.damageMultiplier === 0) {
       const healAmount = Math.floor(character.max_health * (skill.effectValue! / 100));
       const newHealth = Math.min(character.max_health, playerHealth + healAmount);
@@ -195,7 +194,6 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
       setFeedback({ show: true, text: `${skill.icon} BUFF!`, type: 'heal' });
       setPlayerMana(playerMana - skill.manaCost);
     } else {
-      // Damage skills
       const result = calculateDamage(character, creature, true, skill.damageMultiplier);
       if (result.isMiss) {
         addToCombatLog(`${character.name} erra ${skill.name}!`);
@@ -221,12 +219,10 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
       setPlayerMana(playerMana - skill.manaCost);
     }
 
-    // Set cooldown
     setSkillCooldowns(prev => ({ ...prev, [skill.id]: skill.cooldown }));
 
     setIsPlayerTurn(false);
     setTimeout(() => {
-      // Reduce cooldowns
       setSkillCooldowns(prev => {
         const next: Record<string, number> = {};
         for (const [k, v] of Object.entries(prev)) next[k] = Math.max(0, v - 1);
@@ -334,15 +330,6 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
   const creatureHealthPercent = (creatureHealth / creature.max_health) * 100;
   const isCombatActive = playerHealth > 0 && creatureHealth > 0;
 
-  const shakeAnimation = {
-    shake: { x: [0, -8, 8, -6, 6, -3, 3, 0], transition: { duration: 0.4 } },
-    idle: { x: 0 },
-  };
-
-  const flashStyle = (isFlashing: boolean) => isFlashing
-    ? { filter: 'brightness(3) saturate(0)', transition: 'filter 0.1s' }
-    : { filter: 'none', transition: 'filter 0.3s' };
-
   return (
     <Div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
       <Div className="w-full max-w-2xl">
@@ -391,103 +378,78 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
             onComplete={() => setFeedback({ ...feedback, show: false })}
           />
 
-          {/* Combatants */}
-          <Div className="grid grid-cols-2 gap-4 mb-4">
-            {/* Player */}
-            <motion.div
-              className="rpg-combatant"
-              variants={shakeAnimation}
-              animate={playerShake ? 'shake' : 'idle'}
-              style={flashStyle(playerFlash)}
-            >
-              <AnimatePresence>
-                {playerDead ? (
-                  <motion.div
-                    initial={{ opacity: 1 }}
-                    animate={{ opacity: 0, y: 20, scale: 0.8 }}
-                    transition={{ duration: 0.8 }}
-                  >
-                    <Div className="rpg-combatant-name">{character.name}</Div>
-                    <span className="rpg-combatant-level">Nível {character.level}</span>
-                    <p className="text-xs text-center mt-2" style={{ color: 'hsl(0 60% 55%)' }}>💀 Derrotado</p>
-                  </motion.div>
-                ) : (
-                  <Div>
-                    <Div className="rpg-combatant-name">{character.name}</Div>
-                    <span className="rpg-combatant-level">Nível {character.level}</span>
-                    <Div className="rpg-bar-group">
-                      <Div className="rpg-bar-label"><Heart className="h-3 w-3" /> {playerHealth}/{character.max_health}</Div>
-                      <Div className="rpg-bar rpg-bar-hp">
-                        <motion.div className="rpg-bar-fill rpg-bar-fill-hp"
-                          animate={{ width: `${playerHealthPercent}%` }}
-                          transition={{ duration: 0.4, ease: 'easeOut' }}
-                        />
-                      </Div>
-                      <Div className="rpg-bar-label"><Zap className="h-3 w-3" /> {playerMana}/{character.max_mana}</Div>
-                      <Div className="rpg-bar rpg-bar-mp">
-                        <motion.div className="rpg-bar-fill rpg-bar-fill-mp"
-                          animate={{ width: `${playerManaPercent}%` }}
-                          transition={{ duration: 0.4, ease: 'easeOut' }}
-                        />
-                      </Div>
-                    </Div>
-                    {isDefending && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="rpg-defending-badge"
-                      >
-                        <Shield className="h-3 w-3" /> Defendendo
-                      </motion.div>
-                    )}
-                  </Div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+          {/* VISUAL COMBAT CANVAS */}
+          <Div className="mb-3">
+            <CombatCanvas
+              characterClass={character.class}
+              creatureName={creature.name}
+              creatureRarity={creature.rarity}
+              playerHealth={playerHealth}
+              playerMaxHealth={character.max_health}
+              creatureHealth={creatureHealth}
+              creatureMaxHealth={creature.max_health}
+              isPlayerTurn={isPlayerTurn}
+              playerShake={playerShake}
+              creatureShake={creatureShake}
+              playerFlash={playerFlash}
+              creatureFlash={creatureFlash}
+              playerDead={playerDead}
+              creatureDead={creatureDead}
+              isDefending={isDefending}
+            />
+          </Div>
 
-            {/* Creature */}
-            <motion.div
-              className="rpg-combatant"
-              variants={shakeAnimation}
-              animate={creatureShake ? 'shake' : 'idle'}
-              style={flashStyle(creatureFlash)}
-            >
-              <AnimatePresence>
-                {creatureDead ? (
-                  <motion.div
-                    initial={{ opacity: 1 }}
-                    animate={{ opacity: 0, y: 20, rotateZ: 15, scale: 0.7 }}
-                    transition={{ duration: 0.8 }}
-                  >
-                    <Div className="rpg-combatant-name">{creature.name}</Div>
-                    <p className="text-xs text-center mt-2" style={{ color: 'hsl(var(--rpg-gold))' }}>🏆 Derrotado!</p>
-                  </motion.div>
-                ) : (
-                  <Div>
-                    <Div className="rpg-combatant-name">{creature.name}</Div>
-                    <span className={`rpg-combatant-level rpg-rarity-label-${creature.rarity}`}>Nível {creature.level} • {creature.rarity}</span>
-                    <Div className="rpg-bar-group">
-                      <Div className="rpg-bar-label"><Heart className="h-3 w-3" /> {creatureHealth}/{creature.max_health}</Div>
-                      <Div className="rpg-bar rpg-bar-hp">
-                        <motion.div className="rpg-bar-fill rpg-bar-fill-hp"
-                          animate={{ width: `${creatureHealthPercent}%` }}
-                          transition={{ duration: 0.4, ease: 'easeOut' }}
-                        />
-                      </Div>
-                    </Div>
-                    <p className="text-[10px] opacity-60 mt-1">{creature.description}</p>
-                    {creature.special_ability && (
-                      <p className="text-[10px] mt-0.5" style={{ color: 'hsl(var(--rpg-gold))' }}>✦ {creature.special_ability}</p>
-                    )}
-                  </Div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+          {/* Combatant info cards */}
+          <Div className="grid grid-cols-2 gap-3 mb-3">
+            {/* Player info */}
+            <Div className="rpg-combatant p-2">
+              <Div className="rpg-combatant-name text-sm">{character.name}</Div>
+              <span className="rpg-combatant-level text-[10px]">Nv.{character.level}</span>
+              <Div className="rpg-bar-group mt-1">
+                <Div className="rpg-bar-label text-[10px]"><Heart className="h-2.5 w-2.5" /> {playerHealth}/{character.max_health}</Div>
+                <Div className="rpg-bar rpg-bar-hp" style={{ height: '6px' }}>
+                  <motion.div className="rpg-bar-fill rpg-bar-fill-hp"
+                    animate={{ width: `${playerHealthPercent}%` }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                  />
+                </Div>
+                <Div className="rpg-bar-label text-[10px]"><Zap className="h-2.5 w-2.5" /> {playerMana}/{character.max_mana}</Div>
+                <Div className="rpg-bar rpg-bar-mp" style={{ height: '6px' }}>
+                  <motion.div className="rpg-bar-fill rpg-bar-fill-mp"
+                    animate={{ width: `${playerManaPercent}%` }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                  />
+                </Div>
+              </Div>
+              {isDefending && (
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="rpg-defending-badge mt-1">
+                  <Shield className="h-2.5 w-2.5" /> Defendendo
+                </motion.div>
+              )}
+            </Div>
+
+            {/* Creature info */}
+            <Div className="rpg-combatant p-2">
+              <Div className="rpg-combatant-name text-sm">{creature.name}</Div>
+              <span className={`rpg-combatant-level rpg-rarity-label-${creature.rarity} text-[10px]`}>Nv.{creature.level} • {creature.rarity}</span>
+              <Div className="rpg-bar-group mt-1">
+                <Div className="rpg-bar-label text-[10px]"><Heart className="h-2.5 w-2.5" /> {creatureHealth}/{creature.max_health}</Div>
+                <Div className="rpg-bar rpg-bar-hp" style={{ height: '6px' }}>
+                  <motion.div className="rpg-bar-fill rpg-bar-fill-hp"
+                    animate={{ width: `${creatureHealthPercent}%` }}
+                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                  />
+                </Div>
+              </Div>
+              {creature.special_ability && (
+                <p className="text-[9px] mt-0.5" style={{ color: 'hsl(var(--rpg-gold))' }}>✦ {creature.special_ability}</p>
+              )}
+            </Div>
           </Div>
 
           {/* Turn indicator */}
           {isCombatActive && (
-            <Div className="text-center mb-3">
+            <Div className="text-center mb-2">
               <motion.span
                 key={isPlayerTurn ? 'player' : 'enemy'}
                 initial={{ scale: 0.8, opacity: 0 }}
