@@ -151,17 +151,25 @@ export function getMonsterSpriteByRarity(rarity: string): string {
 export const TILE_SPRITE_PATHS = {
   grass: '/sprites/tiles/grass_middle.png',
   water: '/sprites/tiles/water_middle.png',
-  sand: '/sprites/tiles/beach_tile.png',
+  sand: '/sprites/tiles/grass.png',
   path: '/sprites/tiles/path_middle.png',
+  dead_grass: '/sprites/tiles/dead_grass.png',
 };
 
 // Nature/object sprite paths  
 export const NATURE_SPRITE_PATHS = {
   trees: '/sprites/nature/trees.png',
   oak_tree: '/sprites/nature/oak_tree.png',
+  oak_tree_small: '/sprites/nature/oak_tree_small.png',
   coconut: '/sprites/nature/coconut_trees.png',
   cactus: '/sprites/nature/cactus.png',
   rocks: '/sprites/nature/rocks.png',
+  pine_trees: '/sprites/nature/pine_trees.png',
+  dead_trees: '/sprites/nature/dead_trees.png',
+  tumbleweed: '/sprites/nature/tumbleweed.png',
+  wheatfield: '/sprites/nature/wheatfield.png',
+  fences: '/sprites/nature/fences.png',
+  bridge_wood: '/sprites/nature/bridge_wood.png',
 };
 
 // Preload all sprites
@@ -175,4 +183,40 @@ export async function preloadAllSprites(): Promise<void> {
   // Deduplicate
   const unique = [...new Set(allPaths)];
   await Promise.allSettled(unique.map(p => loadImage(p)));
+}
+
+export async function preloadEssentialSprites(biome: string, characterClass: string): Promise<void> {
+  const safeBiome =
+    biome === 'caatinga' || biome === 'agreste' || biome === 'litoral' || biome === 'santa_cruz'
+      ? biome
+      : 'caatinga';
+  const characterSprite = CHARACTER_SPRITE_PATHS[characterClass] || CHARACTER_SPRITE_PATHS.warrior;
+  const tiles = [
+    TILE_SPRITE_PATHS.grass,
+    TILE_SPRITE_PATHS.water,
+    TILE_SPRITE_PATHS.sand,
+    TILE_SPRITE_PATHS.path,
+    safeBiome === 'caatinga' ? TILE_SPRITE_PATHS.dead_grass : null,
+  ].filter(Boolean) as string[];
+
+  const nature =
+    safeBiome === 'caatinga'
+      ? [NATURE_SPRITE_PATHS.cactus, NATURE_SPRITE_PATHS.rocks, NATURE_SPRITE_PATHS.dead_trees]
+      : safeBiome === 'litoral'
+        ? [NATURE_SPRITE_PATHS.coconut, NATURE_SPRITE_PATHS.rocks]
+        : [NATURE_SPRITE_PATHS.oak_tree_small, NATURE_SPRITE_PATHS.rocks, NATURE_SPRITE_PATHS.trees];
+
+  const list = [characterSprite, ...tiles, ...nature];
+  const unique = [...new Set(list)];
+  await Promise.allSettled(unique.map(p => loadImage(p)));
+}
+
+export function scheduleBackgroundPreload(): void {
+  const run = () => { preloadAllSprites(); };
+  const w = window as any;
+  if (typeof w.requestIdleCallback === 'function') {
+    w.requestIdleCallback(run, { timeout: 2500 });
+    return;
+  }
+  window.setTimeout(run, 1500);
 }

@@ -1,8 +1,8 @@
 import { useRef, useEffect, useState, useCallback, type ReactNode } from 'react';
 import { TILE_SIZE, Direction, WALK_SPEED, MAP_WIDTH, MAP_HEIGHT } from './constants';
 import { generateTileMap, isWalkable, getBiomeAt, getBiomeSpawnPoint, getMapPOIs, TileMapData, MapPOI } from './TileMap';
-import { renderMap, renderPlayer, renderPOI, renderMinimap, renderControls, renderCreature } from './Renderer';
-import { preloadAllSprites } from './SpriteLoader';
+import { renderMap, renderParallax, getDayFactor, renderDayNightOverlay, renderPlayer, renderPOI, renderMinimap, renderControls, renderCreature } from './Renderer';
+import { preloadEssentialSprites, scheduleBackgroundPreload } from './SpriteLoader';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Div } from '@/components/ui/Div';
@@ -18,6 +18,9 @@ type MinimapFilters = {
 
 const MINIMAP_FILTERS_STORAGE_KEY = 'ziv_minimap_filters_v1';
 const DEFAULT_MINIMAP_FILTERS: MinimapFilters = { showCreatures: true, showPlayer: true, showNpcs: true };
+const DAY_NIGHT_CYCLE_MS = 6 * 60 * 1000;
+
+type PlayerAction = 'idle' | 'walk' | 'attack' | 'hurt' | 'death';
 
 function parseMinimapFilters(raw: unknown): MinimapFilters {
   if (!raw || typeof raw !== 'object') return DEFAULT_MINIMAP_FILTERS;
@@ -80,6 +83,10 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
   const minimapCssSizeRef = useRef<number>(0);
   const minimapDprRef = useRef<number>(1);
   const animFrameRef = useRef(0);
+  const worldStartMsRef = useRef<number>(Date.now());
+  const playerActionRef = useRef<PlayerAction>('idle');
+  const playerActionStartMsRef = useRef<number>(0);
+  const playerActionUntilMsRef = useRef<number>(0);
   const keysRef = useRef<Set<string>>(new Set());
   const playerPosRef = useRef({ x: 0, y: 0 });
   const targetPosRef = useRef({ x: 0, y: 0 });
@@ -134,12 +141,27 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
     minimapZoomRef.current = value;
   }, []);
 
+  const triggerPlayerAction = useCallback((action: PlayerAction, durationMs: number) => {
+    const now = Date.now();
+    playerActionRef.current = action;
+    playerActionStartMsRef.current = now;
+    playerActionUntilMsRef.current = now + Math.max(0, durationMs);
+  }, []);
+
+  useEffect(() => {
+    if (character.health <= 0) {
+      triggerPlayerAction('death', DAY_NIGHT_CYCLE_MS);
+      return;
+    }
+    if (playerActionRef.current === 'death') {
+      triggerPlayerAction('idle', 0);
+    }
+  }, [character.health, triggerPlayerAction]);
+
   // Initialize map and player position
   useEffect(() => {
-    // Preload sprites then initialize map
-    preloadAllSprites().then(() => {
-      console.log('Sprites loaded');
-    });
+    preloadEssentialSprites(character.current_biome, character.class);
+    scheduleBackgroundPreload();
 
     const map = generateTileMap(42);
     mapRef.current = map;
@@ -265,11 +287,57 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
     }
   };
 
+  const handleInteract = useCallback(() => {
+    const px = playerPosRef.current.x;
+    const py = playerPosRef.current.y;
+
+    for (const poi of poisRef.current) {
+      const dist = Math.abs(poi.x - px) + Math.abs(poi.y - py);
+      if (dist <= 2) {
+        setInteractMessage(`${poi.emoji} ${poi.name}`);
+        setTimeout(() => setInteractMessage(null), 2000);
+
+        if (poi.type === 'rest') {
+          toast.success('Descansando... Vida e mana restauradas!');
+        } else if (poi.type === 'quest') {
+          toast.info(`Quest: ${poi.name}`);
+        } else if (poi.type === 'shop') {
+          toast.info(`Loja: ${poi.name}`);
+        } else if (poi.type === 'npc') {
+          toast.info(`NPC: ${poi.name}`);
+          onNpcInteracted?.(poi.name);
+        }
+        return;
+      }
+    }
+
+    for (const creature of creaturesRef.current) {
+      const dist = Math.abs(creature.worldX - px) + Math.abs(creature.worldY - py);
+      if (dist <= 2) {
+        triggerPlayerAction('attack', 520);
+        onStartCombat(creature);
+        return;
+      }
+    }
+
+    setInteractMessage('Nada para interagir aqui...');
+    setTimeout(() => setInteractMessage(null), 1500);
+  }, [onStartCombat, onNpcInteracted, triggerPlayerAction]);
+
   // Keyboard handlers
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       keysRef.current.add(e.key.toLowerCase());
+
+      if (e.key === ' ' || e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        triggerPlayerAction('attack', 520);
+      }
+      if (e.key.toLowerCase() === 'h') {
+        e.preventDefault();
+        triggerPlayerAction('hurt', 420);
+      }
       
       if (e.key.toLowerCase() === 'i') {
         e.preventDefault();
@@ -294,45 +362,7 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [character]);
-
-  const handleInteract = useCallback(() => {
-    const px = playerPosRef.current.x;
-    const py = playerPosRef.current.y;
-
-    // Check POIs
-    for (const poi of poisRef.current) {
-      const dist = Math.abs(poi.x - px) + Math.abs(poi.y - py);
-      if (dist <= 2) {
-        setInteractMessage(`${poi.emoji} ${poi.name}`);
-        setTimeout(() => setInteractMessage(null), 2000);
-        
-        if (poi.type === 'rest') {
-          toast.success('Descansando... Vida e mana restauradas!');
-        } else if (poi.type === 'quest') {
-          toast.info(`Quest: ${poi.name}`);
-        } else if (poi.type === 'shop') {
-          toast.info(`Loja: ${poi.name}`);
-        } else if (poi.type === 'npc') {
-          toast.info(`NPC: ${poi.name}`);
-          onNpcInteracted?.(poi.name);
-        }
-        return;
-      }
-    }
-
-    // Check creatures
-    for (const creature of creaturesRef.current) {
-      const dist = Math.abs(creature.worldX - px) + Math.abs(creature.worldY - py);
-      if (dist <= 2) {
-        onStartCombat(creature);
-        return;
-      }
-    }
-
-    setInteractMessage('Nada para interagir aqui...');
-    setTimeout(() => setInteractMessage(null), 1500);
-  }, [onStartCombat, onNpcInteracted]);
+  }, [character, handleInteract, onOpenInventory, onOpenMenu, triggerPlayerAction]);
 
   // Game loop
   useEffect(() => {
@@ -403,6 +433,7 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
               if (nearby.length > 0) {
                 const creature = nearby[Math.floor(Math.random() * nearby.length)];
                 toast.warning(`${creature.name} te atacou!`);
+                triggerPlayerAction('hurt', 420);
                 onStartCombat(creature);
               }
             }
@@ -422,9 +453,9 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
       cameraRef.current.x = Math.max(0, Math.min(cameraRef.current.x, MAP_WIDTH * TILE_SIZE - canvas.width));
       cameraRef.current.y = Math.max(0, Math.min(cameraRef.current.y, MAP_HEIGHT * TILE_SIZE - canvas.height));
 
-      // Clear
-      ctx.fillStyle = '#1a1a2e';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const timeOfDay01 = ((now - worldStartMsRef.current) % DAY_NIGHT_CYCLE_MS) / DAY_NIGHT_CYCLE_MS;
+      const dayFactor = getDayFactor(timeOfDay01);
+      renderParallax(ctx, cameraRef.current.x, cameraRef.current.y, canvas.width, canvas.height, animFrameRef.current, dayFactor);
 
       // Render map
       renderMap(ctx, map, cameraRef.current.x, cameraRef.current.y, canvas.width, canvas.height, animFrameRef.current);
@@ -443,6 +474,20 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
         }
       }
 
+      const hasTimedAction = now < playerActionUntilMsRef.current;
+      const action: PlayerAction =
+        character.health <= 0 ? 'death'
+        : hasTimedAction ? playerActionRef.current
+        : isMovingRef.current ? 'walk'
+        : 'idle';
+
+      const actionTimeMs = hasTimedAction ? now - playerActionStartMsRef.current : 0;
+      if (!hasTimedAction && playerActionRef.current !== 'idle' && character.health > 0) {
+        playerActionRef.current = 'idle';
+        playerActionStartMsRef.current = 0;
+        playerActionUntilMsRef.current = 0;
+      }
+
       // Render player
       renderPlayer(
         ctx,
@@ -451,7 +496,9 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
         directionRef.current,
         character.class,
         animFrameRef.current,
-        isMovingRef.current
+        isMovingRef.current,
+        action,
+        actionTimeMs
       );
 
       // Player name
@@ -461,6 +508,8 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
       const nameX = playerPosRef.current.x * TILE_SIZE - cameraRef.current.x + TILE_SIZE / 2;
       const nameY = playerPosRef.current.y * TILE_SIZE - cameraRef.current.y - 4;
       ctx.fillText(character.name, nameX, nameY);
+
+      renderDayNightOverlay(ctx, canvas.width, canvas.height, timeOfDay01);
 
       const minimapCanvas = minimapCanvasRef.current;
       const minimapCtx = minimapCanvas?.getContext('2d');
@@ -510,7 +559,7 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
 
     requestAnimationFrame(updateAndRender);
     return () => { running = false; };
-  }, [character, interactMessage]);
+  }, [character, interactMessage, triggerPlayerAction]);
 
   // Resize canvas
   useEffect(() => {

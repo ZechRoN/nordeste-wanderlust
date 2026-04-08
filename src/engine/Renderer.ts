@@ -7,6 +7,127 @@ const tileCache = new Map<string, HTMLCanvasElement>();
 
 // Sprite-based tile cache
 const spriteTileCache = new Map<string, HTMLCanvasElement>();
+const biomeTileCache = new Map<string, HTMLCanvasElement>();
+const groundVariantCache = new Map<string, HTMLCanvasElement>();
+
+type ParallaxLayerKey = 'far' | 'mid' | 'near';
+const parallaxCanvasCache = new Map<ParallaxLayerKey, HTMLCanvasElement>();
+
+function getParallaxCanvas(key: ParallaxLayerKey): HTMLCanvasElement {
+  const cached = parallaxCanvasCache.get(key);
+  if (cached) return cached;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d')!;
+
+  const bg =
+    key === 'far' ? 'rgba(35, 55, 95, 0.35)'
+    : key === 'mid' ? 'rgba(20, 40, 70, 0.55)'
+    : 'rgba(10, 20, 40, 0.60)';
+
+  const fg =
+    key === 'far' ? 'rgba(255, 255, 255, 0.07)'
+    : key === 'mid' ? 'rgba(255, 255, 255, 0.09)'
+    : 'rgba(255, 255, 255, 0.06)';
+
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const seed = key === 'far' ? 13 : key === 'mid' ? 37 : 71;
+  for (let i = 0; i < 90; i++) {
+    const x = (Math.sin(i * seed) * 0.5 + 0.5) * canvas.width;
+    const y = (Math.sin(i * (seed + 3.1)) * 0.5 + 0.5) * canvas.height;
+    const r = key === 'far' ? 28 : key === 'mid' ? 44 : 18;
+    ctx.fillStyle = fg;
+    ctx.beginPath();
+    ctx.ellipse(x, y, r + (i % 7), (r * 0.6) + (i % 5), (i % 9) * 0.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  parallaxCanvasCache.set(key, canvas);
+  return canvas;
+}
+
+export function renderParallax(
+  ctx: CanvasRenderingContext2D,
+  cameraX: number,
+  cameraY: number,
+  canvasWidth: number,
+  canvasHeight: number,
+  animFrame: number,
+  dayFactor: number
+) {
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+  const skyTop = `rgba(${Math.round(12 + 50 * dayFactor)}, ${Math.round(18 + 70 * dayFactor)}, ${Math.round(30 + 100 * dayFactor)}, 1)`;
+  const skyBottom = `rgba(${Math.round(6 + 28 * dayFactor)}, ${Math.round(10 + 40 * dayFactor)}, ${Math.round(18 + 70 * dayFactor)}, 1)`;
+  const g = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+  g.addColorStop(0, skyTop);
+  g.addColorStop(1, skyBottom);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+  const layers: Array<{ key: ParallaxLayerKey; factor: number; alpha: number; driftX: number; driftY: number }> = [
+    { key: 'far', factor: 0.12, alpha: 0.55, driftX: 0.08, driftY: 0.02 },
+    { key: 'mid', factor: 0.22, alpha: 0.75, driftX: 0.12, driftY: 0.04 },
+    { key: 'near', factor: 0.35, alpha: 0.55, driftX: 0.18, driftY: 0.06 },
+  ];
+
+  const t = animFrame;
+  for (const layer of layers) {
+    const img = getParallaxCanvas(layer.key);
+    const ox = -(cameraX * layer.factor) + Math.sin(t * 0.01) * (img.width * layer.driftX);
+    const oy = -(cameraY * layer.factor) + Math.cos(t * 0.008) * (img.height * layer.driftY);
+    ctx.globalAlpha = layer.alpha;
+    for (let x = -img.width; x < canvasWidth + img.width; x += img.width) {
+      for (let y = -img.height; y < canvasHeight + img.height; y += img.height) {
+        ctx.drawImage(img, x + (ox % img.width), y + (oy % img.height));
+      }
+    }
+  }
+
+  ctx.restore();
+}
+
+export function getDayFactor(timeOfDay01: number) {
+  const t = ((timeOfDay01 % 1) + 1) % 1;
+  const sun = Math.sin((t * Math.PI * 2) - Math.PI / 2) * 0.5 + 0.5;
+  return Math.max(0, Math.min(1, sun));
+}
+
+export function renderDayNightOverlay(
+  ctx: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+  timeOfDay01: number
+) {
+  const day = getDayFactor(timeOfDay01);
+  const night = 1 - day;
+
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+  const dusk = Math.max(0, 1 - Math.abs(((timeOfDay01 % 1) + 1) % 1 - 0.5) * 6);
+  const baseAlpha = 0.62 * night;
+  if (baseAlpha > 0.01) {
+    ctx.fillStyle = `rgba(10, 18, 34, ${baseAlpha})`;
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  }
+
+  if (dusk > 0.01) {
+    ctx.globalAlpha = 0.18 * dusk * (0.6 + 0.4 * day);
+    const g = ctx.createRadialGradient(canvasWidth * 0.35, canvasHeight * 0.1, 0, canvasWidth * 0.35, canvasHeight * 0.1, canvasHeight);
+    g.addColorStop(0, 'rgba(255, 160, 80, 0.9)');
+    g.addColorStop(1, 'rgba(255, 160, 80, 0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  }
+
+  ctx.restore();
+}
 
 function getSpriteTile(type: TileType): HTMLCanvasElement | null {
   const key = `stile_${type}`;
@@ -27,7 +148,8 @@ function getSpriteTile(type: TileType): HTMLCanvasElement | null {
       imgSrc = '/sprites/tiles/water_middle.png';
       break;
     case TileType.SAND:
-      imgSrc = '/sprites/tiles/beach_tile.png';
+      imgSrc = '/sprites/tiles/grass.png';
+      sx = 32;
       break;
     case TileType.PATH:
     case TileType.BRIDGE:
@@ -126,25 +248,192 @@ function getCachedTile(type: TileType): HTMLCanvasElement {
   return canvas;
 }
 
+function tileHash(x: number, y: number, seed: number) {
+  const n = Math.sin(x * 12.9898 + y * 78.233 + seed) * 43758.5453;
+  return n - Math.floor(n);
+}
+
+function biomeAtFast(x: number, y: number): 'caatinga' | 'agreste' | 'litoral' | 'santa_cruz' {
+  if (x < 40) return y < 30 ? 'caatinga' : 'litoral';
+  return y < 30 ? 'agreste' : 'santa_cruz';
+}
+
+function pickSpriteCell(img: HTMLImageElement, cellW: number, cellH: number, pick: number) {
+  const cols = Math.max(1, Math.floor(img.width / cellW));
+  const rows = Math.max(1, Math.floor(img.height / cellH));
+  const idx = Math.max(0, Math.floor(pick * cols * rows)) % (cols * rows);
+  return { col: idx % cols, row: Math.floor(idx / cols) % rows, cols, rows };
+}
+
+function getGroundForNature(tile: TileType, biome: 'caatinga' | 'agreste' | 'litoral' | 'santa_cruz') {
+  if (tile === TileType.CACTUS) return TileType.SAND;
+  if (tile === TileType.PALM) return TileType.SAND;
+  if (tile === TileType.ROCK) return biome === 'agreste' || biome === 'santa_cruz' ? TileType.GRASS : TileType.SAND;
+  return biome === 'caatinga' || biome === 'litoral' ? TileType.SAND : TileType.GRASS;
+}
+
+function getBiomeSpecificTile(type: TileType, biome: 'caatinga' | 'agreste' | 'litoral' | 'santa_cruz'): HTMLCanvasElement | null {
+  const key = `biome_${biome}_${type}`;
+  if (biomeTileCache.has(key)) return biomeTileCache.get(key)!;
+
+  let imgSrc: string | null = null;
+  if (biome === 'caatinga' && type === TileType.GRASS) {
+    imgSrc = '/sprites/tiles/dead_grass.png';
+  }
+  if (!imgSrc) return null;
+
+  const img = getImage(imgSrc);
+  if (!img) return null;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = TILE_SIZE;
+  canvas.height = TILE_SIZE;
+  const ctx = canvas.getContext('2d')!;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(img, 0, 0, 16, 16, 0, 0, TILE_SIZE, TILE_SIZE);
+  biomeTileCache.set(key, canvas);
+  return canvas;
+}
+
+function decorateGroundVariant(
+  ctx: CanvasRenderingContext2D,
+  type: TileType,
+  biome: 'caatinga' | 'agreste' | 'litoral' | 'santa_cruz',
+  variant: number
+) {
+  if (variant === 0) return;
+  const seed = variant * 97 + (biome === 'caatinga' ? 13 : biome === 'litoral' ? 37 : 71);
+
+  if (type === TileType.SAND) {
+    ctx.fillStyle = biome === 'caatinga' ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.06)';
+    for (let i = 0; i < 6; i++) {
+      const x = Math.floor((Math.sin((seed + i) * 1.7) * 0.5 + 0.5) * (TILE_SIZE - 2));
+      const y = Math.floor((Math.sin((seed + i) * 2.3) * 0.5 + 0.5) * (TILE_SIZE - 2));
+      ctx.fillRect(x, y, i % 3 === 0 ? 2 : 1, 1);
+    }
+    if (biome === 'litoral') {
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.fillRect(6 + (variant % 5), 18 + (variant % 3), 2, 1);
+    }
+    if (biome === 'caatinga') {
+      ctx.fillStyle = 'rgba(0,0,0,0.06)';
+      ctx.fillRect(10 + (variant % 4), 8 + (variant % 5), 8, 1);
+    }
+    return;
+  }
+
+  if (type === TileType.GRASS) {
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.fillRect(6 + (variant % 7), 8 + (variant % 5), 2, 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.05)';
+    ctx.fillRect(16 + (variant % 6), 18 + (variant % 4), 2, 1);
+    return;
+  }
+
+  if (type === TileType.PATH) {
+    ctx.fillStyle = 'rgba(0,0,0,0.06)';
+    ctx.fillRect(8 + (variant % 6), 14, 10, 1);
+    return;
+  }
+
+  if (type === TileType.WATER || type === TileType.CORAL) {
+    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    ctx.fillRect(6 + (variant % 8), 10 + (variant % 6), 2, 1);
+  }
+}
+
+function getGroundVariantTile(
+  type: TileType,
+  biome: 'caatinga' | 'agreste' | 'litoral' | 'santa_cruz',
+  variant: number
+) {
+  const key = `gvar_${biome}_${type}_${variant}`;
+  const cached = groundVariantCache.get(key);
+  if (cached) return cached;
+
+  const base = getBiomeSpecificTile(type, biome) ?? getCachedTile(type);
+  const canvas = document.createElement('canvas');
+  canvas.width = TILE_SIZE;
+  canvas.height = TILE_SIZE;
+  const ctx = canvas.getContext('2d')!;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(base, 0, 0);
+  decorateGroundVariant(ctx, type, biome, variant);
+  groundVariantCache.set(key, canvas);
+  return canvas;
+}
+
 // Draw nature objects (trees, cacti, rocks) using sprites
 function renderNatureSprite(
   ctx: CanvasRenderingContext2D,
   type: TileType,
   sx: number, sy: number,
+  tileX: number,
+  tileY: number,
   animFrame: number
 ) {
   switch (type) {
     case TileType.TREE: {
-      const img = getImage('/sprites/nature/trees.png');
-      if (img) {
-        ctx.imageSmoothingEnabled = false;
-        // trees.png is 64x16, 4 tree variations of 16x16
-        const variant = Math.abs((sx + sy) * 7) % 4;
-        // Draw tree shadow
-        ctx.fillStyle = 'rgba(0,0,0,0.15)';
-        ctx.fillRect(sx + 6, sy + TILE_SIZE - 8, TILE_SIZE - 12, 6);
-        // Draw tree scaled up, offset upward for canopy
-        ctx.drawImage(img, variant * 16, 0, 16, 16, sx - 4, sy - 16, TILE_SIZE + 8, TILE_SIZE + 16);
+      const biome = biomeAtFast(tileX, tileY);
+      const roll = tileHash(tileX, tileY, 17);
+
+      const oakLarge = getImage('/sprites/nature/oak_tree.png');
+      const pine = getImage('/sprites/nature/pine_trees.png');
+      const oakSmall = getImage('/sprites/nature/oak_tree_small.png');
+      const trees = getImage('/sprites/nature/trees.png');
+      const dead = getImage('/sprites/nature/dead_trees.png');
+
+      ctx.imageSmoothingEnabled = false;
+
+      const sway = Math.sin(animFrame * 0.06 + tileX * 0.7 + tileY * 1.3) * 1.2;
+      const shadowAlpha = 0.18;
+      ctx.fillStyle = `rgba(0,0,0,${shadowAlpha})`;
+      ctx.beginPath();
+      ctx.ellipse(sx + TILE_SIZE / 2, sy + TILE_SIZE - 5, 10, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (biome === 'caatinga' && dead) {
+        const cell = pickSpriteCell(dead, 16, 32, roll);
+        const targetH = TILE_SIZE * 1.9;
+        const scale = targetH / 32;
+        const dw = 16 * scale;
+        const dh = 32 * scale;
+        ctx.drawImage(dead, cell.col * 16, cell.row * 32, 16, 32, sx + TILE_SIZE / 2 - dw / 2, sy + TILE_SIZE - dh + sway, dw, dh);
+        return;
+      }
+
+      if (roll < 0.18 && oakLarge) {
+        const targetH = TILE_SIZE * 2.4;
+        const scale = targetH / oakLarge.height;
+        const dw = oakLarge.width * scale;
+        const dh = oakLarge.height * scale;
+        ctx.drawImage(oakLarge, 0, 0, oakLarge.width, oakLarge.height, sx + TILE_SIZE / 2 - dw / 2, sy + TILE_SIZE - dh + sway, dw, dh);
+        return;
+      }
+
+      if (roll < 0.42 && pine) {
+        const cell = pickSpriteCell(pine, 16, 32, roll);
+        const targetH = TILE_SIZE * 2.0;
+        const scale = targetH / 32;
+        const dw = 16 * scale;
+        const dh = 32 * scale;
+        ctx.drawImage(pine, cell.col * 16, cell.row * 32, 16, 32, sx + TILE_SIZE / 2 - dw / 2, sy + TILE_SIZE - dh + sway, dw, dh);
+        return;
+      }
+
+      if (roll < 0.62 && oakSmall) {
+        const cell = pickSpriteCell(oakSmall, 16, 32, roll);
+        const targetH = TILE_SIZE * 2.0;
+        const scale = targetH / 32;
+        const dw = 16 * scale;
+        const dh = 32 * scale;
+        ctx.drawImage(oakSmall, cell.col * 16, cell.row * 32, 16, 32, sx + TILE_SIZE / 2 - dw / 2, sy + TILE_SIZE - dh + sway, dw, dh);
+        return;
+      }
+
+      if (trees) {
+        const cell = pickSpriteCell(trees, 16, 16, roll);
+        ctx.drawImage(trees, cell.col * 16, cell.row * 16, 16, 16, sx - 6, sy - 22 + sway, TILE_SIZE + 12, TILE_SIZE + 20);
         return;
       }
       // Fallback: canvas tree
@@ -162,10 +451,14 @@ function renderNatureSprite(
       const img = getImage('/sprites/nature/coconut_trees.png');
       if (img) {
         ctx.imageSmoothingEnabled = false;
-        const variant = Math.abs((sx + sy) * 3) % (Math.floor(img.width / 16));
-        ctx.fillStyle = 'rgba(0,0,0,0.12)';
-        ctx.fillRect(sx + 8, sy + TILE_SIZE - 6, TILE_SIZE - 16, 4);
-        ctx.drawImage(img, variant * 16, 0, 16, 16, sx - 4, sy - 16, TILE_SIZE + 8, TILE_SIZE + 16);
+        const pick = tileHash(tileX, tileY, 29);
+        const cell = pickSpriteCell(img, 16, 16, pick);
+        const sway = Math.sin(animFrame * 0.07 + tileX * 0.9 + tileY * 1.1) * 1.2;
+        ctx.fillStyle = 'rgba(0,0,0,0.14)';
+        ctx.beginPath();
+        ctx.ellipse(sx + TILE_SIZE / 2, sy + TILE_SIZE - 5, 10, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.drawImage(img, cell.col * 16, cell.row * 16, 16, 16, sx - 6, sy - 22 + sway, TILE_SIZE + 12, TILE_SIZE + 20);
         return;
       }
       ctx.fillStyle = '#6b4a2a';
@@ -179,8 +472,13 @@ function renderNatureSprite(
       const img = getImage('/sprites/nature/cactus.png');
       if (img) {
         ctx.imageSmoothingEnabled = false;
-        const variant = Math.abs((sx + sy) * 5) % Math.floor(img.width / 16);
-        ctx.drawImage(img, variant * 16, 0, 16, 16, sx + 2, sy + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+        const pick = tileHash(tileX, tileY, 41);
+        const cell = pickSpriteCell(img, 16, 16, pick);
+        ctx.fillStyle = 'rgba(0,0,0,0.12)';
+        ctx.beginPath();
+        ctx.ellipse(sx + TILE_SIZE / 2, sy + TILE_SIZE - 6, 8, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.drawImage(img, cell.col * 16, cell.row * 16, 16, 16, sx - 1, sy - 6, TILE_SIZE + 2, TILE_SIZE + 6);
         return;
       }
       ctx.fillStyle = '#3a6a1a';
@@ -193,9 +491,13 @@ function renderNatureSprite(
       const img = getImage('/sprites/nature/rocks.png');
       if (img) {
         ctx.imageSmoothingEnabled = false;
-        // rocks.png is 48x64 - extract a 16x16 portion
-        const variant = Math.abs((sx + sy) * 11) % 3;
-        ctx.drawImage(img, variant * 16, 0, 16, 16, sx + 4, sy + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+        const pick = tileHash(tileX, tileY, 53);
+        const cell = pickSpriteCell(img, 16, 16, pick);
+        ctx.fillStyle = 'rgba(0,0,0,0.16)';
+        ctx.beginPath();
+        ctx.ellipse(sx + TILE_SIZE / 2, sy + TILE_SIZE - 6, 9, 3.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.drawImage(img, cell.col * 16, cell.row * 16, 16, 16, sx + 1, sy + 2, TILE_SIZE - 2, TILE_SIZE - 2);
         return;
       }
       ctx.fillStyle = '#4a4a4a';
@@ -231,18 +533,24 @@ export function renderMap(
 
       // For nature objects, draw grass underneath then queue the object
       if (tile === TileType.TREE || tile === TileType.PALM || tile === TileType.CACTUS || tile === TileType.ROCK) {
-        const grassTile = getSpriteTile(TileType.GRASS);
-        if (grassTile) {
-          ctx.drawImage(grassTile, sx, sy);
-        } else {
-          ctx.fillStyle = TILE_COLORS[TileType.GRASS];
+        const biome = biomeAtFast(x, y);
+        const ground = getGroundForNature(tile, biome);
+        const groundSprite = getSpriteTile(ground);
+        if (groundSprite) ctx.drawImage(groundSprite, sx, sy);
+        else {
+          ctx.fillStyle = TILE_COLORS[ground];
           ctx.fillRect(sx, sy, TILE_SIZE, TILE_SIZE);
         }
         natureTiles.push({ x, y, tile, sx, sy });
         continue;
       }
 
-      const tileCanvas = getCachedTile(tile);
+      const biome = biomeAtFast(x, y);
+      const variantIndex = Math.floor(tileHash(x, y, 123) * 6);
+      const tileCanvas =
+        tile === TileType.SAND || tile === TileType.GRASS || tile === TileType.PATH || tile === TileType.WATER || tile === TileType.CORAL
+          ? getGroundVariantTile(tile, biome, variantIndex)
+          : getCachedTile(tile);
       ctx.drawImage(tileCanvas, sx, sy);
 
       // Water animation
@@ -266,13 +574,60 @@ export function renderMap(
           ctx.fillRect(sx + 2, sy + TILE_SIZE - 4, TILE_SIZE - 4, 4);
         }
       }
+
+      // Litoral: borda areia/água (foam) sem depender de spritesheet de shoreline
+      if (biome === 'litoral') {
+        const left = map.tiles[y]?.[x - 1] ?? TileType.EMPTY;
+        const up = map.tiles[y - 1]?.[x] ?? TileType.EMPTY;
+        const right = map.tiles[y]?.[x + 1] ?? TileType.EMPTY;
+        const down = map.tiles[y + 1]?.[x] ?? TileType.EMPTY;
+
+        const isWater = (t: TileType) => t === TileType.WATER || t === TileType.CORAL;
+        const isSand = (t: TileType) => t === TileType.SAND;
+
+        if (tile === TileType.SAND) {
+          const waterLeft = isWater(left);
+          const waterUp = isWater(up);
+          const waterRight = isWater(right);
+          const waterDown = isWater(down);
+          const touches = waterLeft || waterUp || waterRight || waterDown;
+          if (touches) {
+            ctx.fillStyle = 'rgba(255,255,255,0.12)';
+            if (waterUp) ctx.fillRect(sx, sy, TILE_SIZE, 2);
+            if (waterLeft) ctx.fillRect(sx, sy, 2, TILE_SIZE);
+            if (waterRight) ctx.fillRect(sx + TILE_SIZE - 2, sy, 2, TILE_SIZE);
+            if (waterDown) ctx.fillRect(sx, sy + TILE_SIZE - 2, TILE_SIZE, 2);
+
+            ctx.fillStyle = 'rgba(0,0,0,0.05)';
+            if (waterUp) ctx.fillRect(sx, sy + 2, TILE_SIZE, 1);
+            if (waterLeft) ctx.fillRect(sx + 2, sy, 1, TILE_SIZE);
+            if (waterRight) ctx.fillRect(sx + TILE_SIZE - 3, sy, 1, TILE_SIZE);
+            if (waterDown) ctx.fillRect(sx, sy + TILE_SIZE - 3, TILE_SIZE, 1);
+          }
+        }
+
+        if (tile === TileType.WATER || tile === TileType.CORAL) {
+          const sandLeft = isSand(left);
+          const sandUp = isSand(up);
+          const sandRight = isSand(right);
+          const sandDown = isSand(down);
+          const touches = sandLeft || sandUp || sandRight || sandDown;
+          if (touches) {
+            ctx.fillStyle = 'rgba(255,255,255,0.08)';
+            if (sandUp) ctx.fillRect(sx, sy, TILE_SIZE, 2);
+            if (sandLeft) ctx.fillRect(sx, sy, 2, TILE_SIZE);
+            if (sandRight) ctx.fillRect(sx + TILE_SIZE - 2, sy, 2, TILE_SIZE);
+            if (sandDown) ctx.fillRect(sx, sy + TILE_SIZE - 2, TILE_SIZE, 2);
+          }
+        }
+      }
     }
   }
 
   // Render nature objects on top (sorted by Y for depth)
   natureTiles.sort((a, b) => a.y - b.y);
   for (const t of natureTiles) {
-    renderNatureSprite(ctx, t.tile, t.sx, t.sy, animFrame);
+    renderNatureSprite(ctx, t.tile, t.sx, t.sy, t.x, t.y, animFrame);
   }
 }
 
@@ -284,14 +639,16 @@ export function renderPlayer(
   direction: Direction,
   characterClass: string,
   animFrame: number,
-  isMoving: boolean
+  isMoving: boolean,
+  action?: 'idle' | 'walk' | 'attack' | 'hurt' | 'death',
+  actionTimeMs?: number
 ) {
   const spritePath = CHARACTER_SPRITE_PATHS[characterClass] || CHARACTER_SPRITE_PATHS.warrior;
   const img = getImage(spritePath);
   
   const screenX = x * TILE_SIZE - cameraX;
   const screenY = y * TILE_SIZE - cameraY;
-  const bounce = isMoving ? Math.sin(animFrame * 0.3) * 1.5 : 0;
+  let bounce = isMoving ? Math.sin(animFrame * 0.3) * 1.5 : 0;
 
   // Shadow
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
@@ -307,20 +664,40 @@ export function renderPlayer(
     //                ranged (96px wide = 6 cols, 128px tall = 8 rows)
     const frameW = 16;
     const frameH = 16;
-    const cols = Math.floor(img.width / frameW);
-    
-    // Direction mapping for MiniWorld sprites:
-    // Rows: 0=idle_down, 1=walk_down, 2=idle_right, 3=walk_right, 
-    //        4=idle_up, 5=walk_up, 6=idle_left, 7=walk_left
-    // Some sheets have attack rows after walk rows
-    const dirMap: Record<string, number> = { down: 0, right: 2, up: 4, left: 6 };
-    const baseRow = dirMap[direction] ?? 0;
-    const row = isMoving ? baseRow + 1 : baseRow;
-    const maxRow = Math.floor(img.height / frameH);
-    const safeRow = Math.min(row, maxRow - 1);
-    
-    // Animation frame cycling
-    const frameIdx = isMoving ? Math.floor(animFrame / 4) % cols : 0;
+    const cols = Math.max(1, Math.floor(img.width / frameW));
+    const rows = Math.max(1, Math.floor(img.height / frameH));
+
+    const dirIdx = direction === Direction.RIGHT ? 1 : direction === Direction.UP ? 2 : direction === Direction.LEFT ? 3 : 0;
+    const idleRow = dirIdx * 2;
+    const walkRow = idleRow + 1;
+    const attackRow = 8 + dirIdx;
+    const hurtRow = 12 + dirIdx;
+    const deathRow = 16 + dirIdx;
+
+    let wanted = action ?? (isMoving ? 'walk' : 'idle');
+    if (wanted === 'death' && deathRow >= rows) wanted = 'idle';
+    if (wanted === 'hurt' && hurtRow >= rows) wanted = 'idle';
+    if (wanted === 'attack' && attackRow >= rows) wanted = isMoving && walkRow < rows ? 'walk' : 'idle';
+
+    const pickedRow =
+      wanted === 'death' ? Math.min(deathRow, rows - 1)
+      : wanted === 'hurt' ? Math.min(hurtRow, rows - 1)
+      : wanted === 'attack' ? Math.min(attackRow, rows - 1)
+      : wanted === 'walk' ? Math.min(walkRow, rows - 1)
+      : Math.min(idleRow, rows - 1);
+
+    bounce = wanted === 'walk' && isMoving ? Math.sin(animFrame * 0.3) * 1.5 : 0;
+
+    const time = Math.max(0, actionTimeMs ?? 0);
+    const frameCap = wanted === 'walk' ? cols : Math.min(cols, 5);
+    const frameIdx =
+      wanted === 'death'
+        ? Math.min(frameCap - 1, Math.floor(time / 120))
+        : wanted === 'hurt'
+          ? Math.min(frameCap - 1, Math.floor(time / 90))
+          : wanted === 'attack'
+            ? Math.min(frameCap - 1, Math.floor(time / 80))
+            : isMoving ? Math.floor(animFrame / 4) % cols : 0;
     
     // Draw character scaled from 16x16 to display size
     const drawSize = TILE_SIZE + 8;
@@ -329,7 +706,7 @@ export function renderPlayer(
     
     ctx.drawImage(
       img,
-      frameIdx * frameW, safeRow * frameH, frameW, frameH,
+      frameIdx * frameW, pickedRow * frameH, frameW, frameH,
       drawX, drawY, drawSize, drawSize
     );
   } else {
@@ -742,5 +1119,5 @@ export function renderControls(
   ctx.fillStyle = '#aaa';
   ctx.font = '10px monospace';
   ctx.textAlign = 'left';
-  ctx.fillText('WASD/Setas: Mover | E: Interagir | I: Inventário | M: Menu | ESC: Sair', 14, canvasHeight - 14);
+  ctx.fillText('WASD/Setas: Mover | E: Interagir | Espaço/F: Ataque | H: Hurt | I: Inventário | M: Menu | ESC: Sair', 14, canvasHeight - 14);
 }
