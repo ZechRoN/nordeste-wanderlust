@@ -18,32 +18,87 @@ function getParallaxCanvas(key: ParallaxLayerKey): HTMLCanvasElement {
   if (cached) return cached;
 
   const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 512;
+  canvas.width = 640;
+  canvas.height = 480;
   const ctx = canvas.getContext('2d')!;
+  const W = canvas.width;
+  const H = canvas.height;
 
-  const bg =
-    key === 'far' ? 'rgba(35, 55, 95, 0.35)'
-    : key === 'mid' ? 'rgba(20, 40, 70, 0.55)'
-    : 'rgba(10, 20, 40, 0.60)';
-
-  const fg =
-    key === 'far' ? 'rgba(255, 255, 255, 0.07)'
-    : key === 'mid' ? 'rgba(255, 255, 255, 0.09)'
-    : 'rgba(255, 255, 255, 0.06)';
-
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Transparent base
+  ctx.clearRect(0, 0, W, H);
 
   const seed = key === 'far' ? 13 : key === 'mid' ? 37 : 71;
-  for (let i = 0; i < 90; i++) {
-    const x = (Math.sin(i * seed) * 0.5 + 0.5) * canvas.width;
-    const y = (Math.sin(i * (seed + 3.1)) * 0.5 + 0.5) * canvas.height;
-    const r = key === 'far' ? 28 : key === 'mid' ? 44 : 18;
-    ctx.fillStyle = fg;
+
+  if (key === 'far') {
+    // Distant mountains / rolling hills silhouette
+    ctx.fillStyle = 'rgba(20, 35, 60, 0.5)';
     ctx.beginPath();
-    ctx.ellipse(x, y, r + (i % 7), (r * 0.6) + (i % 5), (i % 9) * 0.2, 0, Math.PI * 2);
+    ctx.moveTo(0, H);
+    for (let x = 0; x <= W; x += 4) {
+      const h1 = Math.sin(x * 0.008 + seed) * 60 + 80;
+      const h2 = Math.sin(x * 0.015 + seed * 2) * 30;
+      ctx.lineTo(x, H - h1 - h2);
+    }
+    ctx.lineTo(W, H);
+    ctx.closePath();
     ctx.fill();
+
+    // Stars / distant lights
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+    for (let i = 0; i < 50; i++) {
+      const sx = (Math.sin(i * 73.17 + seed) * 0.5 + 0.5) * W;
+      const sy = (Math.sin(i * 41.31 + seed * 3) * 0.5 + 0.5) * (H * 0.5);
+      const r = (i % 3 === 0) ? 1.5 : 1;
+      ctx.beginPath();
+      ctx.arc(sx, sy, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (key === 'mid') {
+    // Mid-ground: tree line / forest silhouette
+    ctx.fillStyle = 'rgba(15, 30, 20, 0.55)';
+    ctx.beginPath();
+    ctx.moveTo(0, H);
+    for (let x = 0; x <= W; x += 2) {
+      const base = H * 0.5;
+      const treeHeight = Math.sin(x * 0.02 + seed) * 40 + Math.sin(x * 0.05 + seed * 1.5) * 20 + 50;
+      // Jagged tree-top effect
+      const jagged = (Math.sin(x * 0.3 + seed) * 8 + Math.sin(x * 0.7 + seed * 2) * 4);
+      ctx.lineTo(x, base - treeHeight - jagged);
+    }
+    ctx.lineTo(W, H);
+    ctx.closePath();
+    ctx.fill();
+
+    // Occasional glowing spots (fireflies / windows)
+    for (let i = 0; i < 15; i++) {
+      const fx = (Math.sin(i * 47.3 + seed) * 0.5 + 0.5) * W;
+      const fy = H * 0.35 + (Math.sin(i * 31.7 + seed * 2) * 0.5 + 0.5) * (H * 0.3);
+      ctx.fillStyle = `rgba(200, 180, 100, 0.15)`;
+      ctx.beginPath();
+      ctx.arc(fx, fy, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else {
+    // Near layer: grass tufts / foliage hints at bottom
+    ctx.fillStyle = 'rgba(10, 20, 10, 0.45)';
+    ctx.beginPath();
+    ctx.moveTo(0, H);
+    for (let x = 0; x <= W; x += 3) {
+      const grassH = Math.sin(x * 0.04 + seed) * 15 + Math.sin(x * 0.12 + seed * 3) * 8 + 25;
+      const spikes = Math.sin(x * 0.5 + seed) * 6;
+      ctx.lineTo(x, H - grassH - spikes);
+    }
+    ctx.lineTo(W, H);
+    ctx.closePath();
+    ctx.fill();
+
+    // Particle dust
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+    for (let i = 0; i < 30; i++) {
+      const px = (Math.sin(i * 61.7 + seed) * 0.5 + 0.5) * W;
+      const py = (Math.sin(i * 37.3 + seed * 2) * 0.5 + 0.5) * H;
+      ctx.fillRect(px, py, 2, 1);
+    }
   }
 
   parallaxCanvasCache.set(key, canvas);
