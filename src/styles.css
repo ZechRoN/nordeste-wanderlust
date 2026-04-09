@@ -625,7 +625,7 @@
 
   @media (max-width: 520px) {
     .minimap-hud__canvas-wrap {
-      width: 180px;
+      width: 110px;
     }
   }
 
