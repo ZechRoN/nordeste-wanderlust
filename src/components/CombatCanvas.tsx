@@ -18,6 +18,7 @@ interface CombatCanvasProps {
   playerDead: boolean;
   creatureDead: boolean;
   isDefending: boolean;
+  playerAttacking?: boolean; // NEW: triggers lunge animation
 }
 
 // Battle background biome palettes

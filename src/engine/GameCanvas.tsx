@@ -578,7 +578,8 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
     };
 
     requestAnimationFrame(updateAndRender);
-    return () => { running = false; };
+    startAmbientAudio();
+    return () => { running = false; stopAmbientAudio(); };
   }, [character, interactMessage, triggerPlayerAction]);
 
   // Resize canvas
