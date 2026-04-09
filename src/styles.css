@@ -489,10 +489,10 @@
   }
 
   .minimap-hud__canvas-wrap {
-    width: clamp(160px, 20vw, 260px);
+    width: clamp(110px, 14vw, 180px);
     aspect-ratio: 1 / 1;
     position: relative;
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
     background: rgba(0, 0, 0, 0.25);
   }
