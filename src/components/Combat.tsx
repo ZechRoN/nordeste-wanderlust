@@ -129,6 +129,11 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
 
   const playerAttack = (action: CombatAction) => {
     if (!isPlayerTurn) return;
+    // Trigger lunge for attack actions
+    if (action === 'attack' || action === 'special') {
+      setPlayerAttacking(true);
+      setTimeout(() => setPlayerAttacking(false), 500);
+    }
     let damageResult: DamageResult = { damage: 0, isCritical: false, isMiss: false };
     let manaCost = 0;
 
@@ -397,6 +402,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
               playerDead={playerDead}
               creatureDead={creatureDead}
               isDefending={isDefending}
+              playerAttacking={playerAttacking}
             />
           </Div>
 
