@@ -703,7 +703,7 @@
 
   .player-hud__name {
     font-weight: 800;
-    font-size: 13px;
+    font-size: 12px;
     color: hsl(var(--rpg-text));
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
     overflow: hidden;
