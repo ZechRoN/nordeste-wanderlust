@@ -65,6 +65,12 @@ export function CombatCanvas({
     prevCreatureShake.current = creatureShake;
   }, [creatureShake]);
 
+  // Track lunge start
+  useEffect(() => {
+    if (playerAttacking && !prevPlayerAttacking.current) lungeStartRef.current = Date.now();
+    prevPlayerAttacking.current = playerAttacking;
+  }, [playerAttacking]);
+
   const render = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
