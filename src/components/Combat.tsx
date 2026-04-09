@@ -57,6 +57,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
   const [creatureFlash, setCreatureFlash] = useState(false);
   const [creatureDead, setCreatureDead] = useState(false);
   const [playerDead, setPlayerDead] = useState(false);
+  const [playerAttacking, setPlayerAttacking] = useState(false);
 
   const { updateKillProgress } = useQuestProgress();
 

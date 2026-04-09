@@ -429,7 +429,7 @@ export function CombatCanvas({
     characterClass, creatureName, creatureRarity,
     playerHealth, playerMaxHealth, creatureHealth, creatureMaxHealth,
     isPlayerTurn, playerShake, creatureShake, playerFlash, creatureFlash,
-    playerDead, creatureDead, isDefending,
+    playerDead, creatureDead, isDefending, playerAttacking,
   ]);
 
   useEffect(() => {
