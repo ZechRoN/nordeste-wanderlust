@@ -135,30 +135,28 @@ export function CombatCanvas({
     const spriteScale = Math.min(W / 400, H / 200) * 3;
     const spriteSize = Math.floor(16 * spriteScale);
 
+    // Creature position (right side)
+    const creatureBaseX = W * 0.78 - spriteSize / 2;
+    const creatureBaseY = groundY - spriteSize + 4;
+
     // Player position (left side) with lunge offset
     const lungeDuration = 500;
     let lungeOffsetX = 0;
+    const playerRestX = W * 0.22 - spriteSize / 2;
     if (playerAttacking || (now - lungeStartRef.current < lungeDuration)) {
       const elapsed = now - lungeStartRef.current;
       const t = Math.min(1, elapsed / lungeDuration);
-      // Ease out-in: advance to 60% of distance, then retreat
-      const lungeDistance = (creatureBaseX - (W * 0.22 - spriteSize / 2)) * 0.6;
+      const lungeDistance = (creatureBaseX - playerRestX) * 0.6;
       if (t < 0.4) {
-        // Advance phase (ease out)
         const p = t / 0.4;
         lungeOffsetX = lungeDistance * (1 - Math.pow(1 - p, 3));
       } else {
-        // Retreat phase (ease in)
         const p = (t - 0.4) / 0.6;
         lungeOffsetX = lungeDistance * Math.pow(1 - p, 2);
       }
     }
-    const playerBaseX = W * 0.22 - spriteSize / 2 + lungeOffsetX;
+    const playerBaseX = playerRestX + lungeOffsetX;
     const playerBaseY = groundY - spriteSize + 4;
-
-    // Creature position (right side)
-    const creatureBaseX = W * 0.78 - spriteSize / 2;
-    const creatureBaseY = groundY - spriteSize + 4;
 
     // Calculate shake offsets
     const getShakeOffset = (startTime: number, active: boolean) => {
