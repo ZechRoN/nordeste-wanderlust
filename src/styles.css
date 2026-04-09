@@ -720,25 +720,30 @@
   .player-hud__stats {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
   }
 
   .player-hud__stat {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
   }
 
   .player-hud__stat-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 10px;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: hsl(var(--rpg-slot-bg));
     border: 1px solid hsl(var(--rpg-slot-border));
     color: hsl(var(--rpg-text));
+  }
+
+  .player-hud__stat-icon svg {
+    width: 12px;
+    height: 12px;
   }
 
   .player-hud__stat-body {
@@ -750,19 +755,19 @@
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 3px;
+    gap: 6px;
+    margin-bottom: 2px;
   }
 
   .player-hud__stat-label {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 800;
     letter-spacing: 0.06em;
     color: hsl(var(--rpg-text-dim));
   }
 
   .player-hud__stat-value {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 800;
     color: hsl(var(--rpg-text));
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
@@ -770,7 +775,7 @@
   }
 
   .player-hud__bar-track {
-    height: 10px;
+    height: 7px;
     border-radius: 999px;
     overflow: hidden;
     background: rgba(0, 0, 0, 0.35);
