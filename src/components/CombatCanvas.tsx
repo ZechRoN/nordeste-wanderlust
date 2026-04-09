@@ -44,12 +44,15 @@ export function CombatCanvas({
   playerDead,
   creatureDead,
   isDefending,
+  playerAttacking = false,
 }: CombatCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef(0);
   const shakeStartRef = useRef({ player: 0, creature: 0 });
   const prevPlayerShake = useRef(false);
   const prevCreatureShake = useRef(false);
+  const lungeStartRef = useRef(0);
+  const prevPlayerAttacking = useRef(false);
 
   // Track shake start times
   useEffect(() => {
