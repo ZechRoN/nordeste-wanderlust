@@ -2,6 +2,8 @@ import { useRef, useEffect, useState, useCallback, type ReactNode } from 'react'
 import { TILE_SIZE, Direction, WALK_SPEED, MAP_WIDTH, MAP_HEIGHT } from './constants';
 import { generateTileMap, isWalkable, getBiomeAt, getBiomeSpawnPoint, getMapPOIs, TileMapData, MapPOI } from './TileMap';
 import { renderMap, renderParallax, getDayFactor, renderDayNightOverlay, renderPlayer, renderPOI, renderMinimap, renderControls, renderCreature } from './Renderer';
+import { getWeatherSystem } from './WeatherSystem';
+import { startAmbientAudio, stopAmbientAudio, updateAmbientDayFactor } from './AmbientAudio';
 import { preloadEssentialSprites, scheduleBackgroundPreload } from './SpriteLoader';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -455,7 +457,22 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
 
       const timeOfDay01 = ((now - worldStartMsRef.current) % DAY_NIGHT_CYCLE_MS) / DAY_NIGHT_CYCLE_MS;
       const dayFactor = getDayFactor(timeOfDay01);
+
+      // Update weather & ambient audio
+      const weather = getWeatherSystem();
+      weather.update(now);
+      updateAmbientDayFactor(dayFactor);
+
+      // Weather darkening on parallax
+      const weatherDark = weather.getParallaxDarkening();
       renderParallax(ctx, cameraRef.current.x, cameraRef.current.y, canvas.width, canvas.height, animFrameRef.current, dayFactor);
+      if (weatherDark > 0) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = `rgba(20, 25, 35, ${weatherDark})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
 
       // Render map
       renderMap(ctx, map, cameraRef.current.x, cameraRef.current.y, canvas.width, canvas.height, animFrameRef.current);
@@ -511,6 +528,9 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
 
       renderDayNightOverlay(ctx, canvas.width, canvas.height, timeOfDay01);
 
+      // Weather particles on top
+      weather.render(ctx, canvas.width, canvas.height);
+
       const minimapCanvas = minimapCanvasRef.current;
       const minimapCtx = minimapCanvas?.getContext('2d');
       if (minimapCtx) {
@@ -558,7 +578,8 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
     };
 
     requestAnimationFrame(updateAndRender);
-    return () => { running = false; };
+    startAmbientAudio();
+    return () => { running = false; stopAmbientAudio(); };
   }, [character, interactMessage, triggerPlayerAction]);
 
   // Resize canvas

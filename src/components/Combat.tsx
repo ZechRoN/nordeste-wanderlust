@@ -57,6 +57,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
   const [creatureFlash, setCreatureFlash] = useState(false);
   const [creatureDead, setCreatureDead] = useState(false);
   const [playerDead, setPlayerDead] = useState(false);
+  const [playerAttacking, setPlayerAttacking] = useState(false);
 
   const { updateKillProgress } = useQuestProgress();
 
@@ -128,6 +129,11 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
 
   const playerAttack = (action: CombatAction) => {
     if (!isPlayerTurn) return;
+    // Trigger lunge for attack actions
+    if (action === 'attack' || action === 'special') {
+      setPlayerAttacking(true);
+      setTimeout(() => setPlayerAttacking(false), 500);
+    }
     let damageResult: DamageResult = { damage: 0, isCritical: false, isMiss: false };
     let manaCost = 0;
 
@@ -396,6 +402,7 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
               playerDead={playerDead}
               creatureDead={creatureDead}
               isDefending={isDefending}
+              playerAttacking={playerAttacking}
             />
           </Div>
 

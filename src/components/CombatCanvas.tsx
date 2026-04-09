@@ -18,6 +18,7 @@ interface CombatCanvasProps {
   playerDead: boolean;
   creatureDead: boolean;
   isDefending: boolean;
+  playerAttacking?: boolean; // NEW: triggers lunge animation
 }
 
 // Battle background biome palettes
@@ -43,12 +44,15 @@ export function CombatCanvas({
   playerDead,
   creatureDead,
   isDefending,
+  playerAttacking = false,
 }: CombatCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef(0);
   const shakeStartRef = useRef({ player: 0, creature: 0 });
   const prevPlayerShake = useRef(false);
   const prevCreatureShake = useRef(false);
+  const lungeStartRef = useRef(0);
+  const prevPlayerAttacking = useRef(false);
 
   // Track shake start times
   useEffect(() => {
@@ -60,6 +64,12 @@ export function CombatCanvas({
     if (creatureShake && !prevCreatureShake.current) shakeStartRef.current.creature = Date.now();
     prevCreatureShake.current = creatureShake;
   }, [creatureShake]);
+
+  // Track lunge start
+  useEffect(() => {
+    if (playerAttacking && !prevPlayerAttacking.current) lungeStartRef.current = Date.now();
+    prevPlayerAttacking.current = playerAttacking;
+  }, [playerAttacking]);
 
   const render = useCallback(() => {
     const canvas = canvasRef.current;
@@ -125,13 +135,28 @@ export function CombatCanvas({
     const spriteScale = Math.min(W / 400, H / 200) * 3;
     const spriteSize = Math.floor(16 * spriteScale);
 
-    // Player position (left side)
-    const playerBaseX = W * 0.22 - spriteSize / 2;
-    const playerBaseY = groundY - spriteSize + 4;
-
     // Creature position (right side)
     const creatureBaseX = W * 0.78 - spriteSize / 2;
     const creatureBaseY = groundY - spriteSize + 4;
+
+    // Player position (left side) with lunge offset
+    const lungeDuration = 500;
+    let lungeOffsetX = 0;
+    const playerRestX = W * 0.22 - spriteSize / 2;
+    if (playerAttacking || (now - lungeStartRef.current < lungeDuration)) {
+      const elapsed = now - lungeStartRef.current;
+      const t = Math.min(1, elapsed / lungeDuration);
+      const lungeDistance = (creatureBaseX - playerRestX) * 0.6;
+      if (t < 0.4) {
+        const p = t / 0.4;
+        lungeOffsetX = lungeDistance * (1 - Math.pow(1 - p, 3));
+      } else {
+        const p = (t - 0.4) / 0.6;
+        lungeOffsetX = lungeDistance * Math.pow(1 - p, 2);
+      }
+    }
+    const playerBaseX = playerRestX + lungeOffsetX;
+    const playerBaseY = groundY - spriteSize + 4;
 
     // Calculate shake offsets
     const getShakeOffset = (startTime: number, active: boolean) => {
@@ -404,7 +429,7 @@ export function CombatCanvas({
     characterClass, creatureName, creatureRarity,
     playerHealth, playerMaxHealth, creatureHealth, creatureMaxHealth,
     isPlayerTurn, playerShake, creatureShake, playerFlash, creatureFlash,
-    playerDead, creatureDead, isDefending,
+    playerDead, creatureDead, isDefending, playerAttacking,
   ]);
 
   useEffect(() => {
