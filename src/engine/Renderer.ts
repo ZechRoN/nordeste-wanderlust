@@ -1226,16 +1226,4 @@ export function renderHUD(
   ctx.restore();
 }
 
-// Draw controls hint at bottom
-export function renderControls(
-  ctx: CanvasRenderingContext2D,
-  canvasWidth: number,
-  canvasHeight: number
-) {
-  ctx.fillStyle = 'rgba(0,0,0,0.6)';
-  ctx.fillRect(8, canvasHeight - 30, 360, 24);
-  ctx.fillStyle = '#aaa';
-  ctx.font = '10px monospace';
-  ctx.textAlign = 'left';
-  ctx.fillText('WASD/Setas: Mover | E: Interagir | Espaço/F: Ataque | H: Hurt | I: Inventário | M: Menu | ESC: Sair', 14, canvasHeight - 14);
-}
+// renderControls removed
