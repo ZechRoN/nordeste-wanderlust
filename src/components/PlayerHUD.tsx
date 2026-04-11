@@ -76,7 +76,7 @@ function HUDStat(props: {
   );
 }
 
-export function PlayerHUD({ character }: { character: PlayerHUDCharacter }) {
+export function PlayerHUD({ character, notificationSlot }: { character: PlayerHUDCharacter; notificationSlot?: React.ReactNode }) {
   const xpMax = useMemo(() => Math.max(1, character.level * 100), [character.level]);
   const hpPct = clampPct(character.max_health ? character.health / character.max_health : 0);
   const mpPct = clampPct(character.max_mana ? character.mana / character.max_mana : 0);
@@ -115,6 +115,7 @@ export function PlayerHUD({ character }: { character: PlayerHUDCharacter }) {
             </Div>
 
             <Div className="player-hud__chips" aria-label="Recursos">
+              {notificationSlot && <Div className="player-hud__chip">{notificationSlot}</Div>}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Div className="player-hud__chip" aria-label="Gold">
