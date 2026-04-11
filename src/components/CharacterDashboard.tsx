@@ -180,10 +180,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
     <Div className="fixed inset-0 bg-background overflow-hidden">
       <Div className="fixed top-0 left-0 z-30 flex flex-wrap items-start gap-2 p-2 pointer-events-none">
         <Div className="pointer-events-auto">
-          <GameNotifications characterId={currentCharacter.id} containerClassName="relative" />
-        </Div>
-        <Div className="pointer-events-auto">
-          <PlayerHUD character={currentCharacter as any} />
+          <PlayerHUD character={currentCharacter as any} notificationSlot={<GameNotifications characterId={currentCharacter.id} containerClassName="relative" />} />
         </Div>
       </Div>
       <GameCanvas

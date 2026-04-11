@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, useCallback, type ReactNode } from 'react';
 import { TILE_SIZE, Direction, WALK_SPEED, MAP_WIDTH, MAP_HEIGHT } from './constants';
 import { generateTileMap, isWalkable, getBiomeAt, getBiomeSpawnPoint, getMapPOIs, TileMapData, MapPOI } from './TileMap';
-import { renderMap, renderParallax, getDayFactor, renderDayNightOverlay, renderPlayer, renderPOI, renderMinimap, renderControls, renderCreature } from './Renderer';
+import { renderMap, renderParallax, getDayFactor, renderDayNightOverlay, renderPlayer, renderPOI, renderMinimap, renderCreature } from './Renderer';
 import { getWeatherSystem } from './WeatherSystem';
 import { startAmbientAudio, stopAmbientAudio, updateAmbientDayFactor } from './AmbientAudio';
 import { preloadEssentialSprites, scheduleBackgroundPreload } from './SpriteLoader';
@@ -558,7 +558,7 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
           });
         }
       }
-      renderControls(ctx, canvas.width, canvas.height);
+      
 
       // Interaction message
       if (interactMessage) {
