@@ -214,8 +214,6 @@ export function MMOLanding() {
       className="mmo-root min-h-screen w-full text-amber-50"
       style={{
         // Local design tokens scoped to this landing
-        // (kept off the global theme so other pages stay untouched)
-        // @ts-expect-error custom CSS vars
         "--mmo-gold": "#d7a042",
         "--mmo-gold-light": "#f0c66b",
         "--mmo-gold-dark": "#7a541d",
