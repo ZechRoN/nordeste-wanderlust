@@ -11,6 +11,10 @@ import { Div } from "@/components/ui/Div";
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Game = lazy(() => import("./pages/Game"));
+const Wiki = lazy(() => import("./pages/Wiki"));
+const Support = lazy(() => import("./pages/Support"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Bazar = lazy(() => import("./pages/Bazar"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -28,6 +32,10 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/game" element={<Game />} />
+                <Route path="/wiki" element={<Wiki />} />
+                <Route path="/suporte" element={<Support />} />
+                <Route path="/termos" element={<Terms />} />
+                <Route path="/bazar" element={<Bazar />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
