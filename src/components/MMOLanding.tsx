@@ -85,8 +85,66 @@ export function MMOLanding() {
   const [tab, setTab] = useState<"level" | "pvp" | "guilds">("level");
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<"login" | "signup">("login");
+  const [topLevel, setTopLevel] = useState<Row[]>([]);
+  const [topPvp, setTopPvp] = useState<Row[]>([]);
+  const [topGuilds, setTopGuilds] = useState<{ rank: number; name: string; members: number }[]>([]);
+  const [loadingLb, setLoadingLb] = useState(true);
 
   const openAuth = (t: "login" | "signup") => { setAuthTab(t); setAuthOpen(true); };
+
+  useEffect(() => {
+    (async () => {
+      setLoadingLb(true);
+      // Top Level
+      const lvl = await supabase.from("characters").select("name, class, level").order("level", { ascending: false }).limit(10);
+      setTopLevel((lvl.data ?? []).map((c, i) => ({
+        rank: i + 1, name: c.name, klass: CLASS_LABEL[c.class] ?? c.class, level: c.level, delta: 0, trend: "flat" as Trend,
+      })));
+
+      // Top PvP - count wins per character_id, join names
+      const matches = await supabase.from("arena_matches").select("winner_id, arena_points_awarded").not("winner_id", "is", null);
+      const tally = new Map<string, number>();
+      (matches.data ?? []).forEach((m: any) => {
+        if (!m.winner_id) return;
+        tally.set(m.winner_id, (tally.get(m.winner_id) ?? 0) + (m.arena_points_awarded ?? 1));
+      });
+      const winnerIds = Array.from(tally.keys());
+      if (winnerIds.length) {
+        const chars = await supabase.from("characters").select("id, name, class").in("id", winnerIds);
+        const map = new Map((chars.data ?? []).map((c: any) => [c.id, c]));
+        const pvp = winnerIds
+          .map((id) => ({ id, points: tally.get(id) ?? 0, c: map.get(id) }))
+          .filter((x) => x.c)
+          .sort((a, b) => b.points - a.points)
+          .slice(0, 10)
+          .map((x: any, i) => ({
+            rank: i + 1, name: x.c.name, klass: CLASS_LABEL[x.c.class] ?? x.c.class, level: x.points, delta: 0, trend: "flat" as Trend,
+          }));
+        setTopPvp(pvp);
+      } else setTopPvp([]);
+
+      // Top Guilds - by member count
+      const gms = await supabase.from("guild_members").select("guild_id");
+      const gtally = new Map<string, number>();
+      (gms.data ?? []).forEach((g: any) => gtally.set(g.guild_id, (gtally.get(g.guild_id) ?? 0) + 1));
+      const gids = Array.from(gtally.keys());
+      if (gids.length) {
+        const guilds = await supabase.from("guilds").select("id, name").in("id", gids);
+        const gmap = new Map((guilds.data ?? []).map((g: any) => [g.id, g.name]));
+        const tg = gids
+          .map((id) => ({ id, members: gtally.get(id) ?? 0, name: gmap.get(id) }))
+          .filter((g) => g.name)
+          .sort((a, b) => b.members - a.members)
+          .slice(0, 10)
+          .map((g, i) => ({ rank: i + 1, name: g.name as string, members: g.members }));
+        setTopGuilds(tg);
+      } else setTopGuilds([]);
+
+      setLoadingLb(false);
+    })();
+  }, []);
+
+  const currentRows = useMemo(() => (tab === "level" ? topLevel : tab === "pvp" ? topPvp : []), [tab, topLevel, topPvp]);
 
   return (
     <SiteShell>
@@ -167,15 +225,29 @@ export function MMOLanding() {
               })}
             </Div>
             <Div>
-              {LEADERBOARD.map((r) => (
+              {loadingLb && <Div className="px-4 py-6 text-center text-amber-200/60 italic text-sm">Carregando…</Div>}
+              {!loadingLb && tab !== "guilds" && currentRows.length === 0 && (
+                <Div className="px-4 py-6 text-center text-amber-200/60 italic text-sm">Nenhum dado ainda.</Div>
+              )}
+              {!loadingLb && tab !== "guilds" && currentRows.map((r) => (
                 <Div key={r.rank} className="grid items-center gap-3 px-4 py-2.5 border-t border-amber-700/15" style={{ gridTemplateColumns: "36px 1fr auto auto" }}>
                   <span className="text-center"><MedalRank rank={r.rank} /></span>
                   <Div className="flex flex-col leading-tight">
                     <span className="font-bold text-amber-100" style={{ fontFamily: "Cinzel, Georgia, serif" }}>{r.name}</span>
-                    <span className="mt-0.5 inline-block w-max rounded-sm px-1.5 py-px text-[10px] font-bold uppercase tracking-widest text-white" style={{ background: CLASS_COLOR[r.klass] }}>{r.klass}</span>
+                    <span className="mt-0.5 inline-block w-max rounded-sm px-1.5 py-px text-[10px] font-bold uppercase tracking-widest text-white" style={{ background: CLASS_COLOR[r.klass] ?? "#555" }}>{r.klass}</span>
                   </Div>
                   <span className="font-bold text-amber-200 tabular-nums">{r.level.toLocaleString("pt-BR")}</span>
                   <span className="text-xs tabular-nums w-10 text-right"><TrendIcon trend={r.trend} delta={r.delta} /></span>
+                </Div>
+              ))}
+              {!loadingLb && tab === "guilds" && topGuilds.length === 0 && (
+                <Div className="px-4 py-6 text-center text-amber-200/60 italic text-sm">Nenhuma guilda ainda.</Div>
+              )}
+              {!loadingLb && tab === "guilds" && topGuilds.map((g) => (
+                <Div key={g.rank} className="grid items-center gap-3 px-4 py-2.5 border-t border-amber-700/15" style={{ gridTemplateColumns: "36px 1fr auto" }}>
+                  <span className="text-center"><MedalRank rank={g.rank} /></span>
+                  <span className="font-bold text-amber-100" style={{ fontFamily: "Cinzel, Georgia, serif" }}>{g.name}</span>
+                  <span className="font-bold text-amber-200 tabular-nums text-xs">{g.members} membros</span>
                 </Div>
               ))}
             </Div>
