@@ -192,6 +192,45 @@ export type Database = {
           },
         ]
       }
+      character_listings: {
+        Row: {
+          buyer_id: string | null
+          character_id: string
+          created_at: string
+          description: string | null
+          highlight: string | null
+          id: string
+          price_coupons: number
+          seller_id: string
+          sold_at: string | null
+          status: string
+        }
+        Insert: {
+          buyer_id?: string | null
+          character_id: string
+          created_at?: string
+          description?: string | null
+          highlight?: string | null
+          id?: string
+          price_coupons: number
+          seller_id: string
+          sold_at?: string | null
+          status?: string
+        }
+        Update: {
+          buyer_id?: string | null
+          character_id?: string
+          created_at?: string
+          description?: string | null
+          highlight?: string | null
+          id?: string
+          price_coupons?: number
+          seller_id?: string
+          sold_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       character_mounts: {
         Row: {
           captured_at: string
@@ -381,7 +420,9 @@ export type Database = {
           name: string
           position_x: number
           position_y: number
+          profession: string | null
           strength: number
+          subclass: string | null
           updated_at: string
           user_id: string
           vitality: number
@@ -404,7 +445,9 @@ export type Database = {
           name: string
           position_x?: number
           position_y?: number
+          profession?: string | null
           strength?: number
+          subclass?: string | null
           updated_at?: string
           user_id: string
           vitality?: number
@@ -427,7 +470,9 @@ export type Database = {
           name?: string
           position_x?: number
           position_y?: number
+          profession?: string | null
           strength?: number
+          subclass?: string | null
           updated_at?: string
           user_id?: string
           vitality?: number
@@ -915,6 +960,36 @@ export type Database = {
         }
         Relationships: []
       }
+      listing_purchases: {
+        Row: {
+          buyer_id: string
+          character_id: string
+          created_at: string
+          id: string
+          listing_id: string
+          price_coupons: number
+          seller_id: string
+        }
+        Insert: {
+          buyer_id: string
+          character_id: string
+          created_at?: string
+          id?: string
+          listing_id: string
+          price_coupons: number
+          seller_id: string
+        }
+        Update: {
+          buyer_id?: string
+          character_id?: string
+          created_at?: string
+          id?: string
+          listing_id?: string
+          price_coupons?: number
+          seller_id?: string
+        }
+        Relationships: []
+      }
       locations: {
         Row: {
           biome: string
@@ -1318,12 +1393,33 @@ export type Database = {
           },
         ]
       }
+      user_coupons: {
+        Row: {
+          balance: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      purchase_character_listing: {
+        Args: { _listing_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
