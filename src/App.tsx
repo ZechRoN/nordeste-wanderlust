@@ -15,6 +15,7 @@ const Wiki = lazy(() => import("./pages/Wiki"));
 const Support = lazy(() => import("./pages/Support"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Bazar = lazy(() => import("./pages/Bazar"));
+const Wallet = lazy(() => import("./pages/Wallet"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
