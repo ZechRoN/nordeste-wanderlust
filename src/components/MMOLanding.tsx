@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   ChevronRight,
   Map as MapIcon,
@@ -58,19 +59,11 @@ const FEATURES = [
 ];
 
 type Trend = "up" | "down" | "flat";
-const LEADERBOARD: { rank: number; name: string; klass: string; level: number; delta: number; trend: Trend }[] = [
-  { rank: 1, name: "MestreCangaceiro", klass: "Guerreiro", level: 1842, delta: 12, trend: "up" },
-  { rank: 2, name: "ShadowMage", klass: "Mago", level: 1790, delta: 8, trend: "up" },
-  { rank: 3, name: "FlechaDoSertão", klass: "Arqueiro", level: 1735, delta: 3, trend: "down" },
-  { rank: 4, name: "PhoenixKnight", klass: "Guerreiro", level: 1698, delta: 15, trend: "up" },
-  { rank: 5, name: "FrostBurn", klass: "Mago", level: 1654, delta: 5, trend: "up" },
-  { rank: 6, name: "StormArrow", klass: "Arqueiro", level: 1621, delta: 1, trend: "down" },
-  { rank: 7, name: "NightWalker", klass: "Assassino", level: 1589, delta: 22, trend: "up" },
-  { rank: 8, name: "ThunderClap", klass: "Guerreiro", level: 1543, delta: 0, trend: "flat" },
-  { rank: 9, name: "MysticRune", klass: "Curandeiro", level: 1510, delta: 7, trend: "up" },
-  { rank: 10, name: "GoldenBow", klass: "Arqueiro", level: 1488, delta: 3, trend: "down" },
-];
+type Row = { rank: number; name: string; klass: string; level: number; delta: number; trend: Trend };
 
+const CLASS_LABEL: Record<string, string> = {
+  warrior: "Guerreiro", mage: "Mago", archer: "Arqueiro", healer: "Curandeiro", assassin: "Assassino",
+};
 const CLASS_COLOR: Record<string, string> = {
   Guerreiro: "#c0392b", Mago: "#7c5cd6", Arqueiro: "#3a8b4f", Curandeiro: "#2aa498", Assassino: "#3d6cb8",
 };
