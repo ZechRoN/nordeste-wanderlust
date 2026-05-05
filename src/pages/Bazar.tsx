@@ -64,6 +64,8 @@ export default function BazarPage() {
   const [subclass, setSubclass] = useState("");
   const [search, setSearch] = useState("");
   const [minLevel, setMinLevel] = useState(0);
+  const [minPrice, setMinPrice] = useState<string>("");
+  const [maxPrice, setMaxPrice] = useState<string>("");
   const [sort, setSort] = useState<SortKey>("recent");
   const [page, setPage] = useState(1);
   const [coupons, setCoupons] = useState(0);
