@@ -7,7 +7,7 @@ import { CharacterDashboard } from "@/components/CharacterDashboard";
 import { useToast } from "@/hooks/use-toast";
 import { GameButton, GamePanel, GamePanelTabs } from "@/components/ui/game-panel";
 import { Div } from "@/components/ui/Div";
-import { LogOut, Plus, Search } from "lucide-react";
+import { LogOut, Plus, Search, Ticket } from "lucide-react";
 
 type CharacterRow = {
   id: string;
@@ -153,6 +153,10 @@ const Game = () => {
                   Sair
                 </GameButton>
                 <Div className="flex items-center gap-2">
+                  <GameButton variant="gold" onClick={() => window.open('/cupons', '_blank')}>
+                    <Ticket className="h-3 w-3 mr-1" />
+                    Cupons
+                  </GameButton>
                   <span className="rpg-capacity">Characters: {characters.length}/5</span>
                   <GameButton variant="secondary" onClick={() => setSelectedCharacter("create")} disabled={characters.length >= 5}>
                     <Plus className="h-3 w-3 mr-1" />
