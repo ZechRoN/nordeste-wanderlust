@@ -102,15 +102,18 @@ export default function BazarPage() {
 
   useEffect(() => { loadListings(); }, []);
   useEffect(() => { loadCoupons(); }, [user]);
-  useEffect(() => { setPage(1); }, [klass, subclass, search, minLevel, sort]);
+  useEffect(() => { setPage(1); }, [klass, subclass, search, minLevel, minPrice, maxPrice, sort]);
 
   const filteredSorted = useMemo(() => {
+    const minP = minPrice === "" ? -Infinity : Number(minPrice);
+    const maxP = maxPrice === "" ? Infinity : Number(maxPrice);
     const arr = listings.filter((l) => {
       if (!l.characters) return false;
       if (klass !== "Todos" && l.characters.class !== klass) return false;
       if (subclass.trim() && !(l.characters.subclass ?? "").toLowerCase().includes(subclass.trim().toLowerCase())) return false;
       if (search && !l.characters.name.toLowerCase().includes(search.toLowerCase())) return false;
       if (l.characters.level < minLevel) return false;
+      if (l.price_coupons < minP || l.price_coupons > maxP) return false;
       return true;
     });
     arr.sort((a, b) => {
@@ -125,7 +128,7 @@ export default function BazarPage() {
       }
     });
     return arr;
-  }, [listings, klass, subclass, search, minLevel, sort]);
+  }, [listings, klass, subclass, search, minLevel, minPrice, maxPrice, sort]);
 
   const totalPages = Math.max(1, Math.ceil(filteredSorted.length / PAGE_SIZE));
   const pageItems = filteredSorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
