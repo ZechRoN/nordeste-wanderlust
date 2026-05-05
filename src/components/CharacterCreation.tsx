@@ -117,42 +117,103 @@ export const CharacterCreation = ({ onCharacterCreated, onCancel }: CharacterCre
     </div>
   );
 
-  // Character preview
-  const Preview = () => (
-    <div className="rpg-item-detail flex items-center justify-center py-4">
-      <div className="relative">
-        {/* Body/Skin */}
-        <div className="w-16 h-20 rounded-md flex flex-col items-center justify-center relative"
-          style={{ backgroundColor: SKIN_COLORS[appearance.skinColor] }}>
-          {/* Hair */}
-          <div className="absolute -top-3 left-0 right-0 h-6 rounded-t-md"
-            style={{ backgroundColor: HAIR_COLORS[appearance.hairColor] }}>
-            <span className="text-[8px] text-center block mt-1 opacity-60">{HAIR_STYLES[appearance.hairStyle]}</span>
+  // Character preview - larger, framed pixel-art style
+  const Preview = ({ size = "md" }: { size?: "md" | "lg" }) => {
+    const scale = size === "lg" ? 2.2 : 1.4;
+    const W = 64 * scale;
+    return (
+      <div
+        className="rpg-item-detail flex items-center justify-center relative overflow-hidden"
+        style={{
+          minHeight: size === "lg" ? 280 : 180,
+          background:
+            "radial-gradient(ellipse at 50% 25%, hsl(var(--rpg-gold) / 0.18), transparent 70%), linear-gradient(180deg, hsl(var(--rpg-bg-dark) / 0.6), hsl(var(--rpg-bg) / 0.95))",
+          marginBottom: 0,
+        }}
+      >
+        <div
+          className="absolute inset-0 opacity-15 pointer-events-none"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(45deg, hsl(var(--rpg-gold) / 0.1) 0 2px, transparent 2px 8px)",
+          }}
+        />
+        <div className="relative flex flex-col items-center gap-2">
+          <div className="relative" style={{ imageRendering: "pixelated" as any }}>
+            {/* Body/Skin */}
+            <div
+              className="rounded-md flex flex-col items-center justify-center relative"
+              style={{
+                width: W,
+                height: W * 1.25,
+                backgroundColor: SKIN_COLORS[appearance.skinColor],
+                boxShadow: "0 4px 20px rgba(0,0,0,0.5), inset 0 -8px 12px rgba(0,0,0,0.25)",
+              }}
+            >
+              {/* Hair */}
+              <div
+                className="absolute -top-2 left-0 right-0 rounded-t-md"
+                style={{
+                  height: W * 0.4,
+                  backgroundColor: HAIR_COLORS[appearance.hairColor],
+                  boxShadow: "inset 0 -4px 6px rgba(0,0,0,0.25)",
+                }}
+              >
+                <span className="text-[9px] text-white/80 text-center block mt-1">{HAIR_STYLES[appearance.hairStyle]}</span>
+              </div>
+              {/* Eyes */}
+              <div className="flex gap-3 mt-6" style={{ marginTop: W * 0.45 }}>
+                <div className="rounded-full" style={{ width: W * 0.12, height: W * 0.12, backgroundColor: EYE_COLORS[appearance.eyeColor], boxShadow: "0 0 4px rgba(0,0,0,0.4)" }} />
+                <div className="rounded-full" style={{ width: W * 0.12, height: W * 0.12, backgroundColor: EYE_COLORS[appearance.eyeColor], boxShadow: "0 0 4px rgba(0,0,0,0.4)" }} />
+              </div>
+              {/* Nose */}
+              <span style={{ fontSize: W * 0.16, lineHeight: 1, marginTop: 2 }}>{FACE_OPTIONS.nose[appearance.nose]}</span>
+              {/* Mouth */}
+              <span style={{ fontSize: W * 0.22, lineHeight: 1 }}>{FACE_OPTIONS.mouth[appearance.mouth]}</span>
+            </div>
+            {/* Outfit */}
+            <div
+              className="rounded-b-md mt-1"
+              style={{
+                width: W,
+                height: W * 0.55,
+                backgroundColor: OUTFIT_COLORS[appearance.outfitColor],
+                boxShadow: "inset 0 4px 6px rgba(255,255,255,0.1), inset 0 -4px 6px rgba(0,0,0,0.3)",
+              }}
+            />
+            {/* Class icon */}
+            {selectedClass && (
+              <div
+                className="absolute -bottom-1 -right-2 flex items-center justify-center rounded-full border-2"
+                style={{
+                  width: W * 0.5,
+                  height: W * 0.5,
+                  fontSize: W * 0.32,
+                  background: "hsl(var(--rpg-bg-dark))",
+                  borderColor: "hsl(var(--rpg-gold))",
+                  boxShadow: "0 0 8px hsl(var(--rpg-gold) / 0.6)",
+                }}
+              >
+                {classes.find((c) => c.id === selectedClass)?.icon}
+              </div>
+            )}
           </div>
-          {/* Eyes */}
-          <div className="flex gap-2 mt-3">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: EYE_COLORS[appearance.eyeColor] }} />
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: EYE_COLORS[appearance.eyeColor] }} />
-          </div>
-          {/* Nose */}
-          <span className="text-[8px] mt-0.5">{FACE_OPTIONS.nose[appearance.nose]}</span>
-          {/* Mouth */}
-          <span className="text-xs">{FACE_OPTIONS.mouth[appearance.mouth]}</span>
+          {selectedClass && (
+            <div className="text-center">
+              <div className="text-[12px] font-bold" style={{ fontFamily: "Cinzel, Georgia, serif" }}>
+                {characterName.trim() || "Sem nome"}
+              </div>
+              <div className="text-[10px] opacity-70">{selectedClassData?.name}</div>
+            </div>
+          )}
         </div>
-        {/* Outfit */}
-        <div className="w-16 h-8 rounded-b-md mt-0.5"
-          style={{ backgroundColor: OUTFIT_COLORS[appearance.outfitColor] }} />
-        {/* Class icon */}
-        {selectedClass && (
-          <div className="absolute -bottom-2 -right-2 text-lg">{classes.find(c => c.id === selectedClass)?.icon}</div>
-        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex items-center justify-center min-h-[80vh]">
-      <div className="w-full max-w-xl">
+      <div className="w-full max-w-3xl">
         <GamePanel
           title="Criar Personagem"
           icon={<Sword className="h-5 w-5" />}
@@ -171,62 +232,74 @@ export const CharacterCreation = ({ onCharacterCreated, onCancel }: CharacterCre
             </div>
           }
         >
-          {/* Name input */}
-          <div className="mb-4">
-            <label className="rpg-label">Nome do Personagem</label>
-            <input
-              value={characterName}
-              onChange={(e) => setCharacterName(e.target.value)}
-              placeholder="Digite o nome..."
-              maxLength={20}
-              className="rpg-input"
-            />
-          </div>
-
-          <GamePanelTabs tabs={CREATION_TABS} activeTab={activeTab} onTabChange={setActiveTab} />
-
-          {activeTab === 'class' && (
-            <>
-              <label className="rpg-label">Escolha sua Classe</label>
-              <div className="grid grid-cols-1 gap-2">
-                {classes.map((cls) => (
-                  <div
-                    key={cls.id}
-                    className={`rpg-class-card ${selectedClass === cls.id ? 'rpg-class-selected' : ''}`}
-                    onClick={() => setSelectedClass(cls.id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{cls.icon}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-bold text-sm pixel-text">{cls.name}</div>
-                        <div className="text-[10px] opacity-60">{cls.description}</div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 mt-2 flex-wrap">
-                      <span className="rpg-stat-bonus rpg-stat-str text-[10px]">FOR {cls.attributes.strength}</span>
-                      <span className="rpg-stat-bonus rpg-stat-int text-[10px]">INT {cls.attributes.intelligence}</span>
-                      <span className="rpg-stat-bonus rpg-stat-agi text-[10px]">AGI {cls.attributes.agility}</span>
-                      <span className="rpg-stat-bonus rpg-stat-vit text-[10px]">VIT {cls.attributes.vitality}</span>
-                      <span className="rpg-stat-bonus rpg-stat-luk text-[10px]">SOR {cls.attributes.luck}</span>
-                    </div>
-                  </div>
-                ))}
+          <div className="grid gap-3 md:grid-cols-[260px_1fr]">
+            {/* Left column: live preview */}
+            <div className="space-y-2">
+              <Preview size="lg" />
+              <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+                <div className="rpg-label" style={{ marginBottom: 4 }}>Nome do Personagem</div>
+                <input
+                  value={characterName}
+                  onChange={(e) => setCharacterName(e.target.value)}
+                  placeholder="Digite o nome..."
+                  maxLength={20}
+                  className="rpg-input"
+                />
               </div>
-            </>
-          )}
-
-          {activeTab === 'appearance' && (
-            <div>
-              <Preview />
-              <ColorPicker label="Cor da Pele" colors={SKIN_COLORS} selected={appearance.skinColor} onChange={(i) => updateAppearance('skinColor', i)} />
-              <OptionPicker label="Estilo do Cabelo" options={HAIR_STYLES} selected={appearance.hairStyle} onChange={(i) => updateAppearance('hairStyle', i)} />
-              <ColorPicker label="Cor do Cabelo" colors={HAIR_COLORS} selected={appearance.hairColor} onChange={(i) => updateAppearance('hairColor', i)} />
-              <ColorPicker label="Cor dos Olhos" colors={EYE_COLORS} selected={appearance.eyeColor} onChange={(i) => updateAppearance('eyeColor', i)} />
-              <OptionPicker label="Boca" options={FACE_OPTIONS.mouth} selected={appearance.mouth} onChange={(i) => updateAppearance('mouth', i)} />
-              <OptionPicker label="Nariz" options={FACE_OPTIONS.nose} selected={appearance.nose} onChange={(i) => updateAppearance('nose', i)} />
-              <ColorPicker label="Cor da Roupa" colors={OUTFIT_COLORS} selected={appearance.outfitColor} onChange={(i) => updateAppearance('outfitColor', i)} />
+              {selectedClassData && (
+                <div className="rpg-item-detail" style={{ marginBottom: 0 }}>
+                  <div className="text-[11px] font-bold mb-1">Atributos iniciais</div>
+                  <div className="flex gap-1 flex-wrap">
+                    <span className="rpg-stat-bonus rpg-stat-str text-[10px]">FOR {selectedClassData.attributes.strength}</span>
+                    <span className="rpg-stat-bonus rpg-stat-int text-[10px]">INT {selectedClassData.attributes.intelligence}</span>
+                    <span className="rpg-stat-bonus rpg-stat-agi text-[10px]">AGI {selectedClassData.attributes.agility}</span>
+                    <span className="rpg-stat-bonus rpg-stat-vit text-[10px]">VIT {selectedClassData.attributes.vitality}</span>
+                    <span className="rpg-stat-bonus rpg-stat-luk text-[10px]">SOR {selectedClassData.attributes.luck}</span>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Right column: tabs */}
+            <div>
+              <GamePanelTabs tabs={CREATION_TABS} activeTab={activeTab} onTabChange={setActiveTab} />
+
+              {activeTab === 'class' && (
+                <>
+                  <label className="rpg-label">Escolha sua Classe</label>
+                  <div className="grid grid-cols-1 gap-2 max-h-[360px] overflow-y-auto pr-1">
+                    {classes.map((cls) => (
+                      <div
+                        key={cls.id}
+                        className={`rpg-class-card ${selectedClass === cls.id ? 'rpg-class-selected' : ''}`}
+                        onClick={() => setSelectedClass(cls.id)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{cls.icon}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-bold text-sm pixel-text">{cls.name}</div>
+                            <div className="text-[10px] opacity-60">{cls.description}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {activeTab === 'appearance' && (
+                <div className="max-h-[420px] overflow-y-auto pr-1">
+                  <ColorPicker label="Cor da Pele" colors={SKIN_COLORS} selected={appearance.skinColor} onChange={(i) => updateAppearance('skinColor', i)} />
+                  <OptionPicker label="Estilo do Cabelo" options={HAIR_STYLES} selected={appearance.hairStyle} onChange={(i) => updateAppearance('hairStyle', i)} />
+                  <ColorPicker label="Cor do Cabelo" colors={HAIR_COLORS} selected={appearance.hairColor} onChange={(i) => updateAppearance('hairColor', i)} />
+                  <ColorPicker label="Cor dos Olhos" colors={EYE_COLORS} selected={appearance.eyeColor} onChange={(i) => updateAppearance('eyeColor', i)} />
+                  <OptionPicker label="Boca" options={FACE_OPTIONS.mouth} selected={appearance.mouth} onChange={(i) => updateAppearance('mouth', i)} />
+                  <OptionPicker label="Nariz" options={FACE_OPTIONS.nose} selected={appearance.nose} onChange={(i) => updateAppearance('nose', i)} />
+                  <ColorPicker label="Cor da Roupa" colors={OUTFIT_COLORS} selected={appearance.outfitColor} onChange={(i) => updateAppearance('outfitColor', i)} />
+                </div>
+              )}
+            </div>
+          </div>
         </GamePanel>
       </div>
     </div>
