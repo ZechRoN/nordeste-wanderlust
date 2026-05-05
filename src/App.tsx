@@ -16,6 +16,7 @@ const Support = lazy(() => import("./pages/Support"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Bazar = lazy(() => import("./pages/Bazar"));
 const Wallet = lazy(() => import("./pages/Wallet"));
+const Coupons = lazy(() => import("./pages/Coupons"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
                 <Route path="/termos" element={<Terms />} />
                 <Route path="/bazar" element={<Bazar />} />
                 <Route path="/carteira" element={<Wallet />} />
+                <Route path="/cupons" element={<Coupons />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
