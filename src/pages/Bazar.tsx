@@ -64,6 +64,8 @@ export default function BazarPage() {
   const [subclass, setSubclass] = useState("");
   const [search, setSearch] = useState("");
   const [minLevel, setMinLevel] = useState(0);
+  const [minPrice, setMinPrice] = useState<string>("");
+  const [maxPrice, setMaxPrice] = useState<string>("");
   const [sort, setSort] = useState<SortKey>("recent");
   const [page, setPage] = useState(1);
   const [coupons, setCoupons] = useState(0);
@@ -100,15 +102,18 @@ export default function BazarPage() {
 
   useEffect(() => { loadListings(); }, []);
   useEffect(() => { loadCoupons(); }, [user]);
-  useEffect(() => { setPage(1); }, [klass, subclass, search, minLevel, sort]);
+  useEffect(() => { setPage(1); }, [klass, subclass, search, minLevel, minPrice, maxPrice, sort]);
 
   const filteredSorted = useMemo(() => {
+    const minP = minPrice === "" ? -Infinity : Number(minPrice);
+    const maxP = maxPrice === "" ? Infinity : Number(maxPrice);
     const arr = listings.filter((l) => {
       if (!l.characters) return false;
       if (klass !== "Todos" && l.characters.class !== klass) return false;
       if (subclass.trim() && !(l.characters.subclass ?? "").toLowerCase().includes(subclass.trim().toLowerCase())) return false;
       if (search && !l.characters.name.toLowerCase().includes(search.toLowerCase())) return false;
       if (l.characters.level < minLevel) return false;
+      if (l.price_coupons < minP || l.price_coupons > maxP) return false;
       return true;
     });
     arr.sort((a, b) => {
@@ -123,7 +128,7 @@ export default function BazarPage() {
       }
     });
     return arr;
-  }, [listings, klass, subclass, search, minLevel, sort]);
+  }, [listings, klass, subclass, search, minLevel, minPrice, maxPrice, sort]);
 
   const totalPages = Math.max(1, Math.ceil(filteredSorted.length / PAGE_SIZE));
   const pageItems = filteredSorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -204,7 +209,7 @@ export default function BazarPage() {
 
         <GoldFrame>
           <PanelTitle icon={<Filter className="h-3.5 w-3.5" />}>Filtros & Ordenação</PanelTitle>
-          <Div className="grid gap-3 p-4 md:grid-cols-3 lg:grid-cols-5">
+          <Div className="grid gap-3 p-4 md:grid-cols-3 lg:grid-cols-6">
             <label className="flex flex-col gap-1 text-xs uppercase tracking-widest text-amber-300/70">
               Buscar nome
               <Div className="relative">
@@ -228,6 +233,16 @@ export default function BazarPage() {
             <label className="flex flex-col gap-1 text-xs uppercase tracking-widest text-amber-300/70">
               Nível mínimo: {minLevel}
               <input type="range" min={0} max={2000} step={50} value={minLevel} onChange={(e) => setMinLevel(Number(e.target.value))} />
+            </label>
+            <label className="flex flex-col gap-1 text-xs uppercase tracking-widest text-amber-300/70">
+              <span className="inline-flex items-center gap-1"><Ticket className="h-3 w-3" />Faixa de Cupons</span>
+              <Div className="flex items-center gap-1">
+                <input type="number" min={0} value={minPrice} onChange={(e) => setMinPrice(e.target.value)} placeholder="Mín"
+                  className="w-full rounded-sm border border-amber-700/50 bg-black/40 px-2 py-2 text-sm text-amber-100 placeholder:text-amber-200/30" />
+                <span className="text-amber-300/60 text-xs">—</span>
+                <input type="number" min={0} value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} placeholder="Máx"
+                  className="w-full rounded-sm border border-amber-700/50 bg-black/40 px-2 py-2 text-sm text-amber-100 placeholder:text-amber-200/30" />
+              </Div>
             </label>
             <label className="flex flex-col gap-1 text-xs uppercase tracking-widest text-amber-300/70">
               <span className="inline-flex items-center gap-1"><ArrowUpDown className="h-3 w-3" />Ordenar por</span>

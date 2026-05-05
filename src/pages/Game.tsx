@@ -231,11 +231,46 @@ const Game = () => {
               <Div className="space-y-2">
                 {focusedCharacter ? (
                   <>
-                    <Div className="rpg-item-detail" style={{ marginBottom: 0 }}>
-                      <Div className="flex items-center justify-between gap-2">
-                        <Div className="font-bold text-[13px]">{focusedCharacter.name}</Div>
-                        <Div className="text-[11px] opacity-70">
-                          {CLASS_META[focusedCharacter.class]?.label ?? focusedCharacter.class} • Lv. {focusedCharacter.level}
+                    {/* Visual preview */}
+                    <Div
+                      className="rpg-item-detail relative overflow-hidden flex items-center justify-center"
+                      style={{
+                        marginBottom: 0,
+                        minHeight: 220,
+                        background: `radial-gradient(ellipse at 50% 30%, hsl(var(--rpg-${CLASS_META[focusedCharacter.class]?.accent ?? "primary"}) / 0.25), transparent 70%), linear-gradient(180deg, hsl(var(--rpg-bg-dark) / 0.6), hsl(var(--rpg-bg) / 0.9))`,
+                      }}
+                    >
+                      <Div
+                        className="absolute inset-0 opacity-20 pointer-events-none"
+                        style={{
+                          backgroundImage:
+                            "repeating-linear-gradient(45deg, hsl(var(--rpg-gold) / 0.08) 0 2px, transparent 2px 8px)",
+                        }}
+                      />
+                      <Div className="relative flex flex-col items-center gap-2">
+                        <Div
+                          className="flex items-center justify-center rounded-md border-2"
+                          style={{
+                            width: 96,
+                            height: 96,
+                            borderColor: `hsl(var(--rpg-${CLASS_META[focusedCharacter.class]?.accent ?? "gold"}))`,
+                            background: "hsl(var(--rpg-bg-dark) / 0.7)",
+                            boxShadow: "0 0 24px hsl(var(--rpg-gold) / 0.35), inset 0 0 12px hsl(0 0% 0% / 0.5)",
+                          }}
+                        >
+                          <span className="text-6xl drop-shadow-lg">
+                            {CLASS_META[focusedCharacter.class]?.emoji ?? "👤"}
+                          </span>
+                        </Div>
+                        <Div
+                          className="font-bold text-[15px] tracking-wide"
+                          style={{ fontFamily: "Cinzel, Georgia, serif" }}
+                        >
+                          {focusedCharacter.name}
+                        </Div>
+                        <Div className="flex items-center gap-2 text-[11px] opacity-80">
+                          <span className="rpg-combatant-level">Lv. {focusedCharacter.level}</span>
+                          <span>{CLASS_META[focusedCharacter.class]?.label ?? focusedCharacter.class}</span>
                         </Div>
                       </Div>
                     </Div>
