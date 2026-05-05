@@ -71,6 +71,7 @@ export default function BazarPage() {
   const [coupons, setCoupons] = useState(0);
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Listing | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -84,12 +85,16 @@ export default function BazarPage() {
 
   async function loadListings() {
     setLoading(true);
+    setLoadError(null);
     const { data, error } = await supabase
       .from("character_listings")
       .select("id, character_id, seller_id, price_coupons, description, highlight, created_at, characters(id, name, class, subclass, profession, level, experience, gold, current_biome, strength, agility, intelligence, vitality, luck)")
       .eq("status", "active")
       .order("created_at", { ascending: false });
-    if (error) toast({ title: "Erro ao carregar Bazar", description: error.message, variant: "destructive" });
+    if (error) {
+      setLoadError(error.message);
+      toast({ title: "Erro ao carregar Bazar", description: error.message, variant: "destructive" });
+    }
     setListings((data as any) ?? []);
     setLoading(false);
   }
@@ -255,9 +260,35 @@ export default function BazarPage() {
         </GoldFrame>
 
         {loading ? (
-          <Div className="text-center py-10 text-amber-200/70 inline-flex items-center gap-2 justify-center w-full">
-            <Loader2 className="h-4 w-4 animate-spin" /> Carregando anúncios…
+          <Div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <GoldFrame key={i}>
+                <Div className="p-4 space-y-3 animate-pulse">
+                  <Div className="flex items-center gap-3">
+                    <Div className="h-14 w-14 rounded-sm bg-amber-900/30 border border-amber-700/40" />
+                    <Div className="flex-1 space-y-2">
+                      <Div className="h-4 w-3/4 bg-amber-900/30 rounded-sm" />
+                      <Div className="h-3 w-1/2 bg-amber-900/20 rounded-sm" />
+                    </Div>
+                  </Div>
+                  <Div className="h-3 w-full bg-amber-900/20 rounded-sm" />
+                  <Div className="flex items-center justify-between pt-2 border-t border-amber-700/30">
+                    <Div className="h-4 w-20 bg-amber-900/30 rounded-sm" />
+                    <Div className="h-3 w-16 bg-amber-900/20 rounded-sm" />
+                  </Div>
+                </Div>
+              </GoldFrame>
+            ))}
           </Div>
+        ) : loadError ? (
+          <GoldFrame>
+            <Div className="p-8 text-center space-y-3">
+              <AlertTriangle className="h-8 w-8 text-amber-400 mx-auto" />
+              <Div className="text-amber-100 font-bold">Não foi possível carregar o Bazar</Div>
+              <Div className="text-xs text-amber-200/70">{loadError}</Div>
+              <button onClick={loadListings} className="mmo-btn-gold rounded-sm px-4 py-2 text-xs">Tentar novamente</button>
+            </Div>
+          </GoldFrame>
         ) : (
           <>
             <Div className="flex items-center justify-between text-xs text-amber-300/70">
@@ -295,8 +326,16 @@ export default function BazarPage() {
                 );
               })}
               {pageItems.length === 0 && (
-                <Div className="col-span-full text-center py-10 text-amber-200/60 italic">
-                  Nenhum personagem encontrado com esses filtros.
+                <Div className="col-span-full">
+                  <GoldFrame>
+                    <Div className="py-10 px-4 text-center space-y-2">
+                      <ShoppingBag className="h-8 w-8 text-amber-400/60 mx-auto" />
+                      <Div className="text-amber-100 font-bold">Nenhum personagem encontrado</Div>
+                      <Div className="text-xs text-amber-200/60 italic">Ajuste os filtros para ver mais anúncios.</Div>
+                      <button onClick={() => { setKlass("Todos"); setSubclass(""); setSearch(""); setMinLevel(0); setMinPrice(""); setMaxPrice(""); }}
+                        className="mmo-btn-dark rounded-sm px-3 py-1.5 text-xs">Limpar filtros</button>
+                    </Div>
+                  </GoldFrame>
                 </Div>
               )}
             </Div>
