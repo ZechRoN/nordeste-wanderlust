@@ -1416,6 +1416,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_coupons: { Args: { _amount: number }; Returns: Json }
       purchase_character_listing: {
         Args: { _listing_id: string }
         Returns: Json
