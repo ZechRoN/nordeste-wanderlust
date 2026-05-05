@@ -11,6 +11,7 @@ const NAV = [
   { label: "Início", to: "/" },
   { label: "Bazar", to: "/bazar" },
   { label: "Carteira", to: "/carteira" },
+  { label: "Cupons", to: "/cupons" },
   { label: "Wiki", to: "/wiki" },
   { label: "Suporte", to: "/suporte" },
 ];

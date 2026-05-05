@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { ArrowLeft, LogOut, Heart, Zap, Coins, MapPin, X, Backpack, Scroll, Swords, Users, Trophy, Crown, Shield, Hammer, Map, Calendar, ArrowLeftRight, Skull, PawPrint, Sparkles, Volume2, VolumeX, Music2 } from 'lucide-react';
+import { ArrowLeft, LogOut, Heart, Zap, Coins, MapPin, X, Backpack, Scroll, Swords, Users, Trophy, Crown, Shield, Hammer, Map, Calendar, ArrowLeftRight, Skull, PawPrint, Sparkles, Volume2, VolumeX, Music2, Ticket } from 'lucide-react';
 import { GameCanvas } from '@/engine/GameCanvas';
 import { GamePanel, GameButton } from '@/components/ui/game-panel';
 import { DraggablePanel } from '@/components/ui/DraggablePanel';
@@ -255,6 +255,9 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
                 </Div>
               </DialogContent>
             </Dialog>
+            <GameButton size="sm" variant="gold" onClick={() => window.open('/cupons', '_blank')} title="Comprar Cupons">
+              <Ticket className="h-3 w-3" />
+            </GameButton>
             <GameButton size="sm" onClick={onBack}><ArrowLeft className="h-3 w-3" /></GameButton>
             <GameButton size="sm" variant="danger" onClick={onSignOut}><LogOut className="h-3 w-3" /></GameButton>
           </>
