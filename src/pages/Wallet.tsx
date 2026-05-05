@@ -159,6 +159,18 @@ export default function WalletPage() {
                 <AlertTriangle className="h-4 w-4 text-amber-400" />
                 Você precisa estar logado para visualizar sua carteira.
               </Div>
+            ) : loading ? (
+              <Div className="animate-pulse space-y-2">
+                <Div className="h-3 w-32 bg-amber-900/20 rounded-sm" />
+                <Div className="h-8 w-56 bg-amber-900/30 rounded-sm" />
+              </Div>
+            ) : error ? (
+              <Div className="space-y-2">
+                <Div className="text-amber-100 inline-flex items-center gap-2 text-sm">
+                  <AlertTriangle className="h-4 w-4 text-amber-400" /> {error}
+                </Div>
+                <button onClick={load} className="rounded-sm border border-amber-700/50 bg-black/40 px-3 py-1.5 text-xs text-amber-100">Tentar novamente</button>
+              </Div>
             ) : (
               <Div className="flex items-center justify-between flex-wrap gap-3">
                 <Div>
@@ -168,6 +180,9 @@ export default function WalletPage() {
                     {balance.toLocaleString("pt-BR")} <span className="text-base text-amber-300/80">Cupons</span>
                   </Div>
                 </Div>
+                <a href="/cupons" className="mmo-btn-gold rounded-sm px-3 py-2 text-xs inline-flex items-center gap-2">
+                  <Ticket className="h-3.5 w-3.5" /> Comprar Cupons
+                </a>
                 {balance === 0 && (
                   <Div className="rounded-sm border border-amber-600/50 bg-amber-900/20 px-4 py-2 text-xs text-amber-200 inline-flex items-center gap-2 max-w-md">
                     <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" />
