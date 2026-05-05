@@ -209,7 +209,7 @@ export default function BazarPage() {
 
         <GoldFrame>
           <PanelTitle icon={<Filter className="h-3.5 w-3.5" />}>Filtros & Ordenação</PanelTitle>
-          <Div className="grid gap-3 p-4 md:grid-cols-3 lg:grid-cols-5">
+          <Div className="grid gap-3 p-4 md:grid-cols-3 lg:grid-cols-6">
             <label className="flex flex-col gap-1 text-xs uppercase tracking-widest text-amber-300/70">
               Buscar nome
               <Div className="relative">
