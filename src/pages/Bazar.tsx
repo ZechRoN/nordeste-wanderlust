@@ -235,6 +235,16 @@ export default function BazarPage() {
               <input type="range" min={0} max={2000} step={50} value={minLevel} onChange={(e) => setMinLevel(Number(e.target.value))} />
             </label>
             <label className="flex flex-col gap-1 text-xs uppercase tracking-widest text-amber-300/70">
+              <span className="inline-flex items-center gap-1"><Ticket className="h-3 w-3" />Faixa de Cupons</span>
+              <Div className="flex items-center gap-1">
+                <input type="number" min={0} value={minPrice} onChange={(e) => setMinPrice(e.target.value)} placeholder="Mín"
+                  className="w-full rounded-sm border border-amber-700/50 bg-black/40 px-2 py-2 text-sm text-amber-100 placeholder:text-amber-200/30" />
+                <span className="text-amber-300/60 text-xs">—</span>
+                <input type="number" min={0} value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} placeholder="Máx"
+                  className="w-full rounded-sm border border-amber-700/50 bg-black/40 px-2 py-2 text-sm text-amber-100 placeholder:text-amber-200/30" />
+              </Div>
+            </label>
+            <label className="flex flex-col gap-1 text-xs uppercase tracking-widest text-amber-300/70">
               <span className="inline-flex items-center gap-1"><ArrowUpDown className="h-3 w-3" />Ordenar por</span>
               <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)}
                 className="rounded-sm border border-amber-700/50 bg-black/40 px-2 py-2 text-sm text-amber-100">
