@@ -54,13 +54,28 @@ export function Quests({ character, onCharacterUpdate }: QuestsProps) {
 
   const loadQuests = async () => {
     setLoading(true);
-    const { data: available } = await supabase.from('quests' as any).select('*').eq('biome', character.current_biome).lte('required_level', character.level);
-    const { data: active } = await supabase.from('character_quests' as any).select('*, quests(*)').eq('character_id', character.id).eq('completed', false);
+    try {
+      const [{ data: available }, { data: active }] = await Promise.all([
+        supabase.from('quests' as any).select('*').eq('biome', character.current_biome).lte('required_level', character.level),
+        supabase.from('character_quests' as any).select('*, quests(*)').eq('character_id', character.id).eq('completed', false),
+      ]);
 
-    const activeQuestIds = (active as any)?.map((q: any) => q.quest_id) || [];
-    setAvailableQuests((available as any)?.filter((q: any) => !activeQuestIds.includes(q.id)) || []);
-    setActiveQuests((active as any) || []);
-    setLoading(false);
+      const normalizedActive = ((active as any[]) || []).map((cq: any) => {
+        const raw = cq?.progress;
+        const num = typeof raw === 'number' ? raw : (raw && typeof raw === 'object' ? Number(raw.count ?? raw.value ?? 0) : Number(raw ?? 0));
+        return { ...cq, progress: Number.isFinite(num) ? num : 0 };
+      });
+
+      const activeQuestIds = normalizedActive.map((q: any) => q.quest_id);
+      setAvailableQuests(((available as any[]) || []).filter((q: any) => !activeQuestIds.includes(q.id)));
+      setActiveQuests(normalizedActive as any);
+    } catch (e) {
+      console.error('Erro ao carregar missões', e);
+      setAvailableQuests([]);
+      setActiveQuests([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const acceptQuest = async (quest: Quest) => {

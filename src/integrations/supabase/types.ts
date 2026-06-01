@@ -511,6 +511,36 @@ export type Database = {
           },
         ]
       }
+      coupon_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          pack_id: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          pack_id?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          pack_id?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       crafting_recipes: {
         Row: {
           created_at: string
@@ -775,6 +805,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      guild_invites: {
+        Row: {
+          created_at: string
+          guild_id: string
+          id: string
+          invitee_character_id: string
+          inviter_character_id: string
+          responded_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          guild_id: string
+          id?: string
+          invitee_character_id: string
+          inviter_character_id: string
+          responded_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          guild_id?: string
+          id?: string
+          invitee_character_id?: string
+          inviter_character_id?: string
+          responded_at?: string | null
+          status?: string
+        }
+        Relationships: []
       }
       guild_members: {
         Row: {
@@ -1411,19 +1471,50 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      add_coupons: { Args: { _amount: number }; Returns: Json }
+      accept_guild_invite: { Args: { _invite_id: string }; Returns: Json }
+      add_coupons:
+        | { Args: { _amount: number }; Returns: Json }
+        | { Args: { _amount: number; _pack_id?: string }; Returns: Json }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       purchase_character_listing: {
         Args: { _listing_id: string }
         Returns: Json
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "gm" | "tutor" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1550,6 +1641,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "gm", "tutor", "user"],
+    },
   },
 } as const

@@ -1,10 +1,13 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Heart, Sparkles, TrendingUp, Droplets } from "lucide-react";
+import { Heart, Sparkles, TrendingUp, Droplets, Shield } from "lucide-react";
 import { Div } from "@/components/ui/Div";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAuth } from "@/hooks/useAuth";
+import { useCharacterIdentity } from "@/hooks/useCharacterIdentity";
 
 type PlayerHUDCharacter = {
+  id?: string;
   name: string;
   class: string;
   level: number;
@@ -77,10 +80,12 @@ function HUDStat(props: {
 }
 
 export function PlayerHUD({ character, notificationSlot }: { character: PlayerHUDCharacter; notificationSlot?: React.ReactNode }) {
-  const xpMax = useMemo(() => Math.max(1, character.level * 100), [character.level]);
+  const { user } = useAuth();
+  const xpMax = useMemo(() => Math.max(1, Math.floor(100 * character.level * Math.pow(2, Math.floor(character.level / 5)))), [character.level]);
   const hpPct = clampPct(character.max_health ? character.health / character.max_health : 0);
   const mpPct = clampPct(character.max_mana ? character.mana / character.max_mana : 0);
   const xpPct = clampPct(xpMax ? character.experience / xpMax : 0);
+  const identity = useCharacterIdentity(character.id, user?.id);
 
   const classBadge = useMemo(() => {
     const map: Record<string, { label: string; accent: string; glyph: string }> = {
@@ -108,9 +113,30 @@ export function PlayerHUD({ character, notificationSlot }: { character: PlayerHU
                   <Div className="player-hud__level-badge" aria-label={`Nível ${character.level}`}>
                     Lv {character.level}
                   </Div>
-                  <Div className="player-hud__name">{character.name}</Div>
+                  <Div className="player-hud__name flex items-center gap-1.5">
+                    {identity.roleTag && (
+                      <span
+                        className="text-[10px] font-bold px-1.5 py-0.5 rounded-sm border"
+                        style={{
+                          color: identity.roleTag === "ADM" ? "hsl(0 85% 65%)" : identity.roleTag === "GM" ? "hsl(45 95% 60%)" : "hsl(195 85% 65%)",
+                          borderColor: identity.roleTag === "ADM" ? "hsl(0 85% 45%)" : identity.roleTag === "GM" ? "hsl(45 95% 45%)" : "hsl(195 85% 45%)",
+                          background: "hsl(0 0% 0% / 0.4)",
+                        }}
+                      >
+                        [{identity.roleTag}]
+                      </span>
+                    )}
+                    <span>{character.name}</span>
+                  </Div>
                 </Div>
-                <Div className="player-hud__sub">{classBadge.label}</Div>
+                <Div className="player-hud__sub flex items-center gap-2">
+                  <span>{classBadge.label}</span>
+                  {identity.guildName && (
+                    <span className="inline-flex items-center gap-1 text-[10px] opacity-90" style={{ color: "hsl(var(--rpg-gold))" }}>
+                      <Shield className="h-3 w-3" /> &lt;{identity.guildName}&gt;{identity.guildLevel ? ` Lv${identity.guildLevel}` : ""}
+                    </span>
+                  )}
+                </Div>
               </Div>
             </Div>
 

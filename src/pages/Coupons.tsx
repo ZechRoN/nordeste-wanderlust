@@ -25,7 +25,9 @@ export default function CouponsPage() {
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [buyingId, setBuyingId] = useState<string | null>(null);
-  const [success, setSuccess] = useState<{ amount: number; pack: string } | null>(null);
+  const [success, setSuccess] = useState<null | {
+    pack: Pack; previousBalance: number; newBalance: number; total: number; txId: string; date: string;
+  }>(null);
 
   async function loadBalance() {
     if (!user) { setLoading(false); return; }
@@ -41,15 +43,20 @@ export default function CouponsPage() {
     if (!user) { setAuthOpen(true); return; }
     setBuyingId(pack.id);
     const total = pack.coupons + (pack.bonus ?? 0);
-    const { data, error } = await supabase.rpc("add_coupons" as any, { _amount: total });
+    const previousBalance = balance;
+    const { data, error } = await supabase.rpc("add_coupons" as any, { _amount: total, _pack_id: pack.id });
     setBuyingId(null);
     if (error) {
       toast({ title: "Falha ao adicionar Cupons", description: error.message, variant: "destructive" });
       return;
     }
-    const newBal = (data as any)?.balance ?? balance + total;
+    const newBal = (data as any)?.balance ?? previousBalance + total;
     setBalance(newBal);
-    setSuccess({ amount: total, pack: pack.id });
+    setSuccess({
+      pack, previousBalance, newBalance: newBal, total,
+      txId: Math.random().toString(36).slice(2, 10).toUpperCase(),
+      date: new Date().toLocaleString("pt-BR"),
+    });
     toast({ title: "Cupons adicionados!", description: `+${total.toLocaleString("pt-BR")} Cupons creditados.` });
   }
 
@@ -122,14 +129,37 @@ export default function CouponsPage() {
 
       {success && (
         <Div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setSuccess(null)}>
-          <Div className="max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+          <Div className="max-w-md w-full" onClick={(e) => e.stopPropagation()}>
             <GoldFrame>
-              <PanelTitle icon={<CheckCircle2 className="h-3.5 w-3.5" />}>Compra Confirmada</PanelTitle>
-              <Div className="p-5 text-center space-y-3">
-                <Div className="text-3xl font-bold text-emerald-300 tabular-nums">+{success.amount.toLocaleString("pt-BR")}</Div>
-                <Div className="text-xs text-amber-200/80">Cupons creditados na sua carteira.</Div>
-                <Div className="flex gap-2 pt-2">
-                  <button onClick={() => setSuccess(null)} className="mmo-btn-dark rounded-sm px-3 py-2 text-xs flex-1">Continuar</button>
+              <PanelTitle icon={<CheckCircle2 className="h-3.5 w-3.5" />}>Recibo de Compra</PanelTitle>
+              <Div className="p-5 space-y-4">
+                <Div className="text-center">
+                  <Div className="text-3xl font-bold text-emerald-300 tabular-nums inline-flex items-center gap-2">
+                    <Ticket className="h-7 w-7" />+{success.total.toLocaleString("pt-BR")}
+                  </Div>
+                  <Div className="text-xs text-amber-200/80 mt-1">Cupons creditados com sucesso</Div>
+                </Div>
+
+                <Div className="rounded-sm border border-amber-700/50 bg-black/40 p-3 text-xs space-y-1.5">
+                  <Div className="flex justify-between"><span className="text-amber-300/70">Pacote</span><span className="text-amber-100 font-semibold capitalize">{success.pack.id}</span></Div>
+                  <Div className="flex justify-between"><span className="text-amber-300/70">Cupons base</span><span className="text-amber-100 tabular-nums">{success.pack.coupons.toLocaleString("pt-BR")}</span></Div>
+                  {success.pack.bonus ? (
+                    <Div className="flex justify-between"><span className="text-amber-300/70">Bônus</span><span className="text-emerald-300 tabular-nums">+{success.pack.bonus.toLocaleString("pt-BR")}</span></Div>
+                  ) : null}
+                  <Div className="flex justify-between border-t border-amber-700/30 pt-1.5"><span className="text-amber-300/70">Valor pago</span><span className="text-amber-100">R$ {success.pack.priceBRL.toFixed(2).replace(".", ",")}</span></Div>
+                  <Div className="flex justify-between"><span className="text-amber-300/70">Transação</span><span className="text-amber-100/70 font-mono text-[10px]">#{success.txId}</span></Div>
+                  <Div className="flex justify-between"><span className="text-amber-300/70">Data</span><span className="text-amber-100/70 text-[10px]">{success.date}</span></Div>
+                </Div>
+
+                <Div className="rounded-sm border border-emerald-700/40 bg-emerald-950/20 p-3 text-xs space-y-1">
+                  <Div className="flex justify-between"><span className="text-amber-300/70">Saldo anterior</span><span className="tabular-nums text-amber-100/70">{success.previousBalance.toLocaleString("pt-BR")}</span></Div>
+                  <Div className="flex justify-between"><span className="text-amber-300/70">Creditado</span><span className="tabular-nums text-emerald-300">+{success.total.toLocaleString("pt-BR")}</span></Div>
+                  <Div className="flex justify-between border-t border-emerald-700/30 pt-1 font-bold"><span className="text-emerald-200">Novo saldo</span><span className="tabular-nums text-emerald-200">{success.newBalance.toLocaleString("pt-BR")}</span></Div>
+                </Div>
+
+                <Div className="flex gap-2">
+                  <button onClick={() => setSuccess(null)} className="mmo-btn-dark rounded-sm px-3 py-2 text-xs flex-1">Fechar</button>
+                  <button onClick={() => navigate("/carteira")} className="mmo-btn-dark rounded-sm px-3 py-2 text-xs flex-1">Ver Carteira</button>
                   <button onClick={() => navigate("/bazar")} className="mmo-btn-gold rounded-sm px-3 py-2 text-xs flex-1">Ir ao Bazar</button>
                 </Div>
               </Div>
