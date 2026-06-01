@@ -25,7 +25,9 @@ export default function CouponsPage() {
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [buyingId, setBuyingId] = useState<string | null>(null);
-  const [success, setSuccess] = useState<{ amount: number; pack: string } | null>(null);
+  const [success, setSuccess] = useState<null | {
+    pack: Pack; previousBalance: number; newBalance: number; total: number; txId: string; date: string;
+  }>(null);
 
   async function loadBalance() {
     if (!user) { setLoading(false); return; }
@@ -41,15 +43,20 @@ export default function CouponsPage() {
     if (!user) { setAuthOpen(true); return; }
     setBuyingId(pack.id);
     const total = pack.coupons + (pack.bonus ?? 0);
-    const { data, error } = await supabase.rpc("add_coupons" as any, { _amount: total });
+    const previousBalance = balance;
+    const { data, error } = await supabase.rpc("add_coupons" as any, { _amount: total, _pack_id: pack.id });
     setBuyingId(null);
     if (error) {
       toast({ title: "Falha ao adicionar Cupons", description: error.message, variant: "destructive" });
       return;
     }
-    const newBal = (data as any)?.balance ?? balance + total;
+    const newBal = (data as any)?.balance ?? previousBalance + total;
     setBalance(newBal);
-    setSuccess({ amount: total, pack: pack.id });
+    setSuccess({
+      pack, previousBalance, newBalance: newBal, total,
+      txId: Math.random().toString(36).slice(2, 10).toUpperCase(),
+      date: new Date().toLocaleString("pt-BR"),
+    });
     toast({ title: "Cupons adicionados!", description: `+${total.toLocaleString("pt-BR")} Cupons creditados.` });
   }
 
