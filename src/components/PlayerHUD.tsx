@@ -1,10 +1,13 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Heart, Sparkles, TrendingUp, Droplets } from "lucide-react";
+import { Heart, Sparkles, TrendingUp, Droplets, Shield } from "lucide-react";
 import { Div } from "@/components/ui/Div";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAuth } from "@/hooks/useAuth";
+import { useCharacterIdentity } from "@/hooks/useCharacterIdentity";
 
 type PlayerHUDCharacter = {
+  id?: string;
   name: string;
   class: string;
   level: number;
