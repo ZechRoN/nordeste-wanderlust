@@ -80,10 +80,12 @@ function HUDStat(props: {
 }
 
 export function PlayerHUD({ character, notificationSlot }: { character: PlayerHUDCharacter; notificationSlot?: React.ReactNode }) {
-  const xpMax = useMemo(() => Math.max(1, character.level * 100), [character.level]);
+  const { user } = useAuth();
+  const xpMax = useMemo(() => Math.max(1, Math.floor(100 * character.level * Math.pow(2, Math.floor(character.level / 5)))), [character.level]);
   const hpPct = clampPct(character.max_health ? character.health / character.max_health : 0);
   const mpPct = clampPct(character.max_mana ? character.mana / character.max_mana : 0);
   const xpPct = clampPct(xpMax ? character.experience / xpMax : 0);
+  const identity = useCharacterIdentity(character.id, user?.id);
 
   const classBadge = useMemo(() => {
     const map: Record<string, { label: string; accent: string; glyph: string }> = {
