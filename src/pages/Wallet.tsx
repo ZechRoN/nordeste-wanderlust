@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { SiteShell, GoldFrame, PanelTitle } from "@/components/site/SiteShell";
 import { Div } from "@/components/ui/Div";
-import { Ticket, Wallet as WalletIcon, AlertTriangle, Loader2, ArrowDownCircle, ArrowUpCircle, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Ticket, Wallet as WalletIcon, AlertTriangle, Loader2, ArrowDownCircle, ArrowUpCircle, ArrowUpDown, ChevronLeft, ChevronRight, Receipt, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthModal } from "@/components/AuthModal";
