@@ -267,7 +267,8 @@ export function Combat({ character, creature, onCombatEnd }: CombatProps) {
       const newExperience = character.experience + Math.floor(baseExpReward);
       const newGold = character.gold + Math.floor(baseGoldReward);
       const currentLevel = character.level;
-      const experienceForNextLevel = currentLevel * 100;
+      // XP curve: dobra de dificuldade a cada 5 níveis
+      const experienceForNextLevel = Math.floor(100 * currentLevel * Math.pow(2, Math.floor(currentLevel / 5)));
       let newLevel = currentLevel;
       let finalExperience = newExperience;
 
