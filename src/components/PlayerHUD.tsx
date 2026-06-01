@@ -113,9 +113,30 @@ export function PlayerHUD({ character, notificationSlot }: { character: PlayerHU
                   <Div className="player-hud__level-badge" aria-label={`Nível ${character.level}`}>
                     Lv {character.level}
                   </Div>
-                  <Div className="player-hud__name">{character.name}</Div>
+                  <Div className="player-hud__name flex items-center gap-1.5">
+                    {identity.roleTag && (
+                      <span
+                        className="text-[10px] font-bold px-1.5 py-0.5 rounded-sm border"
+                        style={{
+                          color: identity.roleTag === "ADM" ? "hsl(0 85% 65%)" : identity.roleTag === "GM" ? "hsl(45 95% 60%)" : "hsl(195 85% 65%)",
+                          borderColor: identity.roleTag === "ADM" ? "hsl(0 85% 45%)" : identity.roleTag === "GM" ? "hsl(45 95% 45%)" : "hsl(195 85% 45%)",
+                          background: "hsl(0 0% 0% / 0.4)",
+                        }}
+                      >
+                        [{identity.roleTag}]
+                      </span>
+                    )}
+                    <span>{character.name}</span>
+                  </Div>
                 </Div>
-                <Div className="player-hud__sub">{classBadge.label}</Div>
+                <Div className="player-hud__sub flex items-center gap-2">
+                  <span>{classBadge.label}</span>
+                  {identity.guildName && (
+                    <span className="inline-flex items-center gap-1 text-[10px] opacity-90" style={{ color: "hsl(var(--rpg-gold))" }}>
+                      <Shield className="h-3 w-3" /> &lt;{identity.guildName}&gt;{identity.guildLevel ? ` Lv${identity.guildLevel}` : ""}
+                    </span>
+                  )}
+                </Div>
               </Div>
             </Div>
 
