@@ -121,6 +121,9 @@ export default function WalletPage() {
   const [balance, setBalance] = useState(0);
   const [purchases, setPurchases] = useState<Row[]>([]);
   const [sales, setSales] = useState<Row[]>([]);
+  const [recharges, setRecharges] = useState<Array<{ id: string; created_at: string; amount: number; pack_id: string | null; status: string }>>([]);
+  const [rechargeSort, setRechargeSort] = useState<SortKey>("date_desc");
+  const [rechargePage, setRechargePage] = useState(1);
   const [loading, setLoading] = useState(true);
 
   const [error, setError] = useState<string | null>(null);
@@ -129,7 +132,7 @@ export default function WalletPage() {
     if (!user) { setAuthOpen(true); setLoading(false); return; }
     setLoading(true);
     setError(null);
-    const [bal, buys, sells] = await Promise.all([
+    const [bal, buys, sells, rech] = await Promise.all([
       supabase.from("user_coupons").select("balance").eq("user_id", user.id).maybeSingle(),
       supabase.from("listing_purchases")
         .select("id, created_at, price_coupons, buyer_id, seller_id, character_id, characters(name, class, level)")
@@ -137,6 +140,9 @@ export default function WalletPage() {
       supabase.from("listing_purchases")
         .select("id, created_at, price_coupons, buyer_id, seller_id, character_id, characters(name, class, level)")
         .eq("seller_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("coupon_transactions" as any)
+        .select("id, created_at, amount, pack_id, status")
+        .eq("user_id", user.id).order("created_at", { ascending: false }),
     ]);
     if (bal.error || buys.error || sells.error) {
       setError(bal.error?.message || buys.error?.message || sells.error?.message || "Erro ao carregar carteira.");
@@ -144,9 +150,26 @@ export default function WalletPage() {
     setBalance(bal.data?.balance ?? 0);
     setPurchases((buys.data as any) ?? []);
     setSales((sells.data as any) ?? []);
+    setRecharges(((rech as any).data as any[]) ?? []);
     setLoading(false);
   }
   useEffect(() => { load(); }, [user]);
+
+  const sortedRecharges = useMemo(() => {
+    const arr = [...recharges];
+    arr.sort((a, b) => {
+      switch (rechargeSort) {
+        case "date_asc": return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case "price_desc": return b.amount - a.amount;
+        case "price_asc": return a.amount - b.amount;
+        default: return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+    return arr;
+  }, [recharges, rechargeSort]);
+  const rechargeTotalPages = Math.max(1, Math.ceil(sortedRecharges.length / PAGE_SIZE));
+  const rechargeItems = sortedRecharges.slice((rechargePage - 1) * PAGE_SIZE, rechargePage * PAGE_SIZE);
+  useEffect(() => { setRechargePage(1); }, [rechargeSort, recharges.length]);
 
   return (
     <SiteShell>
