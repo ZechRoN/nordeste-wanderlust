@@ -232,6 +232,73 @@ export default function WalletPage() {
                 <HistoryList rows={sales} loading={loading} kind="sell" />
               </Div>
             </GoldFrame>
+
+            <Div className="lg:col-span-2">
+              <GoldFrame>
+                <PanelTitle icon={<Receipt className="h-3.5 w-3.5" />}>Recargas de Cupons</PanelTitle>
+                <Div className="p-4 space-y-3">
+                  {loading ? (
+                    <Div className="space-y-2 animate-pulse">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <Div key={i} className="h-8 bg-amber-900/20 rounded-sm" />
+                      ))}
+                    </Div>
+                  ) : recharges.length === 0 ? (
+                    <Div className="text-center py-6 text-xs italic text-amber-200/60">
+                      Nenhuma recarga registrada. <a href="/cupons" className="text-amber-300 underline">Comprar Cupons</a>
+                    </Div>
+                  ) : (
+                    <>
+                      <Div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] uppercase tracking-widest text-amber-300/70">{recharges.length} recarga(s)</span>
+                        <label className="inline-flex items-center gap-2 text-[11px] text-amber-300/80">
+                          <ArrowUpDown className="h-3 w-3" />
+                          <select value={rechargeSort} onChange={(e) => setRechargeSort(e.target.value as SortKey)}
+                            className="rounded-sm border border-amber-700/50 bg-black/40 px-2 py-1 text-xs text-amber-100">
+                            {(Object.keys(SORT_LABEL) as SortKey[]).map((k) => <option key={k} value={k}>{SORT_LABEL[k]}</option>)}
+                          </select>
+                        </label>
+                      </Div>
+                      <Div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead className="text-amber-300/70 text-[10px] uppercase tracking-widest">
+                            <tr className="border-b border-amber-700/30">
+                              <th className="text-left py-1.5">Data</th>
+                              <th className="text-left py-1.5">Pacote</th>
+                              <th className="text-right py-1.5">Valor</th>
+                              <th className="text-right py-1.5">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rechargeItems.map((r) => (
+                              <tr key={r.id} className="border-b border-amber-700/15">
+                                <td className="py-1.5 text-amber-100/80">{new Date(r.created_at).toLocaleString("pt-BR")}</td>
+                                <td className="py-1.5 text-amber-100/80 capitalize">{r.pack_id ?? "—"}</td>
+                                <td className="py-1.5 text-right tabular-nums text-emerald-300 inline-flex items-center gap-1 justify-end w-full"><Ticket className="h-3 w-3" />+{r.amount.toLocaleString("pt-BR")}</td>
+                                <td className="py-1.5 text-right">
+                                  <span className="inline-flex items-center gap-1 text-emerald-300">
+                                    <CheckCircle2 className="h-3 w-3" />{r.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </Div>
+                      {rechargeTotalPages > 1 && (
+                        <Div className="flex items-center justify-center gap-2 pt-1">
+                          <button onClick={() => setRechargePage((p) => Math.max(1, p - 1))} disabled={rechargePage === 1}
+                            className="rounded-sm border border-amber-700/50 bg-black/40 px-2 py-1 text-[11px] text-amber-100 disabled:opacity-40"><ChevronLeft className="h-3 w-3" /></button>
+                          <span className="text-[11px] text-amber-300/80">Página {rechargePage} / {rechargeTotalPages}</span>
+                          <button onClick={() => setRechargePage((p) => Math.min(rechargeTotalPages, p + 1))} disabled={rechargePage === rechargeTotalPages}
+                            className="rounded-sm border border-amber-700/50 bg-black/40 px-2 py-1 text-[11px] text-amber-100 disabled:opacity-40"><ChevronRight className="h-3 w-3" /></button>
+                        </Div>
+                      )}
+                    </>
+                  )}
+                </Div>
+              </GoldFrame>
+            </Div>
           </Div>
         )}
       </section>
