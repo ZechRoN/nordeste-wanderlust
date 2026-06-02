@@ -1,10 +1,5 @@
 import { motion } from 'framer-motion';
 import { Div } from '@/components/ui/Div';
-import warriorSprite from '/sprites/characters/warrior.png?url';
-import mageSprite from '/sprites/characters/mage.png?url';
-import archerSprite from '/sprites/characters/archer.png?url';
-import healerSprite from '/sprites/characters/healer.png?url';
-import assassinSprite from '/sprites/characters/assassin.png?url';
 
 interface CharacterItem {
   id: string;
@@ -19,11 +14,11 @@ interface CharacterPreviewProps {
 }
 
 const CLASS_SPRITES: Record<string, string> = {
-  warrior: warriorSprite,
-  mage: mageSprite,
-  archer: archerSprite,
-  healer: healerSprite,
-  assassin: assassinSprite,
+  warrior: '/sprites/characters/warrior.png',
+  mage: '/sprites/characters/mage.png',
+  archer: '/sprites/characters/archer.png',
+  healer: '/sprites/characters/healer.png',
+  assassin: '/sprites/characters/assassin.png',
 };
 
 // Item visual per equipment slot
