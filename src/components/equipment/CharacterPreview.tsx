@@ -1,6 +1,10 @@
-import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Div } from '@/components/ui/Div';
+import warriorSprite from '/sprites/characters/warrior.png?url';
+import mageSprite from '/sprites/characters/mage.png?url';
+import archerSprite from '/sprites/characters/archer.png?url';
+import healerSprite from '/sprites/characters/healer.png?url';
+import assassinSprite from '/sprites/characters/assassin.png?url';
 
 interface CharacterItem {
   id: string;
@@ -14,78 +18,118 @@ interface CharacterPreviewProps {
   equipped: Record<string, CharacterItem>;
 }
 
-const CLASS_SPRITES: Record<string, { body: string; color: string }> = {
-  warrior: { body: '🗡️', color: '#C0392B' },
-  mage: { body: '🧙', color: '#8E44AD' },
-  archer: { body: '🏹', color: '#27AE60' },
-  healer: { body: '💚', color: '#2ECC71' },
-  assassin: { body: '🥷', color: '#2C3E50' },
+const CLASS_SPRITES: Record<string, string> = {
+  warrior: warriorSprite,
+  mage: mageSprite,
+  archer: archerSprite,
+  healer: healerSprite,
+  assassin: assassinSprite,
 };
 
-const EQUIPMENT_VISUALS: Record<string, string> = {
-  helmet: '👑', chest: '🛡️', legs: '👖', gloves: '🧤', boots: '👢',
-  main_hand: '⚔️', off_hand: '🔮',
+// Item visual per equipment slot
+const SLOT_GLYPH: Record<string, string> = {
+  helmet: '🪖',
+  chest: '🛡️',
+  legs: '👖',
+  gloves: '🧤',
+  boots: '👢',
+  main_hand: '⚔️',
+  off_hand: '🛡️',
 };
 
 export function CharacterPreview({ characterClass, equipped }: CharacterPreviewProps) {
-  const classInfo = CLASS_SPRITES[characterClass] || CLASS_SPRITES.warrior;
+  const spriteUrl = CLASS_SPRITES[characterClass] || CLASS_SPRITES.warrior;
   const equippedSlots = Object.keys(equipped);
 
   return (
-    <Div className="equip-char-preview">
-      {/* Base body layer */}
+    <Div className="equip-char-preview" style={{ position: 'relative' }}>
+      {/* Character sprite — first idle frame (16x16) scaled up */}
       <motion.div
         className="equip-char-body"
         animate={{ y: [0, -2, 0] }}
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <span className="text-4xl">{classInfo.body}</span>
-      </motion.div>
+        style={{
+          width: 64,
+          height: 64,
+          backgroundImage: `url(${spriteUrl})`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: '0 0',
+          backgroundSize: 'auto',
+          imageRendering: 'pixelated',
+          // scale the first 16x16 frame to 64x64
+          transform: 'scale(4)',
+          transformOrigin: 'top left',
+          width: 16,
+          height: 16,
+          marginLeft: 32,
+          marginTop: 16,
+        }}
+        aria-label={`Sprite ${characterClass}`}
+      />
 
-      {/* Equipment overlays */}
-      <Div className="equip-char-overlays">
+      {/* Equipment overlays positioned anatomically */}
+      <Div
+        className="equip-char-overlays"
+        style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+      >
         {equipped.helmet && (
           <motion.span
             key="helm"
-            className="equip-overlay-helm"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 300 }}
-          >👑</motion.span>
+            style={{ position: 'absolute', top: 4, left: '50%', transform: 'translateX(-50%)', fontSize: 18, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,.6))' }}
+          >{SLOT_GLYPH.helmet}</motion.span>
+        )}
+        {equipped.chest && (
+          <motion.span
+            key="chest"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.85 }}
+            style={{ position: 'absolute', top: '42%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: 22, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,.6))' }}
+          >🦺</motion.span>
+        )}
+        {equipped.legs && (
+          <motion.span
+            key="legs"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.9 }}
+            style={{ position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)', fontSize: 16 }}
+          >{SLOT_GLYPH.legs}</motion.span>
+        )}
+        {equipped.gloves && (
+          <motion.span
+            key="gloves"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            style={{ position: 'absolute', top: '48%', left: 10, fontSize: 14 }}
+          >{SLOT_GLYPH.gloves}</motion.span>
+        )}
+        {equipped.boots && (
+          <motion.span
+            key="boots"
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            style={{ position: 'absolute', bottom: 6, left: '50%', transform: 'translateX(-50%)', fontSize: 14 }}
+          >{SLOT_GLYPH.boots}</motion.span>
         )}
         {equipped.main_hand && (
           <motion.span
             key="weapon"
-            className="equip-overlay-weapon"
             initial={{ rotate: -45, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
+            animate={{ rotate: -15, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 200 }}
+            style={{ position: 'absolute', top: '38%', right: 8, fontSize: 22, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,.7))' }}
           >⚔️</motion.span>
         )}
         {equipped.off_hand && (
           <motion.span
             key="offhand"
-            className="equip-overlay-offhand"
             initial={{ rotate: 45, opacity: 0 }}
             animate={{ rotate: 0, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 200 }}
-          >🔮</motion.span>
-        )}
-        {equipped.chest && (
-          <motion.span
-            key="chest"
-            className="equip-overlay-chest"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.7 }}
+            style={{ position: 'absolute', top: '40%', left: 8, fontSize: 20, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,.7))' }}
           >🛡️</motion.span>
-        )}
-        {equipped.boots && (
-          <motion.span
-            key="boots"
-            className="equip-overlay-boots"
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-          >👢</motion.span>
         )}
       </Div>
 
