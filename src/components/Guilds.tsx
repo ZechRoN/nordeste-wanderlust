@@ -382,6 +382,29 @@ export function Guilds({ character, onCharacterUpdate }: GuildsProps) {
           </Div>
         </Div>
 
+        {/* Convidar membros */}
+        {canManage && (
+          <Div className="rpg-item-detail">
+            <Div className="flex items-center justify-between gap-2 mb-2">
+              <span className="text-xs font-bold">Convidar membro</span>
+              <span className="text-[10px] opacity-60">Só líder/vice-líder</span>
+            </Div>
+            <Div className="flex items-center gap-2">
+              <input
+                className="rpg-input flex-1"
+                placeholder="Nome do personagem"
+                value={inviteName}
+                onChange={(e) => setInviteName(e.target.value.slice(0, 32))}
+                onKeyDown={(e) => { if (e.key === 'Enter') invitePlayer(); }}
+                maxLength={32}
+              />
+              <GameButton size="sm" variant="gold" onClick={invitePlayer} disabled={inviting || !inviteName.trim()}>
+                <UserPlus className="h-3 w-3 mr-1" /> Convidar
+              </GameButton>
+            </Div>
+          </Div>
+        )}
+
         <Div className="flex items-center justify-between">
           <label className="rpg-label">Membros ({guildMembers.length}/{currentGuild.max_members})</label>
           <label className="flex items-center gap-2 text-[11px] opacity-80 select-none">
@@ -389,6 +412,7 @@ export function Guilds({ character, onCharacterUpdate }: GuildsProps) {
             Online
           </label>
         </Div>
+
 
         <Div className="rpg-item-detail !p-2">
           <Div className="grid grid-cols-[1fr_90px_56px_84px_90px_18px] gap-2 text-[10px] font-bold opacity-80">
