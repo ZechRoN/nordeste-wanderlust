@@ -52,8 +52,77 @@ export function Guilds({ character, onCharacterUpdate }: GuildsProps) {
   const [depositAmount, setDepositAmount] = useState('');
   const [announcementDraft, setAnnouncementDraft] = useState('');
   const [profilesById, setProfilesById] = useState<Record<string, { is_online: boolean; last_seen_at: string | null }>>({});
+  const [inviteName, setInviteName] = useState('');
+  const [inviting, setInviting] = useState(false);
+  const [pendingInvites, setPendingInvites] = useState<Array<{ id: string; guild_id: string; guild_name: string; inviter_name: string }>>([]);
 
-  useEffect(() => { loadGuilds(); loadCurrentGuild(); }, [character.id]);
+  useEffect(() => { loadGuilds(); loadCurrentGuild(); loadPendingInvites(); }, [character.id]);
+
+  const loadPendingInvites = async () => {
+    const { data } = await supabase
+      .from('guild_invites')
+      .select('id, guild_id, inviter_character_id, guilds(name)')
+      .eq('invitee_character_id', character.id)
+      .eq('status', 'pending');
+    const rows = (data as any[]) || [];
+    const inviterIds = Array.from(new Set(rows.map((r) => r.inviter_character_id).filter(Boolean)));
+    let inviterNames: Record<string, string> = {};
+    if (inviterIds.length) {
+      const { data: chars } = await supabase.from('characters').select('id, name').in('id', inviterIds);
+      inviterNames = Object.fromEntries(((chars as any[]) || []).map((c) => [c.id, c.name]));
+    }
+    setPendingInvites(rows.map((r) => ({
+      id: r.id,
+      guild_id: r.guild_id,
+      guild_name: r.guilds?.name ?? '—',
+      inviter_name: inviterNames[r.inviter_character_id] ?? '—',
+    })));
+  };
+
+  const invitePlayer = async () => {
+    if (!currentGuild) { toast.error('Você não está em uma guilda'); return; }
+    if (!canManage) { toast.error('Sem permissão para convidar'); return; }
+    const name = inviteName.trim();
+    if (!name) { toast.error('Digite o nome do personagem'); return; }
+    setInviting(true);
+    try {
+      const { data: target, error: findErr } = await supabase
+        .from('characters').select('id, name').ilike('name', name).maybeSingle();
+      if (findErr || !target) { toast.error('Personagem não encontrado'); return; }
+      if (target.id === character.id) { toast.error('Você não pode se convidar'); return; }
+      // Check already in guild
+      const { data: existingMember } = await supabase
+        .from('guild_members').select('id').eq('character_id', target.id).maybeSingle();
+      if (existingMember) { toast.error(`${target.name} já está em uma guilda`); return; }
+      const { error: invErr } = await (supabase as any).from('guild_invites').insert({
+        guild_id: currentGuild.id,
+        inviter_character_id: character.id,
+        invitee_character_id: target.id,
+        status: 'pending',
+      });
+      if (invErr) { toast.error('Erro ao enviar convite'); return; }
+      toast.success(`Convite enviado para ${target.name}`);
+      setInviteName('');
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const acceptInvite = async (inviteId: string) => {
+    const { error } = await (supabase as any).rpc('accept_guild_invite', { _invite_id: inviteId });
+    if (error) { toast.error(error.message || 'Erro ao aceitar convite'); return; }
+    toast.success('Você entrou na guilda!');
+    await Promise.all([loadCurrentGuild(), loadPendingInvites(), loadGuilds()]);
+  };
+
+  const rejectInvite = async (inviteId: string) => {
+    const { error } = await supabase.from('guild_invites')
+      .update({ status: 'rejected', responded_at: new Date().toISOString() })
+      .eq('id', inviteId);
+    if (error) { toast.error('Erro ao recusar'); return; }
+    toast.success('Convite recusado');
+    loadPendingInvites();
+  };
 
   const loadGuilds = async () => {
     const { data } = await supabase.from('guilds').select('*').order('created_at', { ascending: false }).limit(20);
@@ -313,6 +382,29 @@ export function Guilds({ character, onCharacterUpdate }: GuildsProps) {
           </Div>
         </Div>
 
+        {/* Convidar membros */}
+        {canManage && (
+          <Div className="rpg-item-detail">
+            <Div className="flex items-center justify-between gap-2 mb-2">
+              <span className="text-xs font-bold">Convidar membro</span>
+              <span className="text-[10px] opacity-60">Só líder/vice-líder</span>
+            </Div>
+            <Div className="flex items-center gap-2">
+              <input
+                className="rpg-input flex-1"
+                placeholder="Nome do personagem"
+                value={inviteName}
+                onChange={(e) => setInviteName(e.target.value.slice(0, 32))}
+                onKeyDown={(e) => { if (e.key === 'Enter') invitePlayer(); }}
+                maxLength={32}
+              />
+              <GameButton size="sm" variant="gold" onClick={invitePlayer} disabled={inviting || !inviteName.trim()}>
+                <UserPlus className="h-3 w-3 mr-1" /> Convidar
+              </GameButton>
+            </Div>
+          </Div>
+        )}
+
         <Div className="flex items-center justify-between">
           <label className="rpg-label">Membros ({guildMembers.length}/{currentGuild.max_members})</label>
           <label className="flex items-center gap-2 text-[11px] opacity-80 select-none">
@@ -320,6 +412,7 @@ export function Guilds({ character, onCharacterUpdate }: GuildsProps) {
             Online
           </label>
         </Div>
+
 
         <Div className="rpg-item-detail !p-2">
           <Div className="grid grid-cols-[1fr_90px_56px_84px_90px_18px] gap-2 text-[10px] font-bold opacity-80">
@@ -504,9 +597,33 @@ export function Guilds({ character, onCharacterUpdate }: GuildsProps) {
         </Div>
       ) : (
         <Div>
+          {pendingInvites.length > 0 && (
+            <Div className="rpg-item-detail mb-3">
+              <Div className="flex items-center gap-2 mb-2">
+                <Shield className="h-4 w-4" style={{ color: 'hsl(var(--rpg-gold))' }} />
+                <span className="text-xs font-bold">Convites pendentes ({pendingInvites.length})</span>
+              </Div>
+              <Div className="space-y-2">
+                {pendingInvites.map((inv) => (
+                  <Div key={inv.id} className="flex items-center justify-between gap-2 rpg-class-card !p-2">
+                    <Div className="min-w-0">
+                      <Div className="text-xs font-bold truncate">{inv.guild_name}</Div>
+                      <Div className="text-[10px] opacity-60 truncate">Convidado por {inv.inviter_name}</Div>
+                    </Div>
+                    <Div className="flex items-center gap-1 shrink-0">
+                      <GameButton size="sm" variant="gold" onClick={() => acceptInvite(inv.id)}>Aceitar</GameButton>
+                      <GameButton size="sm" variant="danger" onClick={() => rejectInvite(inv.id)}>Recusar</GameButton>
+                    </Div>
+                  </Div>
+                ))}
+              </Div>
+            </Div>
+          )}
+
           <GameButton variant="gold" className="w-full mb-3" onClick={() => setCreating(true)}>
             <UserPlus className="h-3 w-3 mr-1" /> Criar Nova Guilda
           </GameButton>
+
 
           <label className="rpg-label">Guildas Disponíveis</label>
           <Div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
