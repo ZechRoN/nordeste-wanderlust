@@ -49,8 +49,6 @@ export function CharacterPreview({ characterClass, equipped }: CharacterPreviewP
         animate={{ y: [0, -2, 0] }}
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         style={{
-          width: 64,
-          height: 64,
           backgroundImage: `url(${spriteUrl})`,
           backgroundRepeat: 'no-repeat',
           backgroundPosition: '0 0',
