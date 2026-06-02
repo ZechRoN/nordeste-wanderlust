@@ -61,16 +61,22 @@ export function Guilds({ character, onCharacterUpdate }: GuildsProps) {
   const loadPendingInvites = async () => {
     const { data } = await supabase
       .from('guild_invites')
-      .select('id, guild_id, guilds(name), inviter:characters!guild_invites_inviter_character_id_fkey(name)')
+      .select('id, guild_id, inviter_character_id, guilds(name)')
       .eq('invitee_character_id', character.id)
       .eq('status', 'pending');
-    const list = ((data as any[]) || []).map((r) => ({
+    const rows = (data as any[]) || [];
+    const inviterIds = Array.from(new Set(rows.map((r) => r.inviter_character_id).filter(Boolean)));
+    let inviterNames: Record<string, string> = {};
+    if (inviterIds.length) {
+      const { data: chars } = await supabase.from('characters').select('id, name').in('id', inviterIds);
+      inviterNames = Object.fromEntries(((chars as any[]) || []).map((c) => [c.id, c.name]));
+    }
+    setPendingInvites(rows.map((r) => ({
       id: r.id,
       guild_id: r.guild_id,
       guild_name: r.guilds?.name ?? '—',
-      inviter_name: r.inviter?.name ?? '—',
-    }));
-    setPendingInvites(list);
+      inviter_name: inviterNames[r.inviter_character_id] ?? '—',
+    })));
   };
 
   const invitePlayer = async () => {
