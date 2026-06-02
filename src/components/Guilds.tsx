@@ -597,9 +597,33 @@ export function Guilds({ character, onCharacterUpdate }: GuildsProps) {
         </Div>
       ) : (
         <Div>
+          {pendingInvites.length > 0 && (
+            <Div className="rpg-item-detail mb-3">
+              <Div className="flex items-center gap-2 mb-2">
+                <Shield className="h-4 w-4" style={{ color: 'hsl(var(--rpg-gold))' }} />
+                <span className="text-xs font-bold">Convites pendentes ({pendingInvites.length})</span>
+              </Div>
+              <Div className="space-y-2">
+                {pendingInvites.map((inv) => (
+                  <Div key={inv.id} className="flex items-center justify-between gap-2 rpg-class-card !p-2">
+                    <Div className="min-w-0">
+                      <Div className="text-xs font-bold truncate">{inv.guild_name}</Div>
+                      <Div className="text-[10px] opacity-60 truncate">Convidado por {inv.inviter_name}</Div>
+                    </Div>
+                    <Div className="flex items-center gap-1 shrink-0">
+                      <GameButton size="sm" variant="gold" onClick={() => acceptInvite(inv.id)}>Aceitar</GameButton>
+                      <GameButton size="sm" variant="danger" onClick={() => rejectInvite(inv.id)}>Recusar</GameButton>
+                    </Div>
+                  </Div>
+                ))}
+              </Div>
+            </Div>
+          )}
+
           <GameButton variant="gold" className="w-full mb-3" onClick={() => setCreating(true)}>
             <UserPlus className="h-3 w-3 mr-1" /> Criar Nova Guilda
           </GameButton>
+
 
           <label className="rpg-label">Guildas Disponíveis</label>
           <Div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
