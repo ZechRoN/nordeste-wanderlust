@@ -52,8 +52,71 @@ export function Guilds({ character, onCharacterUpdate }: GuildsProps) {
   const [depositAmount, setDepositAmount] = useState('');
   const [announcementDraft, setAnnouncementDraft] = useState('');
   const [profilesById, setProfilesById] = useState<Record<string, { is_online: boolean; last_seen_at: string | null }>>({});
+  const [inviteName, setInviteName] = useState('');
+  const [inviting, setInviting] = useState(false);
+  const [pendingInvites, setPendingInvites] = useState<Array<{ id: string; guild_id: string; guild_name: string; inviter_name: string }>>([]);
 
-  useEffect(() => { loadGuilds(); loadCurrentGuild(); }, [character.id]);
+  useEffect(() => { loadGuilds(); loadCurrentGuild(); loadPendingInvites(); }, [character.id]);
+
+  const loadPendingInvites = async () => {
+    const { data } = await supabase
+      .from('guild_invites')
+      .select('id, guild_id, guilds(name), inviter:characters!guild_invites_inviter_character_id_fkey(name)')
+      .eq('invitee_character_id', character.id)
+      .eq('status', 'pending');
+    const list = ((data as any[]) || []).map((r) => ({
+      id: r.id,
+      guild_id: r.guild_id,
+      guild_name: r.guilds?.name ?? '—',
+      inviter_name: r.inviter?.name ?? '—',
+    }));
+    setPendingInvites(list);
+  };
+
+  const invitePlayer = async () => {
+    if (!currentGuild) { toast.error('Você não está em uma guilda'); return; }
+    if (!canManage) { toast.error('Sem permissão para convidar'); return; }
+    const name = inviteName.trim();
+    if (!name) { toast.error('Digite o nome do personagem'); return; }
+    setInviting(true);
+    try {
+      const { data: target, error: findErr } = await supabase
+        .from('characters').select('id, name').ilike('name', name).maybeSingle();
+      if (findErr || !target) { toast.error('Personagem não encontrado'); return; }
+      if (target.id === character.id) { toast.error('Você não pode se convidar'); return; }
+      // Check already in guild
+      const { data: existingMember } = await supabase
+        .from('guild_members').select('id').eq('character_id', target.id).maybeSingle();
+      if (existingMember) { toast.error(`${target.name} já está em uma guilda`); return; }
+      const { error: invErr } = await (supabase as any).from('guild_invites').insert({
+        guild_id: currentGuild.id,
+        inviter_character_id: character.id,
+        invitee_character_id: target.id,
+        status: 'pending',
+      });
+      if (invErr) { toast.error('Erro ao enviar convite'); return; }
+      toast.success(`Convite enviado para ${target.name}`);
+      setInviteName('');
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const acceptInvite = async (inviteId: string) => {
+    const { error } = await (supabase as any).rpc('accept_guild_invite', { _invite_id: inviteId });
+    if (error) { toast.error(error.message || 'Erro ao aceitar convite'); return; }
+    toast.success('Você entrou na guilda!');
+    await Promise.all([loadCurrentGuild(), loadPendingInvites(), loadGuilds()]);
+  };
+
+  const rejectInvite = async (inviteId: string) => {
+    const { error } = await supabase.from('guild_invites')
+      .update({ status: 'rejected', responded_at: new Date().toISOString() })
+      .eq('id', inviteId);
+    if (error) { toast.error('Erro ao recusar'); return; }
+    toast.success('Convite recusado');
+    loadPendingInvites();
+  };
 
   const loadGuilds = async () => {
     const { data } = await supabase.from('guilds').select('*').order('created_at', { ascending: false }).limit(20);
