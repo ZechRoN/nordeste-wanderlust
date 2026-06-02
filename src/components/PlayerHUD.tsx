@@ -129,11 +129,15 @@ export function PlayerHUD({ character, notificationSlot }: { character: PlayerHU
                     <span>{character.name}</span>
                   </Div>
                 </Div>
-                <Div className="player-hud__sub flex items-center gap-2">
+                <Div className="player-hud__sub flex items-center gap-2 flex-wrap">
                   <span>{classBadge.label}</span>
                   {identity.guildName && (
                     <span className="inline-flex items-center gap-1 text-[10px] opacity-90" style={{ color: "hsl(var(--rpg-gold))" }}>
-                      <Shield className="h-3 w-3" /> &lt;{identity.guildName}&gt;{identity.guildLevel ? ` Lv${identity.guildLevel}` : ""}
+                      <Shield className="h-3 w-3" />
+                      &lt;{identity.guildName}&gt;
+                      {identity.guildRoleLabel && (
+                        <span className="opacity-80">{identity.guildRoleLabel}</span>
+                      )}
                     </span>
                   )}
                 </Div>
