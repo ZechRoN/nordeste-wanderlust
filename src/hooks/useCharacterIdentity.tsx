@@ -30,38 +30,73 @@ export function useCharacterIdentity(characterId: string | null | undefined, use
 
   useEffect(() => {
     let cancelled = false;
-    if (!characterId) {
-      setIdentity(EMPTY);
-      return;
-    }
-    (async () => {
+
+    async function load() {
+      if (!characterId) {
+        if (!cancelled) setIdentity(EMPTY);
+        return;
+      }
       try {
-        const [guildRes, rolesRes] = await Promise.all([
-          supabase
-            .from("guild_members")
-            .select("role, guilds(name)")
-            .eq("character_id", characterId)
-            .maybeSingle(),
-          userId
-            ? supabase.from("user_roles").select("role").eq("user_id", userId)
-            : Promise.resolve({ data: [] as any[] } as any),
-        ]);
+        // Fetch guild membership (avoid PostgREST embed in case FK is not declared)
+        const memberRes = await supabase
+          .from("guild_members")
+          .select("role, guild_id, joined_at")
+          .eq("character_id", characterId)
+          .order("joined_at", { ascending: false })
+          .limit(1);
+
+        const member: any = memberRes.data?.[0] ?? null;
+        let guildName: string | null = null;
+        let guildRole: GuildRole | null = (member?.role ?? null) as GuildRole | null;
+
+        if (member?.guild_id) {
+          const guildRes = await supabase
+            .from("guilds")
+            .select("name")
+            .eq("id", member.guild_id)
+            .maybeSingle();
+          guildName = (guildRes.data as any)?.name ?? null;
+        }
+
+        // Roles (only if user available)
+        let roleTag: CharacterIdentity["roleTag"] = null;
+        if (userId) {
+          const rolesRes = await supabase.from("user_roles").select("role").eq("user_id", userId);
+          const roles: Array<{ role: string }> = ((rolesRes.data as any[]) || []);
+          const found = ROLE_PRIORITY.find((r) => roles.some((x) => x.role === r.role));
+          roleTag = found?.tag ?? null;
+        }
+
         if (cancelled) return;
-        const g: any = (guildRes as any).data ?? null;
-        const guildRole = (g?.role ?? null) as GuildRole | null;
-        const roles: Array<{ role: string }> = ((rolesRes as any).data as any[]) || [];
-        const found = ROLE_PRIORITY.find((r) => roles.some((x) => x.role === r.role));
         setIdentity({
-          guildName: g?.guilds?.name ?? null,
+          guildName,
           guildRole,
           guildRoleLabel: guildRole ? GUILD_ROLE_LABELS[guildRole] ?? "Member" : null,
-          roleTag: found?.tag ?? null,
+          roleTag,
         });
       } catch {
         if (!cancelled) setIdentity(EMPTY);
       }
-    })();
-    return () => { cancelled = true; };
+    }
+
+    load();
+
+    // Realtime: refresh when this character's guild membership changes
+    const channel = characterId
+      ? supabase
+          .channel(`identity_${characterId}`)
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "guild_members", filter: `character_id=eq.${characterId}` },
+            () => load(),
+          )
+          .subscribe()
+      : null;
+
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
   }, [characterId, userId]);
 
   return identity;
