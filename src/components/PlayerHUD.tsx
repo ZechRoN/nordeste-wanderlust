@@ -4,6 +4,7 @@ import { Heart, Sparkles, TrendingUp, Droplets, Shield } from "lucide-react";
 import { Div } from "@/components/ui/Div";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { CharacterPortrait } from "@/components/equipment/CharacterPortrait";
 import { useCharacterIdentity } from "@/hooks/useCharacterIdentity";
 
 type PlayerHUDCharacter = {
@@ -105,7 +106,7 @@ export function PlayerHUD({ character, notificationSlot }: { character: PlayerHU
           <Div className="player-hud__top">
             <Div className="player-hud__identity">
               <Div className={`player-hud__avatar player-hud__avatar--${classBadge.accent}`} aria-hidden="true">
-                <span className="player-hud__avatar-glyph">{classBadge.glyph}</span>
+                <CharacterPortrait characterClass={character.class} compact />
               </Div>
 
               <Div className="player-hud__meta">
@@ -129,10 +130,10 @@ export function PlayerHUD({ character, notificationSlot }: { character: PlayerHU
                     <span>{character.name}</span>
                   </Div>
                 </Div>
-                <Div className="player-hud__sub flex items-center gap-2 flex-wrap">
+                <Div className="player-hud__sub">
                   <span>{classBadge.label}</span>
                   {identity.guildName && (
-                    <span className="inline-flex items-center gap-1 text-[10px] opacity-90" style={{ color: "hsl(var(--rpg-gold))" }}>
+                    <span className="player-hud__guild">
                       <Shield className="h-3 w-3" />
                       &lt;{identity.guildName}&gt;
                       {identity.guildRoleLabel && (

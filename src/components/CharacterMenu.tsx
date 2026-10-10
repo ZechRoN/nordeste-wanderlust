@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { GameButton, GamePanelTabs, InventorySlot } from "@/components/ui/game-panel";
-import { CLASS_COLORS } from "@/engine/constants";
+import { CharacterPortrait } from "@/components/equipment/CharacterPortrait";
 import { RARITY_COLORS } from "@/assets/sprites";
 import { ItemTooltip } from "@/components/inventory/ItemTooltip";
 import { Div } from "@/components/ui/Div";
@@ -73,8 +73,6 @@ export function CharacterMenu({
   onCharacterUpdate: (updatedCharacter: any) => void;
 }) {
   const [activeTab, setActiveTab] = useState<MenuTab>("gear");
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const animRef = useRef(0);
   const [items, setItems] = useState<CharacterItem[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
@@ -153,7 +151,8 @@ export function CharacterMenu({
 
   const equipItem = useCallback(async (ci: CharacterItem) => {
     try {
-      const slot = ci.item.equipment_slot!;
+      const slot = ci.item.equipment_slot;
+      if (!slot) return;
       const current = equippedBySlot[slot];
       if (current) {
         await supabase.from('character_items').update({ is_equipped: false }).eq('id', current.id);
@@ -231,69 +230,6 @@ export function CharacterMenu({
     } catch { toast.error("Erro ao aplicar pontos"); }
   };
 
-  // Canvas sprite
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    let raf = 0;
-    const draw = () => {
-      animRef.current++;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.imageSmoothingEnabled = false;
-      const colors = CLASS_COLORS[character.class] || CLASS_COLORS.warrior;
-      const bob = Math.sin(animRef.current * 0.08) * 2;
-      const cx = Math.floor(canvas.width / 2);
-      const cy = Math.floor(canvas.height / 2);
-      // Shadow
-      ctx.fillStyle = "rgba(0,0,0,0.25)";
-      ctx.fillRect(cx - 14, cy + 22, 28, 6);
-      // Body
-      ctx.fillStyle = colors.body;
-      ctx.fillRect(cx - 12, cy - 4 + bob, 24, 24);
-      // Belt
-      ctx.fillStyle = colors.accent;
-      ctx.fillRect(cx - 12, cy + 10 + bob, 24, 4);
-      // Head
-      ctx.fillStyle = colors.skin;
-      ctx.fillRect(cx - 10, cy - 20 + bob, 20, 16);
-      // Eyes
-      ctx.fillStyle = "#1a1a1a";
-      ctx.fillRect(cx - 5, cy - 12 + bob, 3, 3);
-      ctx.fillRect(cx + 3, cy - 12 + bob, 3, 3);
-      // Hair
-      ctx.fillStyle = colors.body;
-      ctx.fillRect(cx - 10, cy - 22 + bob, 20, 5);
-      // Legs
-      ctx.fillStyle = colors.body;
-      ctx.fillRect(cx - 10, cy + 20 + bob, 8, 8);
-      ctx.fillRect(cx + 2, cy + 20 + bob, 8, 8);
-
-      // Equipment overlays
-      if (equippedBySlot.helmet) {
-        ctx.fillStyle = '#FFD700';
-        ctx.fillRect(cx - 11, cy - 24 + bob, 22, 5);
-      }
-      if (equippedBySlot.chest) {
-        ctx.fillStyle = 'rgba(192,192,192,0.4)';
-        ctx.fillRect(cx - 12, cy - 2 + bob, 24, 14);
-      }
-      if (equippedBySlot.main_hand) {
-        ctx.fillStyle = '#AAA';
-        ctx.fillRect(cx + 14, cy - 2 + bob, 4, 20);
-      }
-      if (equippedBySlot.off_hand) {
-        ctx.fillStyle = '#8B4513';
-        ctx.fillRect(cx - 18, cy + 0 + bob, 4, 14);
-      }
-
-      raf = requestAnimationFrame(draw);
-    };
-    raf = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(raf);
-  }, [character.class, equippedBySlot]);
-
   const totalEquipBonus = useMemo(() => {
     let str = 0, agi = 0, int_ = 0, vit = 0, luk = 0;
     Object.values(equippedBySlot).forEach(ci => {
@@ -312,7 +248,7 @@ export function CharacterMenu({
   const expPercent = Math.min(100, (character.experience / expForLevel) * 100);
 
   return (
-    <Div className="flex flex-col gap-0 h-full overflow-hidden">
+    <Div className="character-menu flex flex-col gap-0 h-full overflow-hidden">
       <GamePanelTabs tabs={MENU_TABS} activeTab={activeTab} onTabChange={(k) => setActiveTab(k as MenuTab)} />
 
       {activeTab === "gear" && (
@@ -357,7 +293,7 @@ export function CharacterMenu({
                   </Div>
 
                   <Div className="char-sprite-box">
-                    <canvas ref={canvasRef} width={120} height={120} style={{ imageRendering: "pixelated" }} />
+                    <CharacterPortrait characterClass={character.class} equipped={equippedBySlot} />
                   </Div>
 
                   <Div className="flex flex-col gap-1">

@@ -1,0 +1,4 @@
+- [ ] Renovar menus e barra de ações mantendo funções e janelas arrastáveis.
+- [ ] Refinar chat e minimapa conforme as referências.
+- [ ] Unificar visual do personagem com os sprites do jogo.
+- [ ] Verificar apresentação e controles disponíveis; teste autenticado depende de sessão externa.

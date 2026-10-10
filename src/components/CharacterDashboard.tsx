@@ -177,7 +177,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
   }
 
   return (
-    <Div className="fixed inset-0 bg-background overflow-hidden">
+    <Div className="game-ui fixed inset-0 bg-background overflow-hidden">
       <Div className="fixed top-0 left-0 z-30 flex flex-wrap items-start gap-2 p-2 pointer-events-none">
         <Div className="pointer-events-auto">
           <PlayerHUD character={currentCharacter as any} notificationSlot={<GameNotifications characterId={currentCharacter.id} containerClassName="relative" />} />
@@ -191,7 +191,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
         onOpenInventory={() => { SFX.openPanel(); togglePanel('inventory'); }}
         hudRightSlot={
           <>
-            <GameButton size="sm" onClick={() => setShowMenu(!showMenu)}>☰</GameButton>
+            <GameButton size="sm" title="Menu" aria-label="Abrir menu" onClick={() => setShowMenu(!showMenu)}>☰</GameButton>
             <Dialog open={audioOpen} onOpenChange={setAudioOpen}>
               <DialogTrigger asChild>
                 <GameButton size="sm" variant={(settings.musicMuted && settings.sfxMuted) ? 'secondary' : 'gold'}>
@@ -258,8 +258,8 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
             <GameButton size="sm" variant="gold" onClick={() => window.open('/cupons', '_blank')} title="Comprar Cupons">
               <Ticket className="h-3 w-3" />
             </GameButton>
-            <GameButton size="sm" onClick={onBack}><ArrowLeft className="h-3 w-3" /></GameButton>
-            <GameButton size="sm" variant="danger" onClick={onSignOut}><LogOut className="h-3 w-3" /></GameButton>
+            <GameButton size="sm" title="Selecionar personagem" aria-label="Selecionar personagem" onClick={onBack}><ArrowLeft className="h-3 w-3" /></GameButton>
+            <GameButton size="sm" variant="danger" title="Sair" aria-label="Sair" onClick={onSignOut}><LogOut className="h-3 w-3" /></GameButton>
           </>
         }
         onNpcInteracted={async (npcName) => {
@@ -275,23 +275,28 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
       />
 
       {/* Bottom action bar - quick access */}
-      <Div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex gap-1 rpg-hud-bar">
-        {MENU_ITEMS.slice(0, 6).map(item => (
+      <Div className="game-action-dock z-20">
+        {MENU_ITEMS.slice(0, 10).map(item => (
           <GameButton
             key={item.key}
             variant={openPanels.some(p => p.key === item.key) ? 'gold' : 'secondary'}
             size="sm"
             onClick={() => togglePanel(item.key)}
+            className="game-action-dock__item"
+            title={item.label}
+            aria-label={item.label}
+            aria-pressed={openPanels.some(p => p.key === item.key)}
           >
             {item.icon}
-            <span className="hidden md:inline ml-1 text-[10px]">{item.label}</span>
+            <span className="game-action-dock__label">{item.label}</span>
           </GameButton>
         ))}
       </Div>
 
       {/* Draggable panels */}
       {openPanels.map(panel => {
-        const menuItem = MENU_ITEMS.find(m => m.key === panel.key)!;
+        const menuItem = MENU_ITEMS.find(m => m.key === panel.key);
+        if (!menuItem) return null;
         const isInventoryPanel = panel.key === 'inventory';
         return (
           <DraggablePanel
@@ -315,7 +320,7 @@ export function CharacterDashboard({ character, onBack, onSignOut }: CharacterDa
 
       {/* Menu overlay */}
       {showMenu && (
-        <Div className="absolute inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4" onClick={() => setShowMenu(false)}>
+        <Div className="game-menu-overlay absolute inset-0 z-[9999] flex items-center justify-center p-4" onClick={() => setShowMenu(false)}>
           <Div className="w-full max-w-sm" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
             <GamePanel
               title="Menu"

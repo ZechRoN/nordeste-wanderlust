@@ -300,7 +300,7 @@ export function GlobalChat({ character }: GlobalChatProps) {
   }, [character.id]);
 
   return (
-    <Div className="absolute bottom-2 left-2 z-20" style={{ width: 280 }}>
+    <Div className="game-chat absolute bottom-2 left-2 z-20">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -308,17 +308,17 @@ export function GlobalChat({ character }: GlobalChatProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="rpg-panel mb-1"
+            className="rpg-panel game-chat__panel mb-1"
           >
-            <Div className="rpg-panel-header" style={{ padding: '4px 8px' }}>
+            <Div className="rpg-panel-header game-chat__header">
               <Div className="rpg-panel-title-bar">
                 <MessageSquare className="h-3 w-3" style={{ color: 'hsl(var(--rpg-gold))' }} />
                 <span className="rpg-panel-title" style={{ fontSize: 11 }}>{title}</span>
-                <button onClick={toggleChat} className="rpg-panel-close" style={{ width: 18, height: 18 }}>
+                <GameButton onClick={toggleChat} className="game-chat__collapse" size="sm" aria-label="Recolher chat" title="Recolher chat">
                   <ChevronDown className="h-3 w-3" />
-                </button>
+                </GameButton>
               </Div>
-              <Div className="flex items-center justify-between gap-1 mt-1">
+              <Div className="game-chat__channels">
                 {modes.map((m) => {
                   const Icon = m.icon;
                   const active = mode === m.key;
@@ -327,11 +327,13 @@ export function GlobalChat({ character }: GlobalChatProps) {
                       key={m.key}
                       size="sm"
                       variant={active ? 'gold' : 'secondary'}
-                      className="flex-1"
+                      className="game-chat__channel"
+                       aria-label={m.label}
+                       aria-pressed={active}
                       onClick={() => handleModeChange(m.key)}
                       title={m.label}
                     >
-                      <Icon className="h-3 w-3" />
+                      <Icon className="h-3 w-3" /><span>{m.label}</span>
                     </GameButton>
                   );
                 })}
@@ -383,7 +385,7 @@ export function GlobalChat({ character }: GlobalChatProps) {
               {messages.map((raw) => {
                 const msg = formatMessage(raw);
                 return (
-                  <Div key={msg.id} className="mb-1" style={{ lineHeight: 1.3 }}>
+                  <Div key={msg.id} className="game-chat__message">
                     <span className="opacity-40 text-[9px]">[{formatTime(msg.created_at)}] </span>
                     <span
                       className="font-bold"
@@ -391,7 +393,7 @@ export function GlobalChat({ character }: GlobalChatProps) {
                     >
                       {msg.author_name}:
                     </span>{' '}
-                    <span style={{ color: 'hsl(var(--rpg-text))' }}>{msg.text}</span>
+                    <span>{msg.text}</span>
                   </Div>
                 );
               })}
@@ -409,7 +411,7 @@ export function GlobalChat({ character }: GlobalChatProps) {
                   maxLength={200}
                   disabled={mode === 'private' && !pmTargetName.trim()}
                 />
-                <GameButton size="sm" variant="gold" onClick={sendMessage} disabled={!input.trim()}>
+                <GameButton size="sm" variant="gold" aria-label="Enviar mensagem" title="Enviar mensagem" onClick={sendMessage} disabled={!input.trim()}>
                   <Send className="h-3 w-3" />
                 </GameButton>
               </Div>
