@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useRef, useState, useCallback } from 'react';
 import { X, Minus } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { GameButton } from '@/components/ui/game-panel';
 import { Div } from '@/components/ui/Div';
 
 interface DraggablePanelProps {
@@ -55,6 +55,7 @@ export function DraggablePanel({
   return (
     <div
       className="draggable-panel"
+      role="region" aria-label={title} data-panel={id}
       style={{
         position: 'absolute',
         left: pos.x,
@@ -77,12 +78,12 @@ export function DraggablePanel({
           {icon && <span className="draggable-handle-icon">{icon}</span>}
           <span className="draggable-handle-title">{title}</span>
           <div className="draggable-handle-buttons">
-            <button onClick={(e) => { e.stopPropagation(); setMinimized(!minimized); }} className="rpg-panel-btn">
+            <GameButton size="sm" onPointerDown={e => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); setMinimized(!minimized); }} className="rpg-panel-btn" title={minimized ? "Restaurar" : "Minimizar"} aria-label={minimized ? `Restaurar ${title}` : `Minimizar ${title}`}>
               <Minus className="h-3 w-3" />
-            </button>
-            <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="rpg-panel-btn">
+            </GameButton>
+            <GameButton size="sm" onPointerDown={e => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onClose(); }} className="rpg-panel-btn" title="Fechar" aria-label={`Fechar ${title}`}>
               <X className="h-3 w-3" />
-            </button>
+            </GameButton>
           </div>
         </div>
       </div>

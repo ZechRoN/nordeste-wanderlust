@@ -610,6 +610,7 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
       />
       <Div className="minimap-hud hidden md:block">
         <Div className="rpg-hud-bar minimap-hud__panel">
+          <Div className="minimap-hud__location">{({ caatinga: "Caatinga", agreste: "Agreste", litoral: "Litoral", santa_cruz: "Santa Cruz" } as Record<string, string>)[character.current_biome] ?? character.current_biome}</Div>
           <Div className="minimap-hud__canvas-wrap">
             <canvas ref={minimapCanvasRef} className="minimap-hud__canvas" />
               <Div className="minimap-hud__zoom-buttons">
@@ -637,7 +638,7 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
               {minimapFiltersOpen ? (
                 <Div className="minimap-hud__overlay" onClick={() => setMinimapFiltersOpen(false)}>
                   <Div
-                    className="rpg-item-detail minimimap-hud__modal"
+                    className="rpg-item-detail minimap-hud__modal"
                     role="dialog"
                     aria-modal="true"
                     aria-label="Filtros do minimapa"
@@ -687,7 +688,7 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
           <Div className="minimap-hud__side">
             <Div className="minimap-hud__controls">
               <Div className="minimap-hud__row">
-                <span className="minimap-hud__label">α</span>
+                <span className="minimap-hud__label" title="Opacidade">◐</span>
                 <input
                   type="range"
                   min={0.5}
@@ -703,12 +704,12 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
                 />
               </Div>
               <Div className="minimap-hud__row minimap-hud__row--meta">
-                <span className="minimap-hud__label">Q</span>
+                <span className="minimap-hud__label" title="Missões ativas">Missões</span>
                 <span className="minimap-hud__value">{activeQuestCount}</span>
               </Div>
             </Div>
             <Div className="minimap-hud__buttons">
-              <GameButton size="sm" variant={minimapFiltersOpen ? 'gold' : 'secondary'} onClick={() => setMinimapFiltersOpen(v => !v)}>
+              <GameButton size="sm" title="Filtros do minimapa" aria-label="Filtros do minimapa" variant={minimapFiltersOpen ? 'gold' : 'secondary'} onClick={() => setMinimapFiltersOpen(v => !v)}>
                 Filtros
               </GameButton>
               {hudRightSlot}
