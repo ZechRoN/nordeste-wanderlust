@@ -173,9 +173,16 @@ export function Inventory({ character, onCharacterUpdate, bare }: InventoryProps
   const equipItem = async (characterItem: CharacterItem) => {
     try {
       const item = characterItem.item;
-      if (item.type === 'weapon' || item.type === 'armor') {
-        await supabase.from('character_items').update({ is_equipped: false })
-          .eq('character_id', character.id).neq('id', characterItem.id);
+      const slot = resolveEquipmentSlot(item as any);
+      if (slot) {
+        // Unequip only what already occupies the same slot (sword + shield can coexist)
+        const occupants = items.filter(ci => ci.is_equipped && ci.id !== characterItem.id && resolveEquipmentSlot(ci.item as any) === slot);
+        for (const occ of occupants) {
+          await supabase.from('character_items').update({ is_equipped: false }).eq('id', occ.id);
+          (['strength','agility','intelligence','vitality','luck'] as const).forEach(k => {
+            (character as any)[k] -= applyQuality((occ.item as any)[`${k}_bonus`], (occ as any).quality_rank);
+          });
+        }
       }
       const { error } = await supabase.from('character_items')
         .update({ is_equipped: true }).eq('id', characterItem.id);
