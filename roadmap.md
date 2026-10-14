@@ -1,4 +1,5 @@
-- [ ] Renovar menus e barra de ações mantendo funções e janelas arrastáveis.
-- [ ] Refinar chat e minimapa conforme as referências.
-- [ ] Unificar visual do personagem com os sprites do jogo.
-- [ ] Verificar apresentação e controles disponíveis; teste autenticado depende de sessão externa.
+- [x] Renovar menus e barra de ações mantendo funções e janelas arrastáveis.
+- [x] Refinar chat e minimapa conforme as referências.
+- [x] Unificar visual do personagem com os sprites do jogo.
+- [x] Verificar sprites, três janelas simultâneas, arrastar/minimizar/restaurar e cinco testes de HUD/seleção.
+- [ ] Conferir HUD, chat e minimapa em jogo autenticado: bloqueado pela sessão externa indisponível no ambiente de teste.
