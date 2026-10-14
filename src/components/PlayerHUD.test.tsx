@@ -1,6 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { PlayerHUD } from "./PlayerHUD";
+
+vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: null }) }));
+vi.mock("@/hooks/useCharacterIdentity", () => ({
+  useCharacterIdentity: () => ({ roleTag: null, guildName: "Main Street", guildRoleLabel: "Guild Leader" }),
+}));
 
 describe("PlayerHUD", () => {
   const baseCharacter = {
@@ -19,6 +24,8 @@ describe("PlayerHUD", () => {
     render(<PlayerHUD character={baseCharacter} />);
     expect(screen.getByText("CarecaDoSTF")).toBeInTheDocument();
     expect(screen.getByLabelText("Nível 81")).toBeInTheDocument();
+    expect(screen.getByText("Guild Leader")).toBeInTheDocument();
+    expect(screen.getByText("<Main Street>")).toBeInTheDocument();
   });
 
   it("expõe progressbars acessíveis", () => {
