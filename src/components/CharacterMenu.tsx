@@ -52,6 +52,24 @@ const SLOT_ICONS: Record<string, string> = {
   helmet: '🪖', chest: '🛡️', legs: '👖', gloves: '🧤', boots: '👢', main_hand: '⚔️', off_hand: '🔮',
 };
 
+function itemIcon(slot: string, subtype?: string | null): string {
+  const s = subtype ?? '';
+  if (slot === 'main_hand') {
+    if (s.startsWith('cajado')) return '🪄';
+    if (s.startsWith('arco')) return '🏹';
+    if (/grimorio|tomo|codex/.test(s)) return '📖';
+    if (/adaga|katar/.test(s)) return '🗡️';
+    return '⚔️';
+  }
+  if (slot === 'off_hand') {
+    if (s.startsWith('orbe')) return '🔮';
+    if (s.startsWith('runa')) return '🪨';
+    if (s.startsWith('bolsa')) return '🎯';
+    return '🛡️';
+  }
+  return { helmet: '⛑️', chest: '🥋', legs: '👖', gloves: '🧤', boots: '🥾' }[slot] ?? '📦';
+}
+
 const SLOT_LABELS: Record<string, string> = {
   helmet: 'Elmo', chest: 'Peitoral', legs: 'Calças', gloves: 'Luvas', boots: 'Botas',
   main_hand: 'Mão Principal', off_hand: 'Mão Secundária',
@@ -481,12 +499,13 @@ function EquipSlot({ slot, equipped, selected, onClick, onUnequip }: {
 }) {
   const rarityColor = equipped ? RARITY_COLORS[equipped.item.rarity as keyof typeof RARITY_COLORS] : undefined;
   return (
-    <Div className="equip-slot-wrapper" onClick={onClick} title={SLOT_LABELS[slot]}>
+    <Div className="equip-slot-wrapper" onClick={onClick} title={equipped ? `${SLOT_LABELS[slot]}: ${equipped.item.name}` : SLOT_LABELS[slot]}>
       <Div
         className={`equip-slot ${selected ? 'equip-slot-selected' : ''} ${equipped ? 'equip-slot-filled' : ''}`}
         style={equipped ? { borderColor: rarityColor } : undefined}
       >
-        <span className={`${equipped ? 'text-base' : 'text-sm opacity-30'}`}>{SLOT_ICONS[slot]}</span>
+        <span className={`${equipped ? 'text-base' : 'text-sm opacity-30'}`}>{equipped ? itemIcon(slot, equipped.item.subtype) : SLOT_ICONS[slot]}</span>
+        {equipped && <span className="sr-only">{equipped.item.name}</span>}
       </Div>
     </Div>
   );
