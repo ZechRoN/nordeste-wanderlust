@@ -177,10 +177,7 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
       }
     } catch { /* ignore corrupt save */ }
     exploredRef.current = explored;
-    let exploredDirty = false;
     const saveExplored = () => {
-      if (!exploredDirty) return;
-      exploredDirty = false;
       try {
         let bin = '';
         for (let i = 0; i < explored.length; i++) bin += String.fromCharCode(explored[i]);
@@ -233,6 +230,11 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
 
     // Load creatures from DB and spawn them
     loadCreatures();
+    return () => {
+      saveExplored();
+      window.clearInterval(saveTimer);
+      window.removeEventListener('beforeunload', saveExplored);
+    };
   }, []);
 
   useEffect(() => {
