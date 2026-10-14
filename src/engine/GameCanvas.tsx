@@ -167,7 +167,28 @@ export function GameCanvas({ character, onCharacterUpdate, onStartCombat, onOpen
 
     const map = generateTileMap(42);
     mapRef.current = map;
-    exploredRef.current = new Uint8Array(map.width * map.height);
+    const exploredKey = `ziv_map_explored_${character.id}`;
+    const explored = new Uint8Array(map.width * map.height);
+    try {
+      const saved = localStorage.getItem(exploredKey);
+      if (saved) {
+        const bin = atob(saved);
+        for (let i = 0; i < Math.min(bin.length, explored.length); i++) explored[i] = bin.charCodeAt(i) ? 1 : 0;
+      }
+    } catch { /* ignore corrupt save */ }
+    exploredRef.current = explored;
+    let exploredDirty = false;
+    const saveExplored = () => {
+      if (!exploredDirty) return;
+      exploredDirty = false;
+      try {
+        let bin = '';
+        for (let i = 0; i < explored.length; i++) bin += String.fromCharCode(explored[i]);
+        localStorage.setItem(exploredKey, btoa(bin));
+      } catch { /* storage full */ }
+    };
+    const saveTimer = window.setInterval(saveExplored, 3000);
+    window.addEventListener('beforeunload', saveExplored);
 
     // Get spawn point based on current biome
     const spawn = getBiomeSpawnPoint(character.current_biome);
