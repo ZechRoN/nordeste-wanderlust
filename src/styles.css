@@ -1377,6 +1377,10 @@
   --portrait-edge: 210 18% 25%;
   --portrait-leather: 30 42% 31%;
   --portrait-shadow: 210 15% 4%;
+  --portrait-outline: 220 30% 6%;
+  --portrait-steel: 205 35% 58%;
+  --portrait-epic: 275 45% 55%;
+  --portrait-wood: 28 45% 26%;
   --game-shadow: 210 25% 3%;
   --game-highlight: 45 50% 94%;
   --game-chat-global: 187 77% 70%;
